@@ -1,5 +1,5 @@
 
-```javascript
+
 // Конфигурация API
 const API_CONFIG = {
     RECONNECT_INTERVAL: 5000,
