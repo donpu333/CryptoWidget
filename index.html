@@ -14,7 +14,7 @@
         <div class="nav-container flex justify-between h-16 items-center">
             <div class="flex items-center">
                 <i class="fas fa-bell text-primary text-xl mr-2"></i>
-                <span class="text-xl font-bold text-light">Crypto Tools</span>
+                <span class="text-xl font-bold text-light">Crypto Alerts</span>
             </div>
             <div class="flex items-center space-x-4">
                 <div class="menu-container">
@@ -57,7 +57,6 @@
             </div>
         </div>
     </nav>
-
     <div class="main-container">
         <div class="content-wrapper">
             <!-- Alerts Section -->
@@ -244,114 +243,8 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Watchlist Section -->
-            <div class="dashboard-container mt-8">
-                <div class="dashboard">
-                    <!-- Long Panel -->
-                    <div class="panel long">
-                        <div class="panel-header">
-                            <div>
-                                <i class="fas fa-arrow-trend-up"></i>
-                                WATCHLIST LONG
-                            </div>
-                            <button class="clear-all-btn" onclick="clearAllTickers('long')">Очистить все</button>
-                        </div>
-                        <div class="panel-content">
-                            <div class="input-group">
-                                <input type="text" class="ticker-input" placeholder="Введите тикер (BTCUSDT, ETHUSDT...)" id="long-input">
-                                <button class="add-btn" onclick="addTicker('long')">+</button>
-                                <div class="suggestions-dropdown" id="long-suggestions"></div>
-                            </div>
-                            <div class="error-message" id="long-error"></div>
-                            <ul class="ticker-list" id="long-list"></ul>
-                        </div>
-                    </div>
-                    <!-- Short Panel -->
-                    <div class="panel short">
-                        <div class="panel-header">
-                            <div>
-                                <i class="fas fa-arrow-trend-down"></i>
-                                WATCHLIST SHORT
-                            </div>
-                            <button class="clear-all-btn" onclick="clearAllTickers('short')">Очистить все</button>
-                        </div>
-                        <div class="panel-content">
-                            <div class="input-group">
-                                <input type="text" class="ticker-input" placeholder="Введите тикер (BTCUSDT, ETHUSDT...)" id="short-input">
-                                <button class="add-btn" onclick="addTicker('short')">+</button>
-                                <div class="suggestions-dropdown" id="short-suggestions"></div>
-                            </div>
-                            <div class="error-message" id="short-error"></div>
-                            <ul class="ticker-list" id="short-list"></ul>
-                        </div>
-                    </div>
-                    <!-- Long Wait Panel -->
-                    <div class="panel long-wait">
-                        <div class="panel-header">
-                            <div>
-                                <i class="fas fa-hourglass-half"></i>
-                                LONG ОЖИДАНИЕ
-                            </div>
-                            <button class="clear-all-btn" onclick="clearAllTickers('long-wait')">Очистить все</button>
-                        </div>
-                        <div class="panel-content">
-                            <div class="input-group">
-                                <input type="text" class="ticker-input" placeholder="Введите тикер (BTCUSDT, ETHUSDT...)" id="long-wait-input">
-                                <button class="add-btn" onclick="addTicker('long-wait')">+</button>
-                                <div class="suggestions-dropdown" id="long-wait-suggestions"></div>
-                            </div>
-                            <div class="error-message" id="long-wait-error"></div>
-                            <ul class="ticker-list" id="long-wait-list"></ul>
-                        </div>
-                    </div>
-                    <!-- Short Wait Panel -->
-                    <div class="panel short-wait">
-                        <div class="panel-header">
-                            <div>
-                                <i class="fas fa-hourglass-half"></i>
-                                SHORT ОЖИДАНИЕ
-                            </div>
-                            <button class="clear-all-btn" onclick="clearAllTickers('short-wait')">Очистить все</button>
-                        </div>
-                        <div class="panel-content">
-                            <div class="input-group">
-                                <input type="text" class="ticker-input" placeholder="Введите тикер (BTCUSDT, ETHUSDT...)" id="short-wait-input">
-                                <button class="add-btn" onclick="addTicker('short-wait')">+</button>
-                                <div class="suggestions-dropdown" id="short-wait-suggestions"></div>
-                            </div>
-                            <div class="error-message" id="short-wait-error"></div>
-                            <ul class="ticker-list" id="short-wait-list"></ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="stats-bar">
-                    <div class="stat-item">
-                        <div class="stat-value" id="total-tickers">0</div>
-                        <div class="stat-label">АКТИВНЫХ ТИКЕРОВ</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="long-count">0</div>
-                        <div class="stat-label">LONG ПОЗИЦИЙ</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="short-count">0</div>
-                        <div class="stat-label">SHORT ПОЗИЦИЙ</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="long-wait-count">0</div>
-                        <div class="stat-label">ОЖИДАНИЕ LONG</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="short-wait-count">0</div>
-                        <div class="stat-label">ОЖИДАНИЕ SHORT</div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
-
-    <!-- Notification Modal -->
     <div id="notificationModal" class="fixed bottom-4 right-4 w-80 rounded-lg shadow-lg border-l-4 border-accent-green hidden" style="background-color: #1E1E1E;">
         <div class="p-4">
             <div class="flex justify-between items-start">
@@ -365,8 +258,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Edit Modal -->
     <div id="editModal" class="edit-modal">
         <div class="edit-modal-content">
             <div class="flex justify-between items-center mb-4">
@@ -378,7 +269,6 @@
             <div id="editFormContent"></div>
         </div>
     </div>
-
     <!-- Telegram Settings Modal -->
     <div id="telegramSettingsModal" class="edit-modal">
         <div class="edit-modal-content">
@@ -417,7 +307,6 @@
             </div>
         </div>
     </div>
-
     <!-- Bot Connection Hint Modal -->
     <div id="botConnectionHint" class="edit-modal">
         <div class="edit-modal-content">
@@ -435,65 +324,9 @@
             </div>
         </div>
     </div>
-
-    <!-- Chart Modal -->
-    <div id="chartModal" class="chart-modal">
-        <div class="chart-modal-header">
-            <div class="chart-modal-title" id="chartModalTitle">BTCUSDT</div>
-            <button class="chart-modal-close" onclick="closeChartModal()">&times;</button>
-        </div>
-        <div class="chart-modal-content">
-            <!-- TradingView Widget BEGIN -->
-            <div class="tradingview-widget-container">
-                <div class="tradingview-widget-container__widget" id="tradingview-widget"></div>
-                <div class="tradingview-widget-copyright"><a href="https://ru.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Все рынки на TradingView</span></a></div>
-            </div>
-            <!-- TradingView Widget END -->
-        </div>
-        <div id="chartError" class="hidden p-4 text-center text-red-500">
-            График для этого тикера недоступен
-        </div>
-    </div>
-
-    <!-- Price Modal -->
-    <div id="priceModal" class="modal">
-        <div class="modal-content">
-            <h2 class="modal-title">Редактировать цену</h2>
-            <p id="modalTicker" class="text-center font-medium mb-4"></p>
-            <div>
-                <label class="block text-gray-300 text-sm font-medium mb-2">Цена</label>
-                <input type="text" id="priceInput" class="modal-input" placeholder="Цена">
-            </div>
-            <div>
-                <label class="block text-gray-300 text-sm font-medium mb-2">Изменение (%)</label>
-                <input type="text" id="changeInput" class="modal-input" placeholder="Изменение">
-            </div>
-            <div class="modal-buttons">
-                <button onclick="closeModal()" class="modal-btn modal-btn-cancel">Отмена</button>
-                <button onclick="confirmManualPrice()" class="modal-btn modal-btn-confirm">Сохранить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Comment Modal -->
-    <div id="commentModal" class="modal">
-        <div class="modal-content">
-            <h2 class="modal-title">Комментарий к тикеру</h2>
-            <p id="commentModalTicker" class="text-center font-medium mb-4"></p>
-            <div>
-                <label class="block text-gray-300 text-sm font-medium mb-2">Комментарий</label>
-                <textarea id="commentInput" class="modal-textarea" placeholder="Добавьте ваш комментарий здесь..."></textarea>
-            </div>
-            <div class="modal-buttons">
-                <button onclick="closeCommentModal()" class="modal-btn modal-btn-cancel">Отмена</button>
-                <button onclick="saveComment()" class="modal-btn modal-btn-confirm">Сохранить</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Login Modal -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
+    <div id="loginModal" class="edit-modal">
+        <div class="edit-modal-content">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-primary">Вход в аккаунт</h3>
                 <button onclick="closeLoginModal()" class="text-gray-400 hover:text-white">
@@ -515,10 +348,9 @@
             </div>
         </div>
     </div>
-
     <!-- Register Modal -->
-    <div id="registerModal" class="modal">
-        <div class="modal-content">
+    <div id="registerModal" class="edit-modal">
+        <div class="edit-modal-content">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-primary">Регистрация</h3>
                 <button onclick="closeRegisterModal()" class="text-gray-400 hover:text-white">
@@ -544,8 +376,6 @@
             </div>
         </div>
     </div>
-<script src="script.js"></script>
-    <!-- Подключаем библиотеку для сортировки -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
