@@ -264,6 +264,11 @@ function loadAppState() {
 // Добавлено: Функция для обновления текущих цен
 async function updateCurrentPrices() {
     try {
+        if (!apiManager || typeof apiManager.getCurrentPrice !== 'function') {
+            console.error('API Manager not initialized');
+            return;
+        }
+
         const activeAlerts = userAlerts.filter(a => !a.triggered);
         const uniqueSymbols = [...new Set(activeAlerts.map(a => a.symbol))];
         
@@ -312,8 +317,14 @@ class BinanceAPIManager {
     }
     
     async init() {
-        await this.checkAPIConnection();
-        this.startHealthCheck();
+        try {
+            await this.checkAPIConnection();
+            this.startHealthCheck();
+            return true;
+        } catch (error) {
+            console.error('Failed to initialize API Manager:', error);
+            return false;
+        }
     }
     
     async checkAPIConnection() {
@@ -412,6 +423,11 @@ class BinanceAPIManager {
     
     async getCurrentPrice(symbol, marketType) {
         try {
+            if (!symbol || !marketType) {
+                console.error('Invalid parameters for getCurrentPrice');
+                return null;
+            }
+
             const endpoint = marketType === 'futures'
                 ? `${API_CONFIG.ENDPOINTS.FUTURES}/fapi/v1/ticker/price?symbol=${symbol}`
                 : `${API_CONFIG.ENDPOINTS.SPOT}/api/v3/ticker/price?symbol=${symbol}`;
@@ -438,6 +454,8 @@ class BinanceAPIManager {
 
 // Улучшенная функция сравнения цен
 function comparePrices(currentPrice, condition, targetPrice) {
+    if (currentPrice === null || targetPrice === null) return false;
+    
     const epsilon = API_CONFIG.PRICE_COMPARISON_EPSILON;
     // Форматируем числа для точного сравнения
     const cp = parseFloat(currentPrice.toFixed(8));
@@ -452,6 +470,11 @@ function comparePrices(currentPrice, condition, targetPrice) {
 }
 
 async function checkAlerts() {
+    if (!apiManager || typeof apiManager.getCurrentPrice !== 'function') {
+        console.error('API Manager not initialized');
+        return;
+    }
+
     const now = Date.now();
     for (const alert of userAlerts.filter(a => !a.triggered)) {
         try {
@@ -640,6 +663,8 @@ function applyCurrentPriceForEdit() {
 }
 
 function getMarketTypeBySymbol(symbol) {
+    if (!symbol) return null;
+    
     const futuresMatch = allFutures.find(c => c.symbol === symbol);
     if (futuresMatch) return 'futures';
     
@@ -771,7 +796,7 @@ function validateEditForm() {
 async function loadMarketData() {
     try {
         // Проверяем соединение перед загрузкой данных
-        if (!apiManager.connectionState.connected) {
+        if (!apiManager || !apiManager.connectionState.connected) {
             const connected = await apiManager.checkAPIConnection();
             if (!connected) {
                 throw new Error('No connection to Binance API');
@@ -810,7 +835,9 @@ async function loadMarketData() {
         updateCoinSelect();
     } catch (error) {
         console.error('Error loading market data:', error);
-        apiManager._handleConnectionError(error);
+        if (apiManager) {
+            apiManager._handleConnectionError(error);
+        }
     }
 }
 
@@ -913,6 +940,11 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
         }
         
         const marketType = getMarketTypeBySymbol(symbol);
+        if (!marketType) {
+            showNotification('Ошибка', 'Не удалось определить тип рынка для символа');
+            return false;
+        }
+
         const newAlert = {
             id: Date.now(),
             symbol,
@@ -2058,9 +2090,14 @@ function setupEventListeners() {
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', async () => {
-    apiManager = new BinanceAPIManager();
     try {
-        await apiManager.init();
+        apiManager = new BinanceAPIManager();
+        const apiInitialized = await apiManager.init();
+        
+        if (!apiInitialized) {
+            throw new Error('Failed to initialize API Manager');
+        }
+        
         loadAppState();
         setupEventListeners();
         await loadMarketData();
@@ -2094,7 +2131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateCurrentPrices(); // Первоначальное обновление
     } catch (error) {
         console.error('Failed to initialize application:', error);
-        showNotification('Critical Error', 'Failed to connect to Binance API');
+        showNotification('Critical Error', 'Failed to initialize application. Please try again later.');
     }
 });
 
