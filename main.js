@@ -1,3 +1,6 @@
+Чтобы объединить два скрипта, нужно просто скопировать содержимое второго скрипта и вставить его в конец первого. Поскольку оба скрипта содержат функции и переменные, которые не конфликтуют друг с другом, их объединение не должно вызвать проблем. Вот как это будет выглядеть:
+
+```javascript
 // Конфигурация API
 const API_CONFIG = {
     RECONNECT_INTERVAL: 5000,
@@ -79,37 +82,37 @@ function handleRegister() {
     const email = document.getElementById('registerEmail').value.trim();
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('registerConfirmPassword')?.value;
-    
+
     // Валидация полей
     if (!email || !password || !confirmPassword) {
         showNotification('Ошибка', 'Все поля обязательны для заполнения');
         return;
     }
-    
+
     if (!isValidEmail(email)) {
         showNotification('Ошибка', 'Введите корректный email');
         return;
     }
-    
+
     if (password.length < 8) {
         showNotification('Ошибка', 'Пароль должен содержать минимум 8 символов');
         return;
     }
-    
+
     if (password !== confirmPassword) {
         showNotification('Ошибка', 'Пароли не совпадают');
         return;
     }
-    
+
     // Проверяем, есть ли уже такой пользователь
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     const userExists = users.some(user => user.email === email);
-    
+
     if (userExists) {
         showNotification('Ошибка', 'Пользователь с таким email уже зарегистрирован');
         return;
     }
-    
+
     // Создаем нового пользователя
     const newUser = {
         email: email,
@@ -117,15 +120,15 @@ function handleRegister() {
         createdAt: new Date().toISOString(),
         alerts: []
     };
-    
+
     // Сохраняем пользователя
     users.push(newUser);
     localStorage.setItem('users', JSON.stringify(users));
     localStorage.setItem('currentUser', JSON.stringify({ email: email }));
-    
+
     showNotification('Успех', 'Регистрация прошла успешно!');
     closeRegisterModal();
-    
+
     // Обновляем интерфейс для зарегистрированного пользователя
     updateUserUI(email);
 }
@@ -133,20 +136,20 @@ function handleRegister() {
 function handleLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
-    
+
     if (!email || !password) {
         showNotification('Ошибка', 'Введите email и пароль');
         return;
     }
-    
+
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     const user = users.find(u => u.email === email && atob(u.password) === password);
-    
+
     if (!user) {
         showNotification('Ошибка', 'Неверный email или пароль');
         return;
     }
-    
+
     localStorage.setItem('currentUser', JSON.stringify({ email: email }));
     showNotification('Успех', 'Вход выполнен успешно!');
     closeLoginModal();
@@ -166,7 +169,7 @@ function updateUserUI(email) {
     const loginMenuItem = document.getElementById('loginMenuItem');
     const registerMenuItem = document.getElementById('registerMenuItem');
     const logoutMenuItem = document.getElementById('logoutMenuItem');
-    
+
     if (email) {
         // Пользователь авторизован
         if (userProfileBtn) userProfileBtn.classList.remove('hidden');
@@ -228,13 +231,13 @@ function loadAppState() {
         if (savedAlerts) {
             userAlerts = JSON.parse(savedAlerts);
         }
-        
+
         // Загружаем фильтр
         const savedFilter = localStorage.getItem('alertFilter');
         if (savedFilter) {
             currentAlertFilter = savedFilter;
         }
-        
+
         // Загружаем настройки Telegram
         const tgSettings = JSON.parse(localStorage.getItem('tgSettings') || '{}');
         if (tgSettings.chatId) {
@@ -245,14 +248,14 @@ function loadAppState() {
                 userChatId.classList.remove('hidden');
             }
         }
-        
+
         if (tgSettings.enabled !== undefined) {
             const telegramCheckbox = document.getElementById('telegram');
             if (telegramCheckbox) {
                 telegramCheckbox.checked = tgSettings.enabled;
             }
         }
-        
+
         console.log("Состояние загружено");
         return true;
     } catch (error) {
@@ -266,7 +269,7 @@ async function updateCurrentPrices() {
     try {
         const activeAlerts = userAlerts.filter(a => !a.triggered);
         const uniqueSymbols = [...new Set(activeAlerts.map(a => a.symbol))];
-        
+
         for (const symbol of uniqueSymbols) {
             const marketType = getMarketTypeBySymbol(symbol);
             if (marketType) {
@@ -289,7 +292,7 @@ function updateAlertPriceDisplay(symbol, price) {
         const priceElement = el.querySelector('.current-price-value');
         if (priceElement) {
             priceElement.textContent = price;
-            
+
             // Добавляем сравнение с целевой ценой
             const alertId = el.id.split('-')[1];
             const alert = userAlerts.find(a => a.id == alertId);
@@ -310,21 +313,21 @@ class BinanceAPIManager {
             error: null
         };
     }
-    
+
     async init() {
         await this.checkAPIConnection();
         this.startHealthCheck();
     }
-    
+
     async checkAPIConnection() {
         try {
             const response = await this._fetchWithTimeout(
                 API_CONFIG.ENDPOINTS.TEST,
                 { method: 'GET' }
             );
-            
+
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            
+
             this._updateConnectionState({
                 connected: true,
                 retries: 0,
@@ -336,11 +339,11 @@ class BinanceAPIManager {
             return false;
         }
     }
-    
+
     async _fetchWithTimeout(url, options = {}) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
-        
+
         try {
             const response = await fetch(url, {
                 ...options,
@@ -353,7 +356,7 @@ class BinanceAPIManager {
             throw error;
         }
     }
-    
+
     _updateConnectionState(stateUpdate) {
         this.connectionState = {
             ...this.connectionState,
@@ -362,22 +365,22 @@ class BinanceAPIManager {
         };
         this._updateUIStatus();
     }
-    
+
     _handleConnectionError(error) {
         const newRetries = this.connectionState.retries + 1;
         const fatal = newRetries >= API_CONFIG.MAX_RETRIES;
-        
+
         this._updateConnectionState({
             connected: false,
             retries: newRetries,
             error: fatal ? 'Fatal connection error' : error.message
         });
-        
+
         if (!fatal) {
             setTimeout(() => this.checkAPIConnection(), API_CONFIG.RECONNECT_INTERVAL);
         }
     }
-    
+
     startHealthCheck() {
         setInterval(() => {
             if (!this.connectionState.connected) {
@@ -385,16 +388,16 @@ class BinanceAPIManager {
             }
         }, 30000);
     }
-    
+
     _updateUIStatus() {
         const statusElement = document.getElementById('connectionStatus');
         if (!statusElement) return;
-        
+
         const dotElement = statusElement.querySelector('.status-dot');
         const textElement = statusElement.querySelector('span');
-        
+
         if (!dotElement || !textElement) return;
-        
+
         if (this.connectionState.connected) {
             statusElement.classList.add('connected');
             statusElement.classList.remove('error');
@@ -409,24 +412,24 @@ class BinanceAPIManager {
             textElement.textContent = `Connection error: ${this.connectionState.error || 'Unknown error'} [Retry ${this.connectionState.retries}/${API_CONFIG.MAX_RETRIES}]`;
         }
     }
-    
+
     async getCurrentPrice(symbol, marketType) {
         try {
             const endpoint = marketType === 'futures'
                 ? `${API_CONFIG.ENDPOINTS.FUTURES}/fapi/v1/ticker/price?symbol=${symbol}`
                 : `${API_CONFIG.ENDPOINTS.SPOT}/api/v3/ticker/price?symbol=${symbol}`;
-            
+
             const response = await this._fetchWithTimeout(endpoint);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            
+
             const data = await response.json();
-            
+
             // Валидация ответа API
             if (!data || typeof data.price !== 'string') {
                 console.error('Invalid price data:', data);
                 return null;
             }
-            
+
             const price = parseFloat(data.price);
             return isNaN(price) ? null : price;
         } catch (error) {
@@ -442,7 +445,7 @@ function comparePrices(currentPrice, condition, targetPrice) {
     // Форматируем числа для точного сравнения
     const cp = parseFloat(currentPrice.toFixed(8));
     const tp = parseFloat(targetPrice.toFixed(8));
-    
+
     if (condition === '>') {
         return cp - tp > epsilon;
     } else if (condition === '<') {
@@ -458,31 +461,31 @@ async function checkAlerts() {
             // Всегда получаем свежую цену, без кеширования
             const price = await apiManager.getCurrentPrice(alert.symbol, alert.marketType);
             if (price === null) continue;
-            
+
             // Безопасное сравнение цен
             const conditionMet = comparePrices(price, alert.condition, alert.value);
-            
+
             if (conditionMet) {
                 const cooldownKey = `${alert.symbol}_${alert.condition}_${alert.value}`;
                 const lastNotification = alertCooldowns[cooldownKey] || 0;
-                
+
                 if (now - lastNotification > 60000) { // 60 секунд кд
                     // Логируем детали срабатывания для отладки
                     console.log(`Alert triggered: ${alert.symbol} ${alert.condition} ${alert.value} | Current: ${price} | Time: ${new Date().toISOString()}`);
-                    
+
                     // Отправка уведомлений и обработка срабатывания
                     await handleTriggeredAlert(alert, price);
                     alertCooldowns[cooldownKey] = now;
                     activeTriggeredAlerts[alert.id] = true;
-                    
+
                     // Обновляем интерфейс с подсветкой сработавшего алерта
                     highlightTriggeredAlert(alert.id, alert.condition);
-                    
+
                     if (alert.notificationCount > 0 && alert.triggeredCount >= alert.notificationCount) {
                         alert.triggered = true;
                         console.log(`Alert ${alert.id} reached notification limit`);
                     }
-                    
+
                     saveTriggeredAlert(alert);
                     saveAppState();
                     loadUserAlerts(currentAlertFilter);
@@ -498,20 +501,20 @@ async function checkAlerts() {
 function highlightTriggeredAlert(alertId, condition) {
     const alertElement = document.getElementById(`alert-${alertId}`);
     if (!alertElement) return;
-    
+
     // Добавляем класс для анимации в зависимости от типа алерта
     if (condition === '>') {
         alertElement.classList.add('alert-triggered-long');
     } else {
         alertElement.classList.add('alert-triggered-short');
     }
-    
+
     // Перемещаем алерт в начало списка
     const container = alertElement.parentElement;
     if (container) {
         container.insertBefore(alertElement, container.firstChild);
     }
-    
+
     // Через 5 секунд убираем анимацию
     setTimeout(() => {
         alertElement.classList.remove('alert-triggered-long', 'alert-triggered-short');
@@ -523,7 +526,7 @@ async function handleTriggeredAlert(alert, currentPrice) {
     const message = `🚨 Алерт сработал!\nСимвол: ${alert.symbol}\n` +
         `Условие: ${alert.condition} ${alert.value}\n` +
         `Текущая цена: ${formatNumber(currentPrice, 8)}`;
-    
+
     // Отправка в Telegram
     if (alert.notificationMethods.includes('telegram') && alert.chatId) {
         try {
@@ -533,7 +536,7 @@ async function handleTriggeredAlert(alert, currentPrice) {
             console.error('Failed to send Telegram alert:', error);
         }
     }
-    
+
     // Показываем уведомление в интерфейсе
     showNotification('Алерт сработал',
         `Символ: ${alert.symbol}\n` +
@@ -560,7 +563,7 @@ async function sendTelegramNotification(message, chatId) {
                 parse_mode: 'Markdown'
             })
         });
-        
+
         const data = await response.json();
         if (!data.ok) {
             console.error('Ошибка отправки в Telegram:', data);
@@ -580,20 +583,20 @@ async function exportAllActiveAlerts() {
         showBotConnectionHint();
         return;
     }
-    
+
     const activeAlerts = userAlerts.filter(alert => !alert.triggered);
     if (activeAlerts.length === 0) {
         showNotification('Ошибка', 'Нет активных алертов для экспорта');
         return;
     }
-    
+
     // Формируем сообщение
     let message = '📋 Список активных алертов:\n\n';
     activeAlerts.forEach((alert, index) => {
         message += `${index + 1}. ${alert.symbol} ${alert.condition} ${alert.value}\n`;
         message += `Тип: ${alert.type} | Уведомлений: ${alert.notificationCount === 0 ? '∞' : alert.notificationCount}\n\n`;
     });
-    
+
     try {
         const success = await sendTelegramNotification(message, chatId);
         if (success) {
@@ -610,10 +613,10 @@ async function exportAllActiveAlerts() {
 function applyCurrentPrice() {
     const currentPriceValue = document.getElementById('currentPriceValue');
     if (!currentPriceValue) return;
-    
+
     const priceText = currentPriceValue.textContent;
     const price = parseFloat(priceText);
-    
+
     if (!isNaN(price)) {
         const valueInput = document.getElementById('value');
         if (valueInput) {
@@ -626,10 +629,10 @@ function applyCurrentPrice() {
 function applyCurrentPriceForEdit() {
     const currentPriceValue = document.getElementById('editCurrentPriceValue');
     if (!currentPriceValue) return;
-    
+
     const priceText = currentPriceValue.textContent;
     const price = parseFloat(priceText);
-    
+
     if (!isNaN(price)) {
         const valueInput = document.getElementById('editValue');
         if (valueInput) {
@@ -642,19 +645,19 @@ function applyCurrentPriceForEdit() {
 function getMarketTypeBySymbol(symbol) {
     const futuresMatch = allFutures.find(c => c.symbol === symbol);
     if (futuresMatch) return 'futures';
-    
+
     const spotMatch = allSpot.find(c => c.symbol === symbol);
     if (spotMatch) return 'spot';
-    
+
     return null;
 }
 
 function showValidationError(fieldId, message) {
     const field = document.getElementById(fieldId);
     const errorElement = document.getElementById(`${fieldId}Error`);
-    
+
     if (!field || !errorElement) return;
-    
+
     field.classList.add('validation-error');
     errorElement.textContent = message;
     errorElement.style.display = 'block';
@@ -663,9 +666,9 @@ function showValidationError(fieldId, message) {
 function hideValidationError(fieldId) {
     const field = document.getElementById(fieldId);
     const errorElement = document.getElementById(`${fieldId}Error`);
-    
+
     if (!field || !errorElement) return;
-    
+
     field.classList.remove('validation-error');
     errorElement.style.display = 'none';
 }
@@ -682,7 +685,7 @@ function isDuplicateAlert(symbol, condition, value) {
 
 function validateForm() {
     let isValid = true;
-    
+
     // Проверка подключения к боту если Telegram выбран
     const telegramCheckbox = document.getElementById('telegram');
     if (telegramCheckbox && telegramCheckbox.checked) {
@@ -692,7 +695,7 @@ function validateForm() {
             isValid = false;
         }
     }
-    
+
     // Проверка криптовалюты
     const coinSearch = document.getElementById('coinSearch');
     const symbol = document.getElementById('symbol');
@@ -702,7 +705,7 @@ function validateForm() {
     } else {
         hideValidationError('coinSearch');
     }
-    
+
     // Проверка значения
     const value = document.getElementById('value');
     if (!value || !value.value.trim()) {
@@ -714,7 +717,7 @@ function validateForm() {
     } else {
         hideValidationError('value');
     }
-    
+
     // Проверка на дубликаты
     const symbolValue = symbol.value;
     const conditionValue = document.getElementById('condition').value;
@@ -722,7 +725,7 @@ function validateForm() {
         showValidationError('value', 'Такой алерт уже существует');
         isValid = false;
     }
-    
+
     // Валидация Telegram Chat ID
     if (telegramCheckbox && telegramCheckbox.checked) {
         const userChatId = document.getElementById('userChatId');
@@ -731,7 +734,7 @@ function validateForm() {
             isValid = false;
         }
     }
-    
+
     // Валидация email
     const emailCheckbox = document.getElementById('email');
     if (emailCheckbox && emailCheckbox.checked) {
@@ -746,13 +749,13 @@ function validateForm() {
             hideValidationError('userEmail');
         }
     }
-    
+
     return isValid;
 }
 
 function validateEditForm() {
     let isValid = true;
-    
+
     // Проверка значения
     const value = document.getElementById('editValue');
     if (!value || !value.value.trim()) {
@@ -764,7 +767,7 @@ function validateEditForm() {
     } else {
         hideValidationError('editValue');
     }
-    
+
     return isValid;
 }
 
@@ -777,12 +780,12 @@ async function loadMarketData() {
                 throw new Error('No connection to Binance API');
             }
         }
-        
+
         // Загрузка фьючерсных данных
         const futuresResponse = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
         if (!futuresResponse.ok) throw new Error(`Futures API error: ${futuresResponse.status}`);
         const futuresData = await futuresResponse.json();
-        
+
         allFutures = futuresData.symbols
             .filter(s => s.contractType === 'PERPETUAL' && s.quoteAsset === 'USDT')
             .map(symbol => ({
@@ -792,12 +795,12 @@ async function loadMarketData() {
                 contractType: symbol.contractType,
                 marketType: 'futures'
             }));
-        
+
         // Загрузка спотовых данных
         const spotResponse = await fetch('https://api.binance.com/api/v3/exchangeInfo');
         if (!spotResponse.ok) throw new Error(`Spot API error: ${spotResponse.status}`);
         const spotData = await spotResponse.json();
-        
+
         allSpot = spotData.symbols
             .filter(s => s.quoteAsset === 'USDT' || s.quoteAsset === 'BTC' || s.quoteAsset === 'ETH' || s.quoteAsset === 'BNB')
             .map(symbol => ({
@@ -806,7 +809,7 @@ async function loadMarketData() {
                 quoteAsset: symbol.quoteAsset,
                 marketType: 'spot'
             }));
-        
+
         updateCoinSelect();
     } catch (error) {
         console.error('Error loading market data:', error);
@@ -818,13 +821,13 @@ function showNotification(title, message) {
     const modal = document.getElementById('notificationModal');
     const notificationTitle = document.getElementById('notificationTitle');
     const notificationMessage = document.getElementById('notificationMessage');
-    
+
     if (!modal || !notificationTitle || !notificationMessage) return;
-    
+
     notificationTitle.textContent = title;
     notificationMessage.textContent = message;
     modal.classList.remove('hidden');
-    
+
     setTimeout(() => {
         modal.classList.add('hidden');
     }, 5000);
@@ -833,25 +836,25 @@ function showNotification(title, message) {
 function updateCoinSelect() {
     const coinSearch = document.getElementById('coinSearch');
     const coinSelect = document.getElementById('symbol');
-    
+
     if (!coinSearch || !coinSelect) return;
-    
+
     const searchTerm = coinSearch.value.toLowerCase();
     const allMarketData = [...allFutures, ...allSpot];
     const filteredCoins = allMarketData.filter(coin =>
         coin.symbol.toLowerCase().includes(searchTerm) ||
         coin.baseAsset.toLowerCase().includes(searchTerm)
     );
-    
+
     const limitedCoins = filteredCoins.slice(0, 100);
-    
+
     coinSelect.innerHTML = limitedCoins.map(coin => {
         const badge = coin.marketType === 'spot'
             ? '<span class="spot-badge">SPOT</span>'
             : '<span class="futures-badge">FUTURES</span>';
         return `<option value="${coin.symbol}" data-market-type="${coin.marketType}">${coin.symbol} ${badge}</option>`;
     }).join('');
-    
+
     if (searchTerm) {
         coinSelect.classList.remove('hidden');
         coinSelect.size = Math.min(limitedCoins.length, 5);
@@ -865,24 +868,24 @@ async function createAlertForSymbol(symbol, currentPrice) {
     const symbolInput = document.getElementById('symbol');
     const valueInput = document.getElementById('value');
     const hint = document.getElementById('marketTypeHint');
-    
+
     if (!coinSearch || !symbolInput || !valueInput || !hint) return;
-    
+
     coinSearch.value = symbol;
     const marketType = getMarketTypeBySymbol(symbol);
     const badge = marketType === 'spot'
         ? '<span class="spot-badge">SPOT</span>'
         : '<span class="futures-badge">FUTURES</span>';
-    
+
     hint.innerHTML = badge;
     symbolInput.value = symbol;
     valueInput.value = currentPrice;
     symbolInput.classList.add('hidden');
-    
+
     // Скрываем ошибки валидации при выборе из списка
     hideValidationError('coinSearch');
     hideValidationError('value');
-    
+
     // Получаем текущую цену и показываем её
     const currentPriceValue = await apiManager.getCurrentPrice(symbol, marketType);
     if (currentPriceValue !== null) {
@@ -905,13 +908,13 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
                 return false;
             }
         }
-        
+
         // Проверяем на дубликаты
         if (isDuplicateAlert(symbol, condition, value)) {
             showNotification('Ошибка', 'Такой алерт уже существует');
             return false;
         }
-        
+
         const marketType = getMarketTypeBySymbol(symbol);
         const newAlert = {
             id: Date.now(),
@@ -928,10 +931,10 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
             lastNotificationTime: 0,
             marketType
         };
-        
+
         userAlerts.push(newAlert);
         saveAppState();
-        
+
         // Обновляем список алертов сразу после добавления
         loadUserAlerts(currentAlertFilter);
         return true;
@@ -945,25 +948,25 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
 function loadUserAlerts(filter = 'active') {
     const longAlertsContainer = document.getElementById('longAlerts');
     const shortAlertsContainer = document.getElementById('shortAlerts');
-    
+
     if (!longAlertsContainer || !shortAlertsContainer) return;
-    
+
     currentAlertFilter = filter;
     saveAppState();
-    
+
     document.querySelectorAll('.compact-filter-btn').forEach(btn => {
         btn.classList.remove('bg-blue-900', 'text-blue-300');
         btn.classList.add('bg-gray-700', 'text-gray-300');
     });
-    
+
     const activeBtn = document.getElementById(`show${filter.charAt(0).toUpperCase() + filter.slice(1)}Alerts`);
     if (activeBtn) {
         activeBtn.classList.add('bg-blue-900', 'text-blue-300');
         activeBtn.classList.remove('bg-gray-700', 'text-gray-300');
     }
-    
+
     let filteredAlerts = [];
-    
+
     if (filter === 'history') {
         filteredAlerts = loadTriggeredAlerts();
         if (filteredAlerts.length === 0) {
@@ -991,7 +994,7 @@ function loadUserAlerts(filter = 'active') {
                 filteredAlerts = [...userAlerts];
                 break;
         }
-        
+
         if (filteredAlerts.length === 0) {
             let message = '';
             switch(filter) {
@@ -1005,7 +1008,7 @@ function loadUserAlerts(filter = 'active') {
                     message = 'У вас пока нет алертов';
                     break;
             }
-            
+
             longAlertsContainer.innerHTML = `
                 <div class="text-center text-gray-400 py-4">
                     ${message}
@@ -1019,25 +1022,25 @@ function loadUserAlerts(filter = 'active') {
             return;
         }
     }
-    
+
     // Сортируем алерты: сначала сработавшие (с анимацией), затем активные
     filteredAlerts.sort((a, b) => {
         // Если один из алертов сработал (имеет анимацию), он должен быть выше
         const aTriggered = activeTriggeredAlerts[a.id] || false;
         const bTriggered = activeTriggeredAlerts[b.id] || false;
-        
+
         if (aTriggered && !bTriggered) return -1;
         if (!aTriggered && bTriggered) return 1;
-        
+
         // Если оба сработали или оба не сработали, сортируем по дате
         const dateA = a.triggeredAt || a.createdAt;
         const dateB = b.triggeredAt || b.createdAt;
         return new Date(dateB) - new Date(dateA);
     });
-    
+
     let longHtml = '';
     let shortHtml = '';
-    
+
     filteredAlerts.forEach(alert => {
         const date = new Date(alert.triggeredAt || alert.createdAt);
         const isTriggered = alert.triggered || filter === 'history';
@@ -1045,7 +1048,7 @@ function loadUserAlerts(filter = 'active') {
         const isHistory = filter === 'history';
         const isActiveTriggered = activeTriggeredAlerts[alert.id] && !isHistory;
         const currentPrice = currentPrices[alert.symbol] || 'Загрузка...';
-        
+
         // Добавлено: Отображение текущей цены
         const priceDisplay = !isHistory ? `
             <div class="current-price-container mt-2">
@@ -1053,7 +1056,7 @@ function loadUserAlerts(filter = 'active') {
                 <span class="current-price-value">${currentPrice}</span>
             </div>
         ` : '';
-        
+
         const alertHtml = `
             <div id="alert-${alert.id}" class="alert-card rounded-md p-4 shadow-sm ${isActiveTriggered ? (isUp ? 'alert-triggered-long' : 'alert-triggered-short') : ''}" data-symbol="${alert.symbol}">
                 <div class="flex justify-between items-start">
@@ -1117,26 +1120,26 @@ function loadUserAlerts(filter = 'active') {
                 </div>
             </div>
         `;
-        
+
         if (isUp) {
             longHtml += alertHtml;
         } else {
             shortHtml += alertHtml;
         }
     });
-    
+
     longAlertsContainer.innerHTML = longHtml || `
         <div class="text-center text-gray-400 py-4">
             Нет лонг алертов
         </div>
     `;
-    
+
     shortAlertsContainer.innerHTML = shortHtml || `
         <div class="text-center text-gray-400 py-4">
             Нет шорт алертов
         </div>
     `;
-    
+
     // Обновляем счетчики алертов
     updateAlertsCounter();
 }
@@ -1145,11 +1148,11 @@ function updateAlertsCounter() {
     const activeLongAlertsCount = userAlerts.filter(alert => !alert.triggered && alert.condition === '>').length;
     const activeShortAlertsCount = userAlerts.filter(alert => !alert.triggered && alert.condition === '<').length;
     const totalActiveAlertsCount = userAlerts.filter(alert => !alert.triggered).length;
-    
+
     const longAlertsCountElement = document.getElementById('longAlertsCount');
     const shortAlertsCountElement = document.getElementById('shortAlertsCount');
     const totalAlertsCountElement = document.getElementById('totalAlertsCount');
-    
+
     if (longAlertsCountElement) longAlertsCountElement.textContent = activeLongAlertsCount;
     if (shortAlertsCountElement) shortAlertsCountElement.textContent = activeShortAlertsCount;
     if (totalAlertsCountElement) totalAlertsCountElement.textContent = `Всего: ${totalActiveAlertsCount}`;
@@ -1184,7 +1187,7 @@ function editAlert(alertId) {
 function reactivateAlert(alertId) {
     const alert = userAlerts.find(a => a.id === alertId);
     if (!alert) return;
-    
+
     alert.triggered = false;
     alert.triggeredCount = 0;
     delete activeTriggeredAlerts[alertId];
@@ -1196,15 +1199,15 @@ function reactivateAlert(alertId) {
 async function exportAlertToTelegram(alertId) {
     const alert = userAlerts.find(a => a.id === alertId);
     if (!alert) return;
-    
+
     const chatId = localStorage.getItem('tg_chat_id');
     if (!chatId) {
         showBotConnectionHint();
         return;
     }
-    
+
     const message = `📌 Новый алерт:\nСимвол: ${alert.symbol}\nТип: ${alert.type}\nУсловие: ${alert.condition} ${alert.value}\nУведомлений: ${alert.notificationCount === 0 ? '∞' : alert.notificationCount}`;
-    
+
     const success = await sendTelegramNotification(message, chatId);
     if (success) {
         showNotification('Успешно', 'Алерт экспортирован в Telegram');
@@ -1216,9 +1219,9 @@ async function exportAlertToTelegram(alertId) {
 function openEditModal(alert) {
     const editModal = document.getElementById('editModal');
     const editFormContent = document.getElementById('editFormContent');
-    
+
     if (!editModal || !editFormContent) return;
-    
+
     // Создаем HTML для формы редактирования
     editFormContent.innerHTML = `
         <form id="editAlertForm" class="space-y-4">
@@ -1323,7 +1326,7 @@ function openEditModal(alert) {
             </button>
         </form>
     `;
-    
+
     // Получаем текущую цену для отображения
     apiManager.getCurrentPrice(alert.symbol, alert.marketType).then(price => {
         if (price !== null) {
@@ -1333,14 +1336,14 @@ function openEditModal(alert) {
             }
         }
     });
-    
+
     // Назначаем обработчики событий для чекбоксов
     const telegramCheckbox = document.getElementById('editTelegram');
     if (telegramCheckbox) {
         telegramCheckbox.addEventListener('change', function() {
             const userChatId = document.getElementById('editUserChatId');
             if (!userChatId) return;
-            
+
             if (this.checked) {
                 userChatId.classList.remove('hidden');
                 userChatId.required = true;
@@ -1352,13 +1355,13 @@ function openEditModal(alert) {
             }
         });
     }
-    
+
     const emailCheckbox = document.getElementById('editEmail');
     if (emailCheckbox) {
         emailCheckbox.addEventListener('change', function() {
             const userEmail = document.getElementById('editUserEmail');
             if (!userEmail) return;
-            
+
             if (this.checked) {
                 userEmail.classList.remove('hidden');
                 userEmail.required = true;
@@ -1370,7 +1373,7 @@ function openEditModal(alert) {
             }
         });
     }
-    
+
     // Назначаем обработчик отправки формы
     const editForm = document.getElementById('editAlertForm');
     if (editForm) {
@@ -1379,14 +1382,14 @@ function openEditModal(alert) {
             handleEditSubmit(alert.id);
         });
     }
-    
+
     // Отображаем модальное окно
     editModal.classList.add('active');
 }
 
 function handleEditSubmit(alertId) {
     if (!validateEditForm()) return;
-    
+
     const symbol = document.getElementById('editCoinSearch')?.value;
     const type = document.getElementById('editAlertType')?.value;
     const condition = document.getElementById('editCondition')?.value;
@@ -1396,31 +1399,31 @@ function handleEditSubmit(alertId) {
     const userEmail = useEmail ? document.getElementById('editUserEmail')?.value : '';
     const userChatId = useTelegram ? document.getElementById('editUserChatId')?.value : '';
     const notificationCount = document.getElementById('editNotificationCount')?.value;
-    
+
     if (!symbol || !type || !condition || !value || notificationCount === undefined) {
         showNotification('Ошибка', 'Не все обязательные поля заполнены');
         return;
     }
-    
+
     if (useTelegram && !userChatId && !localStorage.getItem('tg_chat_id')) {
         showNotification('Ошибка', 'Пожалуйста, укажите Telegram Chat ID');
         return;
     }
-    
+
     if (useEmail && !userEmail) {
         showNotification('Ошибка', 'Пожалуйста, укажите email');
         return;
     }
-    
+
     const notificationMethods = [];
     if (useTelegram) notificationMethods.push('telegram');
     if (useEmail) notificationMethods.push('email');
-    
+
     if (notificationMethods.length === 0) {
         showNotification('Ошибка', 'Выберите хотя бы один метод уведомления');
         return;
     }
-    
+
     // Обновляем алерт
     const updatedAlert = {
         id: parseInt(alertId),
@@ -1437,19 +1440,19 @@ function handleEditSubmit(alertId) {
         lastNotificationTime: 0,
         marketType: getMarketTypeBySymbol(symbol)
     };
-    
+
     // Обновляем массив алертов
     userAlerts = userAlerts.map(a => a.id === parseInt(alertId) ? updatedAlert : a);
     saveAppState();
-    
+
     if (useEmail) {
         localStorage.setItem('userEmail', userEmail);
     }
-    
+
     // Обновляем интерфейс
     loadUserAlerts(currentAlertFilter);
     showNotification('Успешно', `Алерт для ${symbol} обновлен`);
-    
+
     // Закрываем модальное окно
     closeEditModal();
 }
@@ -1457,7 +1460,7 @@ function handleEditSubmit(alertId) {
 function closeEditModal() {
     const editModal = document.getElementById('editModal');
     const editFormContent = document.getElementById('editFormContent');
-    
+
     if (editModal) editModal.classList.remove('active');
     if (editFormContent) editFormContent.innerHTML = '';
 }
@@ -1467,11 +1470,11 @@ function openTelegramSettings() {
     const modal = document.getElementById('telegramSettingsModal');
     const chatIdInput = document.getElementById('telegramChatId');
     const savedChatId = localStorage.getItem('tg_chat_id');
-    
+
     if (chatIdInput && savedChatId) {
         chatIdInput.value = savedChatId;
     }
-    
+
     if (modal) {
         modal.classList.add('active');
     }
@@ -1487,7 +1490,7 @@ function closeTelegramSettings() {
 async function saveTelegramSettings() {
     const chatIdInput = document.getElementById('telegramChatId');
     const userChatId = document.getElementById('userChatId');
-    
+
     if (chatIdInput && userChatId) {
         const chatId = chatIdInput.value.trim();
         if (chatId) {
@@ -1593,68 +1596,68 @@ function resetForm() {
             coinSearch.value = '';
             coinSearch.focus();
         }
-        
+
         const symbolSelect = document.getElementById('symbol');
         if (symbolSelect) {
             symbolSelect.innerHTML = '';
             symbolSelect.classList.add('hidden');
         }
-        
+
         const symbolInput = document.getElementById('symbol');
         if (symbolInput) {
             symbolInput.value = '';
         }
-        
+
         const marketTypeHint = document.getElementById('marketTypeHint');
         if (marketTypeHint) {
             marketTypeHint.innerHTML = '';
         }
-        
+
         const currentPriceContainer = document.getElementById('currentPriceContainer');
         if (currentPriceContainer) {
             currentPriceContainer.classList.add('hidden');
         }
-        
+
         const editAlertId = document.getElementById('editAlertId');
         if (editAlertId) {
             editAlertId.value = '';
         }
-        
+
         const submitBtnText = document.getElementById('submitBtnText');
         if (submitBtnText) {
             submitBtnText.textContent = 'Создать алерт';
         }
-        
+
         // Сбрасываем чекбоксы уведомлений к состоянию по умолчанию
         const telegramCheckbox = document.getElementById('telegram');
         if (telegramCheckbox) {
             telegramCheckbox.checked = true;
         }
-        
+
         const emailCheckbox = document.getElementById('email');
         if (emailCheckbox) {
             emailCheckbox.checked = false;
         }
-        
+
         // Скрываем дополнительные поля и очищаем их
         const userChatIdInput = document.getElementById('userChatId');
         if (userChatIdInput) {
             userChatIdInput.value = '';
             userChatIdInput.classList.add('hidden');
         }
-        
+
         const userEmailInput = document.getElementById('userEmail');
         if (userEmailInput) {
             userEmailInput.value = '';
             userEmailInput.classList.add('hidden');
         }
-        
+
         // Устанавливаем значение по умолчанию для количества уведомлений
         const notificationCountSelect = document.getElementById('notificationCount');
         if (notificationCountSelect) {
             notificationCountSelect.value = '5';
         }
-        
+
         // Очищаем все ошибки валидации
         document.querySelectorAll('.validation-message').forEach(el => {
             el.style.display = 'none';
@@ -1670,7 +1673,7 @@ function setupEventListeners() {
     if (coinSearch) {
         coinSearch.addEventListener('input', function() {
             updateCoinSelect();
-            
+
             const searchTerm = this.value.toLowerCase();
             if (searchTerm.length >= 2) {
                 const marketType = getMarketTypeBySymbol(searchTerm.toUpperCase());
@@ -1690,27 +1693,27 @@ function setupEventListeners() {
             }
         });
     }
-    
+
     const symbolSelect = document.getElementById('symbol');
     if (symbolSelect) {
         symbolSelect.addEventListener('change', function() {
             const symbol = this.value;
             const selectedOption = this.options[this.selectedIndex];
             const marketType = selectedOption.getAttribute('data-market-type');
-            
+
             this.classList.add('hidden');
             const coinSearch = document.getElementById('coinSearch');
             if (coinSearch) coinSearch.value = symbol;
-            
+
             const badge = marketType === 'spot'
                 ? '<span class="spot-badge">SPOT</span>'
                 : '<span class="futures-badge">FUTURES</span>';
             const hint = document.getElementById('marketTypeHint');
             if (hint) hint.innerHTML = badge;
-            
+
             // Скрываем ошибки валидации при выборе из списка
             hideValidationError('coinSearch');
-            
+
             // Получаем текущую цену и показываем её
             apiManager.getCurrentPrice(symbol, marketType).then(price => {
                 if (price !== null) {
@@ -1724,13 +1727,13 @@ function setupEventListeners() {
             });
         });
     }
-    
+
     const telegramCheckbox = document.getElementById('telegram');
     if (telegramCheckbox) {
         telegramCheckbox.addEventListener('change', function() {
             const userChatId = document.getElementById('userChatId');
             if (!userChatId) return;
-            
+
             if (this.checked) {
                 userChatId.classList.remove('hidden');
                 userChatId.required = true;
@@ -1740,18 +1743,18 @@ function setupEventListeners() {
                 userChatId.classList.add('hidden');
                 userChatId.required = false;
             }
-            
+
             localStorage.setItem('tg_enabled', this.checked);
             saveAppState();
         });
     }
-    
+
     const emailCheckbox = document.getElementById('email');
     if (emailCheckbox) {
         emailCheckbox.addEventListener('change', function() {
             const userEmail = document.getElementById('userEmail');
             if (!userEmail) return;
-            
+
             if (this.checked) {
                 userEmail.classList.remove('hidden');
                 userEmail.required = true;
@@ -1763,22 +1766,22 @@ function setupEventListeners() {
             }
         });
     }
-    
+
     const alertForm = document.getElementById('alertForm');
     if (alertForm) {
         alertForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             // Добавляем проверку подключения к боту
             const telegramCheckbox = document.getElementById('telegram');
             if (telegramCheckbox && telegramCheckbox.checked && !localStorage.getItem('tg_chat_id')) {
                 showBotConnectionHint();
                 return;
             }
-            
+
             // Валидация формы
             if (!validateForm()) return;
-            
+
             const symbol = document.getElementById('symbol')?.value;
             const alertType = document.getElementById('alertType')?.value;
             const condition = document.getElementById('condition')?.value;
@@ -1788,33 +1791,33 @@ function setupEventListeners() {
             const userEmail = useEmail ? document.getElementById('userEmail')?.value : '';
             const userChatId = useTelegram ? document.getElementById('userChatId')?.value : '';
             const notificationCount = document.getElementById('notificationCount')?.value;
-            
+
             if (!symbol || !alertType || !condition || !value || notificationCount === undefined) {
                 showNotification('Ошибка', 'Не все обязательные поля заполнены');
                 return;
             }
-            
+
             if (useTelegram && !userChatId && !localStorage.getItem('tg_chat_id')) {
                 showNotification('Ошибка', 'Пожалуйста, укажите Telegram Chat ID');
                 return;
             }
-            
+
             if (useEmail && !userEmail) {
                 showNotification('Ошибка', 'Пожалуйста, укажите email');
                 return;
             }
-            
+
             const notificationMethods = [];
             if (useTelegram) notificationMethods.push('telegram');
             if (useEmail) notificationMethods.push('email');
-            
+
             if (notificationMethods.length === 0) {
                 showNotification('Ошибка', 'Выберите хотя бы один метод уведомления');
                 return;
             }
-            
+
             const editAlertId = document.getElementById('editAlertId')?.value;
-            
+
             if (editAlertId) {
                 // Редактирование существующего алерта
                 const updatedAlert = {
@@ -1832,14 +1835,14 @@ function setupEventListeners() {
                     lastNotificationTime: 0,
                     marketType: getMarketTypeBySymbol(symbol)
                 };
-                
+
                 userAlerts = userAlerts.map(a => a.id === parseInt(editAlertId) ? updatedAlert : a);
                 saveAppState();
-                
+
                 if (useEmail) {
                     localStorage.setItem('userEmail', userEmail);
                 }
-                
+
                 loadUserAlerts(currentAlertFilter);
                 showNotification('Успешно', `Алерт для ${symbol} обновлен`);
                 resetForm();
@@ -1855,17 +1858,17 @@ function setupEventListeners() {
             }
         });
     }
-    
+
     const clearAlertsBtn = document.getElementById('clearAlerts');
     if (clearAlertsBtn) {
         clearAlertsBtn.addEventListener('click', clearAllAlerts);
     }
-    
+
     const exportAllAlertsBtn = document.getElementById('exportAllAlerts');
     if (exportAllAlertsBtn) {
         exportAllAlertsBtn.addEventListener('click', exportAllActiveAlerts);
     }
-    
+
     const closeNotificationBtn = document.getElementById('closeNotification');
     if (closeNotificationBtn) {
         closeNotificationBtn.addEventListener('click', function() {
@@ -1873,42 +1876,42 @@ function setupEventListeners() {
             if (notificationModal) notificationModal.classList.add('hidden');
         });
     }
-    
+
     // Обработчики для кнопок фильтрации алертов
     const showActiveAlertsBtn = document.getElementById('showActiveAlerts');
     if (showActiveAlertsBtn) {
         showActiveAlertsBtn.addEventListener('click', () => loadUserAlerts('active'));
     }
-    
+
     const showTriggeredAlertsBtn = document.getElementById('showTriggeredAlerts');
     if (showTriggeredAlertsBtn) {
         showTriggeredAlertsBtn.addEventListener('click', () => loadUserAlerts('triggered'));
     }
-    
+
     const showHistoryAlertsBtn = document.getElementById('showHistoryAlerts');
     if (showHistoryAlertsBtn) {
         showHistoryAlertsBtn.addEventListener('click', () => loadUserAlerts('history'));
     }
-    
+
     const showAllAlertsBtn = document.getElementById('showAllAlerts');
     if (showAllAlertsBtn) {
         showAllAlertsBtn.addEventListener('click', () => loadUserAlerts('all'));
     }
-    
+
     // Обработчик для импорта алертов из файла (только фьючерсы)
     const bulkImportFile = document.getElementById('bulkImportFile');
     if (bulkImportFile) {
         bulkImportFile.addEventListener('change', async function(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
+
             const reader = new FileReader();
             reader.onload = async function(e) {
                 const content = e.target.result;
                 const lines = content.split('\n');
                 let importedCount = 0;
                 let skippedCount = 0;
-                
+
                 // Получаем текущие настройки уведомлений
                 const useTelegram = document.getElementById('telegram')?.checked || false;
                 const useEmail = document.getElementById('email')?.checked || false;
@@ -1916,54 +1919,54 @@ function setupEventListeners() {
                 const userEmail = useEmail ? document.getElementById('userEmail')?.value : null;
                 const notificationCount = document.getElementById('notificationCount')?.value || '5';
                 const alertType = document.getElementById('alertType')?.value || 'price';
-                
+
                 const notificationMethods = [];
                 if (useTelegram) notificationMethods.push('telegram');
                 if (useEmail) notificationMethods.push('email');
-                
+
                 if (notificationMethods.length === 0) {
                     showNotification('Ошибка', 'Выберите хотя бы один метод уведомлений перед импортом');
                     return;
                 }
-                
+
                 // Проверяем подключение к боту если Telegram выбран
                 if (notificationMethods.includes('telegram') && !userChatId) {
                     showBotConnectionHint();
                     return;
                 }
-                
+
                 for (const line of lines) {
                     const trimmedLine = line.trim();
                     if (!trimmedLine) continue;
-                    
+
                     // Исправляем разбор строки
                     const parts = trimmedLine.split(/\s+/);
                     if (parts.length < 3) {
                         skippedCount++;
                         continue;
                     }
-                    
+
                     const symbol = parts[0].toUpperCase();
                     const condition = parts[1] === '+' ? '>' : parts[1] === '-' ? '<' : parts[1];
                     const value = parts[2];
-                    
+
                     if (condition !== '>' && condition !== '<') {
                         skippedCount++;
                         continue;
                     }
-                    
+
                     if (isNaN(parseFloat(value))) {
                         skippedCount++;
                         continue;
                     }
-                    
+
                     // Проверяем что символ является фьючерсным
                     const isFutures = allFutures.some(f => f.symbol === symbol);
                     if (!isFutures) {
                         skippedCount++;
                         continue;
                     }
-                    
+
                     // Добавляем алерт
                     const success = await addUserAlert(
                         symbol,
@@ -1974,44 +1977,44 @@ function setupEventListeners() {
                         notificationCount,
                         userChatId
                     );
-                    
+
                     if (success) {
                         importedCount++;
                     } else {
                         skippedCount++;
                     }
                 }
-                
+
                 showNotification('Импорт завершен',
                     `Успешно импортировано ${importedCount} фьючерсных алертов\n` +
                     `Пропущено: ${skippedCount} (не фьючерсы или ошибки формата)`);
                 loadUserAlerts(currentAlertFilter);
-                
+
                 // Сбрасываем значение input файла, чтобы можно было загрузить тот же файл снова
                 event.target.value = '';
             };
             reader.readAsText(file);
         });
     }
-    
+
     // Обработчик для меню
     const menuButton = document.getElementById('menuButton');
     if (menuButton) {
         menuButton.addEventListener('click', toggleMenu);
     }
-    
+
     // Закрываем меню при клике вне его
     window.addEventListener('click', function(event) {
         const menuContent = document.getElementById('menuContent');
         const menuButton = document.getElementById('menuButton');
-        
+
         if (menuContent && menuButton &&
             !menuContent.contains(event.target) &&
             !menuButton.contains(event.target)) {
             menuContent.classList.remove('show');
         }
     });
-    
+
     // Обработчики для вкладок шорт и лонг алертов
     const showLongAlertsBtn = document.getElementById('showLongAlerts');
     if (showLongAlertsBtn) {
@@ -2024,7 +2027,7 @@ function setupEventListeners() {
             document.getElementById('showShortAlerts').classList.remove('bg-blue-900', 'text-blue-300');
         });
     }
-    
+
     const showShortAlertsBtn = document.getElementById('showShortAlerts');
     if (showShortAlertsBtn) {
         showShortAlertsBtn.addEventListener('click', () => {
@@ -2036,14 +2039,14 @@ function setupEventListeners() {
             document.getElementById('showLongAlerts').classList.remove('bg-blue-900', 'text-blue-300');
         });
     }
-    
+
     // Обработчик для поисковой строки
     const alertSearch = document.getElementById('alertSearch');
     if (alertSearch) {
         alertSearch.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             const alerts = document.querySelectorAll('.alert-card');
-            
+
             alerts.forEach(alert => {
                 const symbol = alert.querySelector('.font-medium.text-light').textContent.toLowerCase();
                 if (symbol.includes(searchTerm)) {
@@ -2065,30 +2068,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupEventListeners();
         await loadMarketData();
         loadUserAlerts(currentAlertFilter);
-        
+
         // Проверяем сохраненный chat_id
         const savedChatId = localStorage.getItem('tg_chat_id');
         if (savedChatId) {
             const userChatId = document.getElementById('userChatId');
             if (userChatId) userChatId.value = savedChatId;
         }
-        
+
         // Проверяем сохраненный email
         const savedEmail = localStorage.getItem('userEmail');
         if (savedEmail) {
             const userEmail = document.getElementById('userEmail');
             if (userEmail) userEmail.value = savedEmail;
         }
-        
+
         // Проверяем авторизацию пользователя
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         if (currentUser && currentUser.email) {
             updateUserUI(currentUser.email);
         }
-        
+
         // Запускаем проверку алертов каждые 2 секунды
         setInterval(checkAlerts, 2000);
-        
+
         // Добавлено: Обновление текущих цен каждые 5 секунд
         setInterval(updateCurrentPrices, 5000);
         updateCurrentPrices(); // Первоначальное обновление
@@ -2126,6 +2129,7 @@ window.resetForm = resetForm;
 window.reactivateAlert = reactivateAlert;
 window.exportAlertToTelegram = exportAlertToTelegram;
 window.exportAllActiveAlerts = exportAllActiveAlerts;
+
 // Конфигурация API
 const API_CONFIG = {
     RECONNECT_INTERVAL: 5000,
@@ -2167,7 +2171,6 @@ let currentListType = '';
 
 // Переменная для хранения виджета TradingView
 let tradingViewWidget = null;
-
 let apiManager;
 
 class BinanceAPIManager {
@@ -2201,7 +2204,6 @@ class BinanceAPIManager {
                 retries: 0,
                 error: null
             });
-
             return true;
         } catch (error) {
             this._handleConnectionError(error);
@@ -2218,7 +2220,6 @@ class BinanceAPIManager {
                 ...options,
                 signal: controller.signal
             });
-
             clearTimeout(timeoutId);
             return response;
         } catch (error) {
@@ -2233,7 +2234,6 @@ class BinanceAPIManager {
             ...stateUpdate,
             lastCheck: new Date().toISOString()
         };
-
         this._updateUIStatus();
     }
 
@@ -2287,14 +2287,14 @@ class BinanceAPIManager {
     async loadAllTickers() {
         try {
             const response = await this._fetchWithTimeout(API_CONFIG.ENDPOINTS.ALL_TICKERS);
-            
+
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            
+
             const data = await response.json();
-            
+
             // Очищаем предыдущий список
             allBinanceTickers = {};
-            
+
             // Заполняем список всех тикеров
             data.symbols.forEach(symbol => {
                 if (symbol.status === 'TRADING' && symbol.symbol.endsWith('USDT')) {
@@ -2304,10 +2304,10 @@ class BinanceAPIManager {
                     };
                 }
             });
-            
+
             // Загружаем фьючерсные тикеры
             await this.loadFuturesTickers();
-            
+
             tickersLoaded = true;
             console.log('Loaded all Binance tickers:', Object.keys(allBinanceTickers).length);
         } catch (error) {
@@ -2320,11 +2320,11 @@ class BinanceAPIManager {
     async loadFuturesTickers() {
         try {
             const response = await this._fetchWithTimeout('https://fapi.binance.com/fapi/v1/exchangeInfo');
-            
+
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            
+
             const data = await response.json();
-            
+
             // Добавляем фьючерсные тикеры
             data.symbols.forEach(symbol => {
                 if (symbol.status === 'TRADING' && symbol.symbol.endsWith('USDT')) {
@@ -2377,7 +2377,6 @@ class BinanceAPIManager {
                 : `${API_CONFIG.ENDPOINTS.SPOT}/api/v3/ticker/price?symbol=${symbol}`;
 
             const response = await this._fetchWithTimeout(endpoint);
-
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
             const data = await response.json();
@@ -2398,33 +2397,28 @@ class BinanceAPIManager {
 
     async getPriceHistory(symbol, marketType = 'spot', days = API_CONFIG.TREND_ANALYSIS_PERIOD) {
         const cacheKey = `${symbol}-${marketType}-${days}`;
-        
+
         // Check cache first
-        if (this.priceHistoryCache[cacheKey] && 
+        if (this.priceHistoryCache[cacheKey] &&
             Date.now() - this.priceHistoryCache[cacheKey].timestamp < 600000) { // 10 minute cache
             return this.priceHistoryCache[cacheKey].data;
         }
-
         try {
             const interval = days <= 7 ? '1h' : days <= 30 ? '4h' : '1d';
             const limit = Math.min(days * 24, 1000); // Binance max limit is 1000
-            
+
             const endpoint = marketType === 'futures'
                 ? `${API_CONFIG.ENDPOINTS.FUTURES}/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
                 : `${API_CONFIG.ENDPOINTS.SPOT}/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
-
             const response = await this._fetchWithTimeout(endpoint);
-
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
             const data = await response.json();
-            
+
             // Cache the data
             this.priceHistoryCache[cacheKey] = {
                 data: data,
                 timestamp: Date.now()
             };
-
             return data;
         } catch (error) {
             console.error(`Error getting price history for ${symbol}:`, error);
@@ -2436,16 +2430,15 @@ class BinanceAPIManager {
         try {
             const history = await this.getPriceHistory(symbol, marketType);
             if (!history || history.length < 2) return null;
-
             // Extract closing prices
             const closes = history.map(item => parseFloat(item[4]));
-            
+
             // Simple moving average calculation
             const sma = closes.reduce((sum, price) => sum + price, 0) / closes.length;
-            
+
             // Latest price
             const latestPrice = closes[closes.length - 1];
-            
+
             // Determine trend
             if (latestPrice > sma * 1.05) {
                 return { direction: 'up', confidence: Math.min(100, Math.round((latestPrice - sma) / sma * 1000)) };
@@ -2513,6 +2506,7 @@ function handleRegister() {
     users.push(newUser);
     localStorage.setItem('users', JSON.stringify(users));
     localStorage.setItem('currentUser', JSON.stringify({ email: email }));
+
     showNotification('Успех', 'Регистрация прошла успешно!');
     closeRegisterModal();
 
@@ -2578,7 +2572,7 @@ function showNotification(title, message) {
     const notification = document.createElement('div');
     notification.className = 'fixed bottom-4 right-4 w-80 rounded-lg shadow-lg border-l-4 border-accent-green';
     notification.style.backgroundColor = '#1E1E1E';
-    
+
     notification.innerHTML = `
         <div class="p-4">
             <div class="flex justify-between items-start">
@@ -2592,9 +2586,9 @@ function showNotification(title, message) {
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     // Автоматически закрываем через 5 секунд
     setTimeout(() => {
         notification.remove();
@@ -2622,13 +2616,11 @@ function initializeSortableLists() {
                 const tickers = Array.from(evt.to.children)
                     .filter(item => item.classList.contains('ticker-item'))
                     .map(item => item.dataset.ticker);
-
                 // Переупорядочиваем объект tickersData
                 const reorderedData = {};
                 tickers.forEach(ticker => {
                     reorderedData[ticker] = tickersData[listType][ticker];
                 });
-
                 tickersData[listType] = reorderedData;
                 saveTickersToStorage();
             }
@@ -2649,7 +2641,6 @@ function setupInputHandlers() {
                 addTicker(type);
             }
         });
-
         // Обработчик ввода для поиска тикеров
         input.addEventListener('input', function(e) {
             const panel = this.closest('.panel');
@@ -2658,7 +2649,6 @@ function setupInputHandlers() {
                         panel.classList.contains('long-wait') ? 'long-wait' : 'short-wait';
             showTickerSuggestions(this.value.trim().toUpperCase(), type);
         });
-
         // Скрываем подсказки при потере фокуса
         input.addEventListener('blur', function() {
             setTimeout(() => {
@@ -2676,22 +2666,18 @@ function setupInputHandlers() {
 function showTickerSuggestions(query, listType) {
     const suggestionsContainer = document.getElementById(`${listType}-suggestions`);
     suggestionsContainer.innerHTML = '';
-
     if (!query || query.length < 2) {
         suggestionsContainer.style.display = 'none';
         return;
     }
-
     // Фильтруем тикеры по запросу
     const filteredTickers = Object.keys(allBinanceTickers)
         .filter(ticker => ticker.includes(query))
         .slice(0, 10); // Ограничиваем 10 подсказками
-
     if (filteredTickers.length === 0) {
         suggestionsContainer.style.display = 'none';
         return;
     }
-
     // Добавляем подсказки в контейнер
     filteredTickers.forEach(ticker => {
         const suggestionItem = document.createElement('div');
@@ -2702,7 +2688,6 @@ function showTickerSuggestions(query, listType) {
                 ${allBinanceTickers[ticker].type === 'spot' ? 'SPOT' : 'FUTURES'}
             </span>
         `;
-
         suggestionItem.addEventListener('mousedown', (e) => {
             e.preventDefault();
             const input = document.getElementById(`${listType}-input`);
@@ -2710,29 +2695,23 @@ function showTickerSuggestions(query, listType) {
             suggestionsContainer.style.display = 'none';
             input.focus();
         });
-
         suggestionsContainer.appendChild(suggestionItem);
     });
-
     suggestionsContainer.style.display = 'block';
 }
 
 // Загрузка тикеров из localStorage
 function loadTickersFromStorage() {
     const savedData = localStorage.getItem('cryptoDashboardTickers');
-
     if (savedData) {
         try {
             const parsedData = JSON.parse(savedData);
-
             for (const listType in parsedData) {
                 if (parsedData.hasOwnProperty(listType)) {
                     tickersData[listType] = parsedData[listType];
-
                     // Восстанавливаем элементы на странице
                     const list = document.getElementById(`${listType}-list`);
                     list.innerHTML = '';
-
                     for (const ticker in parsedData[listType]) {
                         if (parsedData[listType].hasOwnProperty(ticker)) {
                             addTickerToList(ticker, listType);
@@ -2740,7 +2719,6 @@ function loadTickersFromStorage() {
                     }
                 }
             }
-
             // Обновляем статистику после загрузки
             updateStats();
         } catch (e) {
@@ -2764,15 +2742,12 @@ async function addTicker(listType) {
     const input = document.getElementById(`${listType}-input`);
     const errorElement = document.getElementById(`${listType}-error`);
     let ticker = input.value.trim().toUpperCase();
-
     // Нормализация тикера (удаляем все не-буквы и цифры)
     ticker = ticker.replace(/[^A-Z0-9.]/g, '');
-
     if (!ticker) {
         showError(errorElement, 'Введите тикер');
         return;
     }
-
     // Удаляем .P если он есть (больше не используем для фьючерсов)
     if (ticker.includes('.P')) {
         ticker = ticker.replace('.P', '');
@@ -2781,18 +2756,16 @@ async function addTicker(listType) {
     else if (!ticker.endsWith('USDT')) {
         ticker += 'USDT';
     }
-
     if (tickersData[listType][ticker]) {
         showError(errorElement, 'Этот тикер уже добавлен');
         return;
     }
-
     // Создаем новый тикер
     const now = new Date();
-    
+
     // Проверяем, есть ли такой тикер в Binance
     const isBinanceTicker = allBinanceTickers.hasOwnProperty(ticker);
-    
+
     tickersData[listType][ticker] = {
         name: isBinanceTicker ? allBinanceTickers[ticker].name : ticker.replace(/USDT$/, ''),
         price: '0.000000',
@@ -2804,13 +2777,11 @@ async function addTicker(listType) {
         comment: '', // Комментарий к тикеру
         trend: null // Информация о тренде
     };
-
     // Пробуем получить данные с Binance (для spot и futures)
     if (isBinanceTicker) {
         try {
             let apiUrl;
             const marketType = tickersData[listType][ticker].marketType;
-
             if (marketType === 'futures') {
                 // Для фьючерсов используем Futures API
                 apiUrl = `https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${ticker}`;
@@ -2818,14 +2789,11 @@ async function addTicker(listType) {
                 // Для спота используем Spot API
                 apiUrl = `https://api.binance.com/api/v3/ticker/24hr?symbol=${ticker}`;
             }
-
             const response = await fetch(apiUrl);
-
             if (response.ok) {
                 const data = await response.json();
                 tickersData[listType][ticker].price = parseFloat(data.lastPrice).toFixed(6);
                 tickersData[listType][ticker].change = parseFloat(data.priceChangePercent).toFixed(2);
-
                 // Анализируем тренд
                 const trend = await apiManager.analyzeTrend(ticker, marketType);
                 if (trend) {
@@ -2836,17 +2804,14 @@ async function addTicker(listType) {
             console.error(`Ошибка при проверке тикера ${ticker}:`, error);
         }
     }
-
     // Добавляем на страницу
     const list = document.getElementById(`${listType}-list`);
     addTickerToList(ticker, listType);
     saveTickersToStorage();
     input.value = '';
     hideError(errorElement);
-
     // Скрываем подсказки
     document.getElementById(`${listType}-suggestions`).style.display = 'none';
-
     // Открываем модальное окно для ручного ввода (если не Binance)
     if (!tickersData[listType][ticker].isBinance) {
         editTicker(ticker, listType);
@@ -2857,22 +2822,18 @@ async function addTicker(listType) {
 function addTickerToList(ticker, listType) {
     const list = document.getElementById(`${listType}-list`);
     const tickerData = tickersData[listType][ticker];
-
     const changeNum = parseFloat(tickerData.change);
     const changeClass = changeNum > 0 ?
                       'positive' :
                       changeNum < 0 ?
                       'negative' : 'neutral';
-
     const addedDate = new Date(tickerData.addedDate);
     const formattedDate = addedDate.toLocaleString();
-
     // Создаем звезды рейтинга
     const starsHtml = Array(3).fill(0).map((_, i) =>
         `<i class="star ${i < tickerData.stars ? 'fas' : 'far'} fa-star"
             onclick="rateTicker(event, '${ticker}', '${listType}', ${i + 1})"></i>`
     ).join('');
-
     // Создаем индикатор тренда
     let trendIndicator = '';
     if (tickerData.trend) {
@@ -2880,7 +2841,7 @@ function addTickerToList(ticker, listType) {
                          tickerData.trend.direction === 'down' ? 'trend-down' : 'trend-neutral';
         const trendIcon = tickerData.trend.direction === 'up' ? 'fa-arrow-up' :
                          tickerData.trend.direction === 'down' ? 'fa-arrow-down' : 'fa-arrows-left-right';
-        
+
         trendIndicator = `
             <span class="trend-indicator ${trendClass}" title="Тренд: ${tickerData.trend.direction}, уверенность: ${tickerData.trend.confidence}%">
                 <i class="fas ${trendIcon}"></i>
@@ -2888,12 +2849,10 @@ function addTickerToList(ticker, listType) {
             </span>
         `;
     }
-
     const listItem = document.createElement('li');
     listItem.className = 'ticker-item';
     listItem.dataset.ticker = ticker;
     listItem.dataset.listType = listType;
-
     listItem.innerHTML = `
         <div class="ticker-info">
             <div class="ticker-name-container">
@@ -2926,12 +2885,10 @@ function addTickerToList(ticker, listType) {
             <button class="action-btn delete-btn" onclick="removeTicker(event, this)">×</button>
         </div>
     `;
-
     // Добавляем обработчик клика для открытия графика
     listItem.querySelector('.ticker-info').addEventListener('click', function() {
         openTradingViewChart(ticker, listType);
     });
-
     list.appendChild(listItem);
 }
 
@@ -2940,7 +2897,7 @@ function editComment(event, ticker, listType) {
     event.stopPropagation();
     currentTicker = ticker;
     currentListType = listType;
-    
+
     const tickerData = tickersData[listType][ticker];
     commentModalTicker.textContent = ticker;
     commentInput.value = tickerData.comment || '';
@@ -2951,17 +2908,17 @@ function editComment(event, ticker, listType) {
 function saveComment() {
     const comment = commentInput.value.trim();
     tickersData[currentListType][currentTicker].comment = comment;
-    
+
     // Обновляем отображение на странице
     const listItem = document.querySelector(`.ticker-item[data-ticker="${currentTicker}"][data-list-type="${currentListType}"]`);
     if (listItem) {
         const commentBtn = listItem.querySelector('.comment-btn');
         const hasComment = comment !== '';
-        
+
         // Обновляем иконку
         const icon = commentBtn.querySelector('i');
         icon.className = hasComment ? 'fas fa-comment' : 'fas fa-comment-dots';
-        
+
         // Обновляем тултип
         let tooltip = commentBtn.querySelector('.comment-tooltip');
         if (hasComment) {
@@ -2975,7 +2932,7 @@ function saveComment() {
             tooltip.remove();
         }
     }
-    
+
     saveTickersToStorage();
     closeCommentModal();
 }
@@ -2989,17 +2946,14 @@ function closeCommentModal() {
 function rateTicker(event, ticker, listType, rating) {
     event.stopPropagation();
     const tickerData = tickersData[listType][ticker];
-
     // Если кликнули на ту же звезду, что и текущий рейтинг - снимаем оценку
     tickerData.stars = tickerData.stars === rating ? 0 : rating;
-
     // Обновляем отображение звезд
     const stars = event.target.parentElement.querySelectorAll('.star');
     stars.forEach((star, i) => {
         star.classList.toggle('fas', i < tickerData.stars);
         star.classList.toggle('far', i >= tickerData.stars);
     });
-
     saveTickersToStorage();
 }
 
@@ -3008,7 +2962,6 @@ function moveTickerUp(event, button) {
     event.stopPropagation();
     const listItem = button.closest('.ticker-item');
     const prevItem = listItem.previousElementSibling;
-
     if (prevItem) {
         const list = listItem.parentElement;
         list.insertBefore(listItem, prevItem);
@@ -3021,7 +2974,6 @@ function moveTickerDown(event, button) {
     event.stopPropagation();
     const listItem = button.closest('.ticker-item');
     const nextItem = listItem.nextElementSibling;
-
     if (nextItem) {
         const list = listItem.parentElement;
         list.insertBefore(nextItem, listItem);
@@ -3035,13 +2987,11 @@ function updateTickersOrder(listType) {
     const tickers = Array.from(list.children)
         .filter(item => item.classList.contains('ticker-item'))
         .map(item => item.dataset.ticker);
-
     // Переупорядочиваем объект tickersData
     const reorderedData = {};
     tickers.forEach(ticker => {
         reorderedData[ticker] = tickersData[listType][ticker];
     });
-
     tickersData[listType] = reorderedData;
     saveTickersToStorage();
 }
@@ -3051,7 +3001,6 @@ function editTicker(ticker, listType) {
     currentTicker = ticker;
     currentListType = listType;
     const tickerData = tickersData[listType][ticker];
-
     modalTicker.textContent = ticker;
     priceInput.value = tickerData.price;
     changeInput.value = tickerData.change;
@@ -3067,11 +3016,9 @@ function closeModal() {
 function confirmManualPrice() {
     const price = parseFloat(priceInput.value);
     const change = parseFloat(changeInput.value) || 0;
-
     if (!isNaN(price)) {
         tickersData[currentListType][currentTicker].price = price.toFixed(6);
         tickersData[currentListType][currentTicker].change = change.toFixed(2);
-
         // Обновляем на странице
         updateTickerOnPage(currentTicker, currentListType);
         saveTickersToStorage();
@@ -3083,17 +3030,14 @@ function confirmManualPrice() {
 function updateTickerOnPage(ticker, listType) {
     const tickerData = tickersData[listType][ticker];
     const listItem = document.querySelector(`.ticker-item[data-ticker="${ticker}"][data-list-type="${listType}"]`);
-
     if (listItem) {
         const changeNum = parseFloat(tickerData.change);
         const changeClass = changeNum > 0 ?
                           'positive' :
                           changeNum < 0 ?
                           'negative' : 'neutral';
-
         const addedDate = new Date(tickerData.addedDate);
         const formattedDate = addedDate.toLocaleString();
-
         listItem.querySelector('.price-value').innerHTML = `$${tickerData.price} <span class="price-change ${changeClass}">${tickerData.change}%</span>`;
         listItem.querySelector('.added-date').textContent = formattedDate;
     }
@@ -3105,13 +3049,10 @@ function removeTicker(event, button) {
     const listItem = button.closest('.ticker-item');
     const ticker = listItem.dataset.ticker;
     const listType = listItem.dataset.listType;
-
     // Удаляем из объекта данных
     delete tickersData[listType][ticker];
-
     // Удаляем со страницы
     listItem.remove();
-
     // Сохраняем в localStorage
     saveTickersToStorage();
 }
@@ -3128,14 +3069,11 @@ function clearAllTickers(listType) {
 // Обновление цены для одного тикера
 async function updateTickerPrice(ticker, listType) {
     const tickerData = tickersData[listType][ticker];
-
     // Пропускаем обновление для ручных тикеров
     if (!tickerData.isBinance) return;
-
     try {
         let apiUrl;
         const marketType = tickerData.marketType;
-
         if (marketType === 'futures') {
             // Для фьючерсов используем Futures API
             apiUrl = `https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${ticker}`;
@@ -3143,25 +3081,20 @@ async function updateTickerPrice(ticker, listType) {
             // Для спота используем Spot API
             apiUrl = `https://api.binance.com/api/v3/ticker/24hr?symbol=${ticker}`;
         }
-
         const response = await fetch(apiUrl);
-
         if (response.ok) {
             const data = await response.json();
             const newPrice = parseFloat(data.lastPrice).toFixed(6);
             const newChange = parseFloat(data.priceChangePercent).toFixed(2);
-
             // Обновляем только если цена изменилась
             if (tickerData.price !== newPrice || tickerData.change !== newChange) {
                 tickerData.price = newPrice;
                 tickerData.change = newChange;
-
                 // Анализируем тренд при обновлении цены
                 const trend = await apiManager.analyzeTrend(ticker, marketType);
                 if (trend) {
                     tickerData.trend = trend;
                 }
-
                 // Обновляем на странице
                 updateTickerOnPage(ticker, listType);
                 saveTickersToStorage();
@@ -3192,19 +3125,16 @@ function updateStats() {
     let shortCount = 0;
     let longWaitCount = 0;
     let shortWaitCount = 0;
-
     for (const listType in tickersData) {
         if (tickersData.hasOwnProperty(listType)) {
             const count = Object.keys(tickersData[listType]).length;
             totalTickers += count;
-
             if (listType === 'long') longCount = count;
             if (listType === 'short') shortCount = count;
             if (listType === 'long-wait') longWaitCount = count;
             if (listType === 'short-wait') shortWaitCount = count;
         }
     }
-
     document.getElementById('total-tickers').textContent = totalTickers;
     document.getElementById('long-count').textContent = longCount;
     document.getElementById('short-count').textContent = shortCount;
@@ -3216,7 +3146,6 @@ function updateStats() {
 function showError(element, message) {
     element.textContent = message;
     element.style.display = 'block';
-
     setTimeout(() => {
         element.style.display = 'none';
     }, 3000);
@@ -3231,11 +3160,11 @@ function hideError(element) {
 function openTradingViewChart(ticker, listType) {
     currentTicker = ticker;
     currentListType = listType;
-    
+
     document.getElementById('chartModalTitle').textContent = ticker;
     document.getElementById('chartModal').style.display = 'flex';
     document.getElementById('chartError').classList.add('hidden');
-    
+
     // Загружаем виджет TradingView
     loadTradingViewWidget(ticker);
 }
@@ -3243,7 +3172,7 @@ function openTradingViewChart(ticker, listType) {
 function loadTradingViewWidget(ticker) {
     const widgetContainer = document.getElementById('tradingview-widget');
     widgetContainer.innerHTML = '';
-    
+
     const script = document.createElement('script');
     script.type = 'text/javascript';
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
@@ -3256,7 +3185,7 @@ function loadTradingViewWidget(ticker) {
         // Ошибка загрузки виджета
         document.getElementById('chartError').classList.remove('hidden');
     };
-    
+
     script.innerHTML = JSON.stringify({
         "allow_symbol_change": true,
         "calendar": false,
@@ -3281,7 +3210,7 @@ function loadTradingViewWidget(ticker) {
         "studies": [],
         "autosize": true
     });
-    
+
     widgetContainer.appendChild(script);
 }
 
@@ -3348,7 +3277,6 @@ function closeRegisterModal() {
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', async () => {
     apiManager = new BinanceAPIManager();
-
     try {
         await apiManager.init();
 
@@ -3383,7 +3311,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.addEventListener('click', function(event) {
             const menuContent = document.getElementById('menuContent');
             const menuButton = document.getElementById('menuButton');
-
             if (menuContent && menuButton &&
                 !menuContent.contains(event.target) &&
                 !menuButton.contains(event.target)) {
@@ -3423,3 +3350,6 @@ window.handleLogout = handleLogout;
 window.toggleMenu = toggleMenu;
 window.openTradingViewChart = openTradingViewChart;
 window.closeChartModal = closeChartModal;
+```
+
+Теперь оба скрипта объединены в один. Убедитесь, что все зависимости и библиотеки, такие как SortableJS и TradingView, подключены в вашем HTML-файле.
