@@ -13,7 +13,7 @@ const API_CONFIG = {
     PRICE_COMPARISON_EPSILON: 0.00000001,
     TREND_ANALYSIS_PERIOD: 14 // Days for trend analysis
 };
-
+const TG_BOT_TOKEN = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30'; // Замените на реальный токен из @BotFather
 // Объект для хранения данных о тикерах
 const tickersData = {
     'long': {},
