@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binance Dashboard</title>
+    <link rel="preload" href="https://s3.tradingview.com/tv.js" as="script" crossorigin>
+    <link rel="preconnect" href="https://s3.tradingview.com">
+    <link rel="preconnect" href="https://api.binance.com">
+    <link rel="preconnect" href="https://fapi.binance.com">
+    <link rel="preconnect" href="https://stream.binance.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1E1E1E;
+            --border-color: #2D2D2D;
+            --hover-color: #2A2A2A;
+            --accent-blue: #2196F3;
+            --positive: #2E7D32;
+            --negative: #C62828;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B0B0;
+            --spot-tag-color: #4CAF50;
+            --perpetual-tag-color: #2196F3;
+            --flag-red: #F44336;
+            --flag-blue: #2196F3;
+            --flag-green: #4CAF50;
+            --flag-yellow: #FFEB3B;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-weight: 400;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            flex-direction: row;
+        }
+
+        .chart-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+        }
+
+        .chart {
+            flex: 1;
+        }
+
+        .ticker-list {
+            width: 350px;
+            background-color: var(--bg-secondary);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .management-panel {
+            padding: 12px;
+            background-color: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .management-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .management-buttons button {
+            flex: 1;
+            padding: 10px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .management-buttons button:hover {
+            background-color: var(--hover-color);
+        }
+
+        .add-symbol-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 104px;
+            z-index: 10;
+            background-color: var(--bg-secondary);
+        }
+
+        .tab {
+            padding: 8px 10px;
+            cursor: pointer;
+            background-color: var(--bg-secondary);
+            flex: 1;
+            text-align: center;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            font-size: 0.85em;
+        }
+
+        .tab:hover {
+            background-color: var(--hover-color);
+        }
+
+        .tab.active {
+            background-color: var(--bg-primary);
+            border-bottom: 2px solid var(--accent-blue);
+            font-weight: 700;
+        }
+
+        .ticker-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+            position: relative;
+            user-select: none;
+            background-color: var(--bg-secondary);
+        }
+
+        .ticker-item:hover {
+            background-color: var(--hover-color);
+        }
+
+        .ticker-item.dragging {
+            opacity: 0.5;
+            background-color: var(--hover-color);
+            border: 1px dashed var(--accent-blue);
+        }
+
+        .ticker-item.drag-over {
+            border-top: 2px solid var(--accent-blue);
+            background-color: rgba(33, 150, 243, 0.1);
+        }
+
+        .ticker-info {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .ticker-name {
+            font-weight: 500;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .ticker-name.inactive {
+            pointer-events: none;
+        }
+
+        .ticker-price.positive {
+            color: var(--positive);
+        }
+
+        .ticker-price.negative {
+            color: var(--negative);
+        }
+
+        .positive {
+            color: var(--positive);
+            font-weight: 500;
+        }
+
+        .negative {
+            color: var(--negative);
+            font-weight: 500;
+        }
+
+        .action-icons {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-icons > span:not(.star):not(.remove-btn) {
+            cursor: pointer;
+        }
+
+        .star {
+            color: var(--accent-blue);
+            cursor: pointer;
+            user-select: none;
+            font-size: 1.1em;
+            transition: transform 0.2s;
+        }
+
+        .star:hover {
+            transform: scale(1.2);
+        }
+
+        .remove-btn {
+            color: var(--negative);
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .remove-btn:hover {
+            background-color: rgba(198, 40, 40, 0.2);
+            transform: scale(1.1);
+        }
+
+        .ticker-item.active {
+            background-color: var(--bg-primary);
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        .no-results {
+            padding: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .loading {
+            padding: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .ticker-list-container {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .tv-lightweight-charts {
+            border-radius: 0 !important;
+        }
+
+        @keyframes flash-positive {
+            0% { background-color: rgba(46, 125, 50, 0); }
+            50% { background-color: rgba(46, 125, 50, 0.3); }
+            100% { background-color: rgba(46, 125, 50, 0); }
+        }
+
+        @keyframes flash-negative {
+            0% { background-color: rgba(198, 40, 40, 0); }
+            50% { background-color: rgba(198, 40, 40, 0.3); }
+            100% { background-color: rgba(198, 40, 40, 0); }
+        }
+
+        .price-flash-positive {
+            animation: flash-positive 1s ease-out;
+        }
+
+        .price-flash-negative {
+            animation: flash-negative 1s ease-out;
+        }
+
+        .market-tag {
+            font-size: 0.7em;
+            padding: 2px 4px;
+            border-radius: 3px;
+            background-color: var(--border-color);
+            color: var(--text-primary);
+            margin-left: 5px;
+        }
+
+        .market-tag.spot {
+            background-color: var(--spot-tag-color);
+        }
+
+        .market-tag.perpetual {
+            background-color: var(--perpetual-tag-color);
+        }
+
+        .sort-options {
+            display: flex;
+            padding: 5px 15px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            gap: 10px;
+            position: sticky;
+            top: 149px;
+            z-index: 9;
+        }
+
+        .sort-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8em;
+            padding: 5px 8px;
+            border-radius: 4px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .sort-btn:hover {
+            background-color: var(--hover-color);
+        }
+
+        .sort-btn.active {
+            color: var(--accent-blue);
+            font-weight: 500;
+        }
+
+        .sort-btn.inactive {
+            pointer-events: none;
+            color: var(--text-secondary);
+            cursor: default;
+        }
+
+        .sort-btn i {
+            margin-left: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 5px;
+            width: 400px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            margin-bottom: 15px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 10px;
+            resize: none;
+        }
+
+        .modal-btn {
+            padding: 8px 15px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .modal-btn:hover {
+            background-color: var(--hover-color);
+        }
+
+        .modal-btn.primary {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .modal-btn.primary:hover {
+            background-color: #1976D2;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 10px;
+            background-color: var(--bg-primary);
+            border: 1px dashed var(--border-color);
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .file-input-label:hover {
+            background-color: var(--hover-color);
+        }
+
+        .file-input {
+            position: absolute;
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .file-name {
+            margin-top: 5px;
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            word-break: break-all;
+        }
+
+        .instructions {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .chart-settings-panel {
+            display: none;
+        }
+
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .settings-modal-content {
+            background-color: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 5px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .settings-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+
+        .settings-tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            background-color: var(--bg-secondary);
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+        }
+
+        .settings-tab.active {
+            border-bottom: 2px solid var(--accent-blue);
+        }
+
+        .settings-tab-content {
+            display: none;
+        }
+
+        .settings-tab-content.active {
+            display: block;
+        }
+
+        .settings-group {
+            margin-bottom: 15px;
+        }
+
+        .settings-group-title {
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: var(--accent-blue);
+        }
+
+        .settings-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .settings-option label {
+            flex: 1;
+        }
+
+        .settings-option select,
+        .settings-option input[type="number"] {
+            width: 150px;
+            padding: 5px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .settings-option-color {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-preview {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .settings-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .market-type-selector {
+            display: flex;
+            padding: 5px 15px;
+            background-color: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            gap: 10px;
+            position: sticky;
+            top: 56px;
+            z-index: 10;
+        }
+
+        .market-type-btn {
+            flex: 1;
+            padding: 8px;
+            background-color: var(--bg-secondary);
+            border: none;
+            border-radius: 4px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            text-align: center;
+        }
+
+        .market-type-btn.active {
+            background-color: var(--accent-blue);
+            font-weight: 500;
+        }
+
+        .flag {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .flag-red {
+            background-color: var(--flag-red);
+        }
+
+        .flag-blue {
+            background-color: var(--flag-blue);
+        }
+
+        .flag-green {
+            background-color: var(--flag-green);
+        }
+
+        .flag-yellow {
+            background-color: var(--flag-yellow);
+        }
+
+        .context-menu {
+            position: absolute;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 5px 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            min-width: 150px;
+            display: none;
+        }
+
+        .context-menu-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .context-menu-item:hover {
+            background-color: var(--hover-color);
+        }
+
+        .context-menu-separator {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 5px 0;
+        }
+
+        .autocomplete {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: var(--bg-secondary);
+        }
+
+        .autocomplete-items div {
+            padding: 10px;
+            cursor: pointer;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .autocomplete-items div:hover {
+            background-color: var(--hover-color);
+        }
+
+        .autocomplete-active {
+            background-color: var(--accent-blue) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .autocomplete-symbol {
+            font-weight: 500;
+        }
+
+        .autocomplete-market {
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+
+        .search-filter {
+            padding: 10px 15px;
+            background-color: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 149px;
+            z-index: 9;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chart-container">
+            <div id="tradingview-chart" class="chart"></div>
+        </div>
+        <div class="ticker-list">
+            <div class="management-panel">
+                <div class="autocomplete">
+                    <input type="text" id="addSymbolInput" class="add-symbol-input" placeholder="Добавить пару (BTCUSDT или BTC spot)" autocomplete="off">
+                    <div id="autocompleteList" class="autocomplete-items"></div>
+                </div>
+                <div class="management-buttons">
+                    <button id="addSymbolBtn"><i class="fas fa-plus"></i> Добавить</button>
+                    <button id="addMultipleBtn"><i class="fas fa-list"></i> Несколько</button>
+                    <button id="removeAllCustomBtn"><i class="fas fa-trash"></i> Очистить</button>
+                </div>
+            </div>
+            <div class="market-type-selector">
+                <button class="market-type-btn active" data-market="futures">Futures</button>
+                <button class="market-type-btn" data-market="spot">Spot</button>
+            </div>
+            <div class="tabs">
+                <div class="tab active" data-tab="all">Все</div>
+                <div class="tab" data-tab="favorites">Избранное</div>
+                <div class="tab" data-tab="custom">Мои пары</div>
+                <div class="tab" data-tab="flags">Флажки</div>
+            </div>
+            <div class="tabs" id="flagTabs" style="display: none;">
+                <div class="tab active" data-flag="all">Все</div>
+                <div class="tab" data-flag="red">Красные</div>
+                <div class="tab" data-flag="blue">Синие</div>
+                <div class="tab" data-flag="green">Зеленые</div>
+                <div class="tab" data-flag="yellow">Желтые</div>
+            </div>
+            <div class="search-filter">
+                <input type="text" id="searchInput" class="search-input" placeholder="Поиск по символам...">
+            </div>
+            <div class="ticker-list-container" id="tickerList">
+                <div class="loading">Загрузка символов...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="multipleSymbolsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Добавление нескольких пар</div>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="instructions">
+                    Вы можете добавить несколько торговых пар одновременно. Введите символы через запятую, пробел или каждую пару с новой строки.<br>
+                    Пример: BTCUSDT, ETHUSDT, SOLUSDT или<br>
+                    BTCUSDT<br>
+                    ETHUSDT<br>
+                    SOLUSDT
+                </div>
+
+                <div class="file-input-wrapper">
+                    <label class="file-input-label" for="symbolsFile">
+                        <i class="fas fa-file-upload"></i> Загрузить из TXT файла
+                        <div class="file-name" id="fileName"></div>
+                    </label>
+                    <input type="file" id="symbolsFile" class="file-input" accept=".txt">
+                </div>
+
+                <textarea class="modal-textarea" id="symbolsTextarea" placeholder="Введите символы пар, например: BTCUSDT, ETHUSDT, SOLUSDT"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn close-modal">Отмена</button>
+                <button class="modal-btn primary" id="addMultipleSymbolsBtn">Добавить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="context-menu" id="flagContextMenu">
+        <div class="context-menu-item" data-flag="red">
+            <div class="flag flag-red"></div>
+            Красный флажок
+        </div>
+        <div class="context-menu-item" data-flag="blue">
+            <div class="flag flag-blue"></div>
+            Синий флажок
+        </div>
+        <div class="context-menu-item" data-flag="green">
+            <div class="flag flag-green"></div>
+            Зеленый флажок
+        </div>
+        <div class="context-menu-item" data-flag="yellow">
+            <div class="flag flag-yellow"></div>
+            Желтый флажок
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" data-flag="none">
+            <i class="fas fa-times"></i> Удалить флажок
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        // Глобальные переменные для управления состоянием загрузки
+        let TVScriptLoaded = false;
+        let DashboardInstance = null;
+
+        // Функция загрузки TradingView
+        function loadTradingView() {
+            if (typeof TradingView !== 'undefined' && !TVScriptLoaded) {
+                TVScriptLoaded = true;
+                initDashboard();
+                return;
+            }
+
+            if (!document.querySelector('script[src="https://s3.tradingview.com/tv.js"]')) {
+                const script = document.createElement('script');
+                script.src = 'https://s3.tradingview.com/tv.js';
+                script.async = true;
+                script.crossOrigin = 'anonymous';
+                script.onload = () => {
+                    TVScriptLoaded = true;
+                    initDashboard();
+                };
+                script.onerror = () => {
+                    console.error("Не удалось загрузить скрипт TradingView");
+                    // Попытка повторной загрузки через 5 секунд
+                    setTimeout(loadTradingView, 5000);
+                };
+                document.head.appendChild(script);
+            }
+        }
+
+        // Инициализация дашборда
+        function initDashboard() {
+            if (!DashboardInstance) {
+                DashboardInstance = new BinanceDashboard();
+            } else if (TVScriptLoaded && !DashboardInstance.state.tvWidget) {
+                DashboardInstance.initTradingView(DashboardInstance.state.currentSymbol);
+            }
+        }
+
+        // Обработчик события DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Параллельная загрузка данных и скрипта TradingView
+            loadTradingView();
+        });
+
+        class BinanceDashboard {
+            constructor() {
+                this.state = {
+                    favorites: JSON.parse(localStorage.getItem('favorites')) || [],
+                    customSymbols: JSON.parse(localStorage.getItem('customSymbols')) || [],
+                    flags: JSON.parse(localStorage.getItem('flags')) || {},
+                    activeTab: 'all',
+                    activeFlagTab: 'all',
+                    currentSymbol: 'BTCUSDT',
+                    sortBy: 'volume',
+                    sortDirection: 'desc',
+                    marketType: localStorage.getItem('marketType') || 'futures',
+                    chartSettings: JSON.parse(localStorage.getItem('chartSettings')) || {
+                        chartStyle: '0',
+                        candleStyle: '0',
+                        upColor: '#26a69a',
+                        downColor: '#ef5350',
+                        wickColor: '#000000',
+                        borderColor: '#378658',
+                        backgroundColor: '#121212',
+                        gridColor: '#2d2d2d',
+                        priceScale: '1',
+                        timeScale: '0',
+                        rightMargin: '30',
+                        showPriceAxis: true,
+                        priceScaleMode: '0',
+                        showTradingPanel: true,
+                        showOrderLines: true,
+                        showPositionLines: true
+                    },
+                    tvWidget: null,
+                    ws: null,
+                    wsReconnectAttempts: 0,
+                    maxWsReconnectAttempts: 5,
+                    lastRenderTime: 0,
+                    renderDebounce: 200,
+                    searchQuery: ''
+                };
+
+                this.tickers = [];
+                this.allSymbolsCache = [];
+
+                // Начинаем инициализацию данных
+                this.initializeData();
+            }
+
+            async initializeData() {
+                try {
+                    await this.fetchAllSymbols();
+                    this.initializeTickers();
+                    this.connectWebSocket();
+
+                    // Если TradingView уже загружен, инициализируем график
+                    if (TVScriptLoaded) {
+                        this.initTradingView(this.state.currentSymbol);
+                    }
+
+                    this.renderTickerList();
+                    this.setupUIEventListeners();
+                    this.setupDragAndDrop();
+                } catch (error) {
+                    console.error("Ошибка инициализации данных:", error);
+                    // Повторная попытка через 5 секунд
+                    setTimeout(() => this.initializeData(), 5000);
+                }
+            }
+
+            initTradingView(symbol) {
+                if (!TVScriptLoaded) {
+                    // Если TradingView еще не загружен, отложим инициализацию
+                    setTimeout(() => this.initTradingView(symbol), 100);
+                    return;
+                }
+
+                if (this.state.tvWidget) {
+                    try {
+                        this.state.tvWidget.remove();
+                    } catch (e) {
+                        console.log("Ошибка при удалении предыдущего виджета:", e);
+                    }
+                }
+
+                // Исправленная часть для правильного отображения фьючерсов
+                const marketPrefix = this.state.marketType === 'futures' ? 'BINANCE' : 'BINANCE';
+                const formattedSymbol = this.state.marketType === 'futures' ? 
+                    `${symbol}PERP` :  // Для фьючерсов добавляем PERP
+                    symbol;
+
+                try {
+                    this.state.tvWidget = new TradingView.widget({
+                        "autosize": true,
+                        "symbol": `${marketPrefix}:${formattedSymbol}`,
+                        "interval": "1D",
+                        "timezone": "Etc/UTC",
+                        "theme": "dark",
+                        "style": this.state.chartSettings.chartStyle,
+                        "locale": "ru",
+                        "toolbar_bg": "#1E1E1E",
+                        "enable_publishing": false,
+                        "hide_top_toolbar": false,
+                        "hide_side_toolbar": false,
+                        "allow_symbol_change": false,
+                        "backgroundColor": "rgba(0, 0, 0, 1)",
+                        "gridColor": "rgba(0, 0, 0, 0.06)",
+                        "container_id": "tradingview-chart",
+                        "studies_overrides": {
+                            "volume.volume.color.0": this.state.chartSettings.downColor,
+                            "volume.volume.color.1": this.state.chartSettings.upColor
+                        },
+                        "overrides": {
+                            "mainSeriesProperties.style": parseInt(this.state.chartSettings.chartStyle),
+                            "mainSeriesProperties.candleStyle.upColor": this.state.chartSettings.upColor,
+                            "mainSeriesProperties.candleStyle.downColor": this.state.chartSettings.downColor,
+                            "mainSeriesProperties.candleStyle.borderUpColor": this.state.chartSettings.upColor,
+                            "mainSeriesProperties.candleStyle.borderDownColor": this.state.chartSettings.downColor,
+                            "mainSeriesProperties.candleStyle.wickUpColor": this.state.chartSettings.wickColor,
+                            "mainSeriesProperties.candleStyle.wickDownColor": this.state.chartSettings.wickColor,
+                            "paneProperties.background": this.state.chartSettings.backgroundColor,
+                            "paneProperties.vertGridProperties.color": this.state.chartSettings.gridColor,
+                            "paneProperties.horzGridProperties.color": this.state.chartSettings.gridColor,
+                            "scalesProperties.lineColor": this.state.chartSettings.gridColor,
+                            "scalesProperties.textColor": "#B0B0B0",
+                            "symbolWatermarkProperties.color": "rgba(0, 0, 0, 0)",
+                            "volume.volume.color.0": this.state.chartSettings.downColor,
+                            "volume.volume.color.1": this.state.chartSettings.upColor
+                        }
+                    });
+                } catch (e) {
+                    console.error("Ошибка при создании виджета TradingView:", e);
+                    // Повторная попытка через 2 секунды
+                    setTimeout(() => this.initTradingView(symbol), 2000);
+                }
+            }
+
+            async fetchAllSymbols() {
+                try {
+                    const [futuresResponse, spotResponse] = await Promise.all([
+                        fetch('https://fapi.binance.com/fapi/v1/exchangeInfo'),
+                        fetch('https://api.binance.com/api/v3/exchangeInfo')
+                    ]);
+
+                    const [futuresData, spotData] = await Promise.all([
+                        futuresResponse.json(),
+                        spotResponse.json()
+                    ]);
+
+                    const futuresSymbols = futuresData.symbols
+                        .filter(s => s.symbol.endsWith('USDT'))
+                        .map(s => ({
+                            symbol: s.symbol,
+                            marketType: 'futures',
+                            baseAsset: s.baseAsset,
+                            quoteAsset: s.quoteAsset
+                        }));
+
+                    const spotSymbols = spotData.symbols
+                        .filter(s => s.symbol.endsWith('USDT'))
+                        .map(s => ({
+                            symbol: s.symbol,
+                            marketType: 'spot',
+                            baseAsset: s.baseAsset,
+                            quoteAsset: s.quoteAsset
+                        }));
+
+                    this.allSymbolsCache = [...futuresSymbols, ...spotSymbols];
+                } catch (error) {
+                    console.error('Ошибка загрузки символов:', error);
+                    throw error;
+                }
+            }
+
+            connectWebSocket() {
+                if (this.state.ws) {
+                    try {
+                        this.state.ws.close();
+                    } catch (e) {
+                        console.log("Ошибка при закрытии WebSocket:", e);
+                    }
+                }
+
+                const endpoint = this.state.marketType === 'futures'
+                    ? 'wss://fstream.binance.com/ws/!ticker@arr'
+                    : 'wss://stream.binance.com:9443/ws/!ticker@arr';
+
+                this.state.ws = new WebSocket(endpoint);
+
+                this.state.ws.onopen = () => {
+                    this.state.wsReconnectAttempts = 0;
+                };
+
+                this.state.ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        this.processTickerData(data);
+                    } catch (e) {
+                        console.log("Ошибка обработки WebSocket сообщения:", e);
+                    }
+                };
+
+                this.state.ws.onclose = () => {
+                    this.scheduleReconnect();
+                };
+
+                this.state.ws.onerror = (error) => {
+                    console.log("WebSocket error:", error);
+                    this.state.ws.close();
+                };
+            }
+
+            processTickerData(data) {
+                const now = Date.now();
+                const shouldRender = now - this.state.lastRenderTime > this.state.renderDebounce;
+
+                try {
+                    data.forEach(item => {
+                        const ticker = this.tickers.find(t =>
+                            t.symbol === item.s && t.marketType === this.state.marketType
+                        );
+
+                        if (ticker) {
+                            const newPrice = parseFloat(item.c || item.lastPrice);
+                            const newChange = parseFloat(item.P || item.priceChangePercent);
+                            const newVolume = this.state.marketType === 'futures'
+                                ? parseFloat(item.q || item.quoteVolume)
+                                : parseFloat(item.v || item.volume) * newPrice;
+
+                            if (ticker.price !== newPrice) {
+                                ticker.prevPrice = ticker.price;
+                                ticker.price = newPrice;
+
+                                if (ticker.prevPrice > 0) {
+                                    const direction = newPrice > ticker.prevPrice ? 'up' : 'down';
+                                    this.flashPrice(ticker.symbol, direction);
+                                }
+                            }
+
+                            if (ticker.change !== newChange) ticker.change = newChange;
+                            if (ticker.volume !== newVolume) ticker.volume = newVolume;
+                        }
+                    });
+
+                    if (shouldRender) {
+                        this.state.lastRenderTime = now;
+                        this.renderTickerList();
+                    }
+                } catch (e) {
+                    console.log("Ошибка обработки данных тикера:", e);
+                }
+            }
+
+            scheduleReconnect() {
+                if (this.state.wsReconnectAttempts < this.state.maxWsReconnectAttempts) {
+                    this.state.wsReconnectAttempts++;
+                    const delay = Math.min(5000, this.state.wsReconnectAttempts * 1000);
+                    setTimeout(() => this.connectWebSocket(), delay);
+                } else {
+                    console.log("Превышено максимальное количество попыток переподключения WebSocket");
+                }
+            }
+
+            initializeTickers() {
+                const defaultFuturesSymbols = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT", "ADAUSDT"];
+                const defaultSpotSymbols = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT", "ADAUSDT"];
+
+                const defaultSymbols = this.state.marketType === 'futures' ? defaultFuturesSymbols : defaultSpotSymbols;
+                const allSymbolsMap = {};
+
+                defaultSymbols.forEach(symbol => {
+                    allSymbolsMap[symbol] = {
+                        symbol,
+                        price: 0,
+                        change: 0,
+                        volume: 0,
+                        custom: false,
+                        prevPrice: 0,
+                        priceFlash: null,
+                        marketType: this.state.marketType,
+                        flag: this.state.flags[`${symbol}:${this.state.marketType}`] || null
+                    };
+                });
+
+                this.state.customSymbols.forEach(symbol => {
+                    if (!allSymbolsMap[symbol]) {
+                        allSymbolsMap[symbol] = {
+                            symbol,
+                            price: 0,
+                            change: 0,
+                            volume: 0,
+                            custom: true,
+                            prevPrice: 0,
+                            priceFlash: null,
+                            marketType: this.state.marketType,
+                            flag: this.state.flags[`${symbol}:${this.state.marketType}`] || null
+                        };
+                    }
+                });
+
+                this.tickers = Object.values(allSymbolsMap);
+            }
+
+            addSymbol(symbol, isCustom = true) {
+                symbol = symbol.trim().toUpperCase();
+
+                if (!symbol || symbol.length < 3 || !symbol.endsWith('USDT')) {
+                    alert('Пожалуйста, введите правильный символ с окончанием USDT');
+                    return false;
+                }
+
+                if (this.tickers.some(t => t.symbol === symbol && t.marketType === this.state.marketType)) {
+                    return false;
+                }
+
+                const newTicker = {
+                    symbol,
+                    price: 0,
+                    change: 0,
+                    volume: 0,
+                    custom: isCustom,
+                    prevPrice: 0,
+                    priceFlash: null,
+                    marketType: this.state.marketType,
+                    flag: null
+                };
+
+                this.tickers.push(newTicker);
+
+                if (isCustom) {
+                    this.state.customSymbols.push(symbol);
+                    this.saveState();
+                }
+
+                return true;
+            }
+
+            removeSymbol(symbol) {
+                const key = `${symbol}:${this.state.marketType}`;
+                delete this.state.flags[key];
+
+                this.tickers = this.tickers.filter(t => t.symbol !== symbol || t.marketType !== this.state.marketType);
+                this.state.customSymbols = this.state.customSymbols.filter(s => s !== symbol);
+                this.state.favorites = this.state.favorites.filter(s => s !== symbol);
+
+                this.saveState();
+
+                if (this.state.currentSymbol === symbol) {
+                    this.state.currentSymbol = 'BTCUSDT';
+                    this.initTradingView(this.state.currentSymbol);
+                }
+
+                this.renderTickerList();
+            }
+
+            flashPrice(symbol, direction) {
+                const priceElement = document.querySelector(`.ticker-item[data-symbol="${symbol}"] .ticker-price`);
+                if (priceElement) {
+                    priceElement.classList.remove('price-flash-positive', 'price-flash-negative');
+                    void priceElement.offsetWidth;
+                    priceElement.classList.add(direction === 'up' ? 'price-flash-positive' : 'price-flash-negative');
+                    setTimeout(() => {
+                        priceElement.classList.remove('price-flash-positive', 'price-flash-negative');
+                    }, 1000);
+                }
+            }
+
+            sortTickers(tickers) {
+                return [...tickers].sort((a, b) => {
+                    let result = 0;
+
+                    if (this.state.sortBy === 'name') {
+                        result = a.symbol.localeCompare(b.symbol);
+                    } else if (this.state.sortBy === 'volume') {
+                        result = a.volume - b.volume;
+                    } else if (this.state.sortBy === 'change') {
+                        result = a.change - b.change;
+                    }
+
+                    return this.state.sortDirection === 'asc' ? result : -result;
+                });
+            }
+
+            getDisplayedTickers() {
+                let filteredTickers = [...this.tickers].filter(t => t.marketType === this.state.marketType);
+
+                if (this.state.searchQuery) {
+                    const query = this.state.searchQuery.toLowerCase();
+                    filteredTickers = filteredTickers.filter(t =>
+                        t.symbol.toLowerCase().includes(query) ||
+                        t.marketType.toLowerCase().includes(query)
+                    );
+                }
+
+                if (this.state.activeTab === 'favorites') {
+                    filteredTickers = filteredTickers.filter(ticker => this.state.favorites.includes(ticker.symbol));
+                } else if (this.state.activeTab === 'custom') {
+                    filteredTickers = filteredTickers.filter(ticker => ticker.custom);
+                } else if (this.state.activeTab === 'flags') {
+                    filteredTickers = filteredTickers.filter(ticker => {
+                        const key = `${ticker.symbol}:${ticker.marketType}`;
+                        const hasFlag = this.state.flags[key];
+
+                        if (this.state.activeFlagTab === 'all') return hasFlag;
+                        return this.state.flags[key] === this.state.activeFlagTab;
+                    });
+                }
+
+                return this.sortTickers(filteredTickers);
+            }
+
+            renderTickerList() {
+                const tickerListElement = document.getElementById('tickerList');
+                const displayedTickers = this.getDisplayedTickers();
+
+                document.getElementById('flagTabs').style.display = this.state.activeTab === 'flags' ? 'flex' : 'none';
+
+                if (displayedTickers.length === 0) {
+                    tickerListElement.innerHTML = '<div class="no-results">Совпадений не найдено</div>';
+                    return;
+                }
+
+                let html = '';
+                displayedTickers.forEach((ticker, index) => {
+                    const priceFormatted = ticker.price > 0
+                        ? '$' + ticker.price.toLocaleString(undefined, {
+                            minimumFractionDigits: ticker.price < 1 ? 6 : 2,
+                            maximumFractionDigits: ticker.price < 1 ? 6 : 2
+                        })
+                        : 'Загрузка...';
+
+                    const changeFormatted = ticker.change > 0
+                        ? '+' + ticker.change.toFixed(2)
+                        : ticker.change.toFixed(2);
+
+                    const volumeFormatted = ticker.volume > 0
+                        ? '$' + (ticker.volume > 1000000
+                            ? (ticker.volume / 1000000).toFixed(2) + 'M'
+                            : (ticker.volume > 1000
+                                ? (ticker.volume / 1000).toFixed(2) + 'K'
+                                : ticker.volume.toFixed(2)))
+                        : '-';
+
+                    const priceColorClass = ticker.prevPrice > 0
+                        ? (ticker.price > ticker.prevPrice ? 'positive' :
+                           ticker.price < ticker.prevPrice ? 'negative' : '')
+                        : '';
+
+                    const marketTag = ticker.marketType === 'futures' ? 'PERPETUAL' : 'SPOT';
+                    const marketTagClass = ticker.marketType === 'futures' ? 'perpetual' : 'spot';
+
+                    const flagKey = `${ticker.symbol}:${ticker.marketType}`;
+                    const flag = this.state.flags[flagKey] || null;
+                    const flagHTML = flag ? `<div class="flag flag-${flag}"></div>` : '';
+
+                    html += `
+                        <div class="ticker-item ${ticker.symbol === this.state.currentSymbol ? 'active' : ''}"
+                             data-symbol="${ticker.symbol}"
+                             data-market-type="${ticker.marketType}"
+                             data-index="${index}"
+                             draggable="true">
+                            <div class="ticker-info">
+                                <div class="ticker-name">
+                                    ${flagHTML}
+                                    ${ticker.symbol}
+                                    <span class="market-tag ${marketTagClass}">${marketTag}</span>
+                                </div>
+                                <div class="ticker-price ${priceColorClass}">${priceFormatted}</div>
+                            </div>
+                            <div class="action-icons">
+                                <span class="${ticker.change >= 0 ? 'positive' : 'negative'}" data-clickable="true">
+                                    ${changeFormatted}%
+                                </span>
+                                <span title="Объем: ${volumeFormatted}" data-clickable="true">${volumeFormatted}</span>
+                                <span class="star" data-symbol="${ticker.symbol}" title="Добавить в избранное">
+                                    ${this.state.favorites.includes(ticker.symbol) ? '★' : '☆'}
+                                </span>
+                                <span class="remove-btn" data-symbol="${ticker.symbol}" title="Удалить пару">×</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                tickerListElement.innerHTML = html;
+                this.setupTickerItemEvents();
+                this.setupFlagContextMenu();
+            }
+
+            setupFlagContextMenu() {
+                const contextMenu = document.getElementById('flagContextMenu');
+
+                document.querySelectorAll('.ticker-item').forEach(item => {
+                    item.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        const symbol = item.dataset.symbol;
+                        const marketType = item.dataset.marketType;
+
+                        contextMenu.style.display = 'block';
+                        contextMenu.style.left = `${e.pageX}px`;
+                        contextMenu.style.top = `${e.pageY}px`;
+                        contextMenu.dataset.symbol = symbol;
+                        contextMenu.dataset.marketType = marketType;
+                    });
+                });
+
+                document.addEventListener('click', () => {
+                    contextMenu.style.display = 'none';
+                });
+
+                document.querySelectorAll('.context-menu-item').forEach(menuItem => {
+                    menuItem.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const symbol = contextMenu.dataset.symbol;
+                        const marketType = contextMenu.dataset.marketType;
+                        const flag = menuItem.dataset.flag;
+
+                        if (symbol && marketType) {
+                            const key = `${symbol}:${marketType}`;
+
+                            if (flag === 'none') {
+                                delete this.state.flags[key];
+                            } else {
+                                this.state.flags[key] = flag;
+                            }
+
+                            this.saveState();
+
+                            const ticker = this.tickers.find(t => t.symbol === symbol && t.marketType === marketType);
+                            if (ticker) {
+                                ticker.flag = flag === 'none' ? null : flag;
+                            }
+
+                            this.renderTickerList();
+                        }
+
+                        contextMenu.style.display = 'none';
+                    });
+                });
+            }
+
+            setupDragAndDrop() {
+                const container = document.querySelector('.ticker-list-container');
+                let draggedItem = null;
+                let draggedIndex = 0;
+
+                container.addEventListener('dragstart', e => {
+                    if (!e.target.classList.contains('ticker-item')) return;
+
+                    draggedItem = e.target;
+                    draggedIndex = [...container.children].indexOf(draggedItem);
+                    draggedItem.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', draggedItem.dataset.symbol);
+                });
+
+                container.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    if (!draggedItem) return;
+
+                    const afterElement = this.getDragAfterElement(container, e.clientY);
+                    container.querySelectorAll('.drag-over').forEach(item => {
+                        item.classList.remove('drag-over');
+                    });
+
+                    if (afterElement) {
+                        afterElement.classList.add('drag-over');
+                    }
+                });
+
+                container.addEventListener('dragleave', e => {
+                    if (e.target.classList.contains('ticker-item')) {
+                        e.target.classList.remove('drag-over');
+                    }
+                });
+
+                container.addEventListener('dragend', () => {
+                    container.querySelectorAll('.ticker-item').forEach(item => {
+                        item.classList.remove('dragging', 'drag-over');
+                    });
+                    draggedItem = null;
+                });
+
+                container.addEventListener('drop', e => {
+                    e.preventDefault();
+                    if (!draggedItem) return;
+
+                    const afterElement = this.getDragAfterElement(container, e.clientY);
+                    const dropIndex = afterElement
+                        ? [...container.children].indexOf(afterElement)
+                        : container.children.length;
+
+                    if (draggedIndex === dropIndex) return;
+
+                    const draggedSymbol = draggedItem.dataset.symbol;
+                    const tickerIndex = this.tickers.findIndex(t => t.symbol === draggedSymbol && t.marketType === this.state.marketType);
+                    const [movedTicker] = this.tickers.splice(tickerIndex, 1);
+
+                    const newIndex = afterElement
+                        ? this.tickers.findIndex(t => t.symbol === afterElement.dataset.symbol && t.marketType === this.state.marketType)
+                        : this.tickers.length;
+
+                    this.tickers.splice(newIndex, 0, movedTicker);
+
+                    this.updateSpecialLists();
+                    this.saveState();
+                    this.renderTickerList();
+                });
+            }
+
+            getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('.ticker-item:not(.dragging)')];
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+
+            updateSpecialLists() {
+                if (this.state.activeTab === 'favorites') {
+                    this.state.favorites = this.tickers
+                        .filter(t => this.state.favorites.includes(t.symbol))
+                        .map(t => t.symbol);
+                } else if (this.state.activeTab === 'custom') {
+                    this.state.customSymbols = this.tickers
+                        .filter(t => t.custom)
+                        .map(t => t.symbol);
+                }
+            }
+
+            saveState() {
+                localStorage.setItem('favorites', JSON.stringify(this.state.favorites));
+                localStorage.setItem('customSymbols', JSON.stringify(this.state.customSymbols));
+                localStorage.setItem('flags', JSON.stringify(this.state.flags));
+                localStorage.setItem('chartSettings', JSON.stringify(this.state.chartSettings));
+                localStorage.setItem('marketType', this.state.marketType);
+            }
+
+            setupTickerItemEvents() {
+                document.querySelectorAll('.ticker-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        if (e.target.hasAttribute('data-clickable') && e.target.getAttribute('data-clickable') === 'true') {
+                            const symbol = item.dataset.symbol;
+                            if (symbol !== this.state.currentSymbol) {
+                                this.state.currentSymbol = symbol;
+                                this.initTradingView(symbol);
+                                this.renderTickerList();
+                            }
+                            return;
+                        }
+
+                        if (e.target.classList.contains('star') ||
+                            e.target.classList.contains('remove-btn')) return;
+
+                        const symbol = item.dataset.symbol;
+                        if (symbol !== this.state.currentSymbol) {
+                            this.state.currentSymbol = symbol;
+                            this.initTradingView(symbol);
+                            this.renderTickerList();
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.star').forEach(star => {
+                    star.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const symbol = star.dataset.symbol;
+                        const index = this.state.favorites.indexOf(symbol);
+                        if (index === -1) {
+                            this.state.favorites.push(symbol);
+                        } else {
+                            this.state.favorites.splice(index, 1);
+                        }
+                        this.saveState();
+                        this.renderTickerList();
+                    });
+                });
+
+                document.querySelectorAll('.remove-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const symbol = btn.dataset.symbol;
+                        if (confirm(`Удалить ${symbol} из списка?`)) {
+                            this.removeSymbol(symbol);
+                        }
+                    });
+                });
+            }
+
+            setupUIEventListeners() {
+                document.querySelectorAll('.market-type-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.market-type-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.state.marketType = btn.dataset.market;
+                        this.state.wsReconnectAttempts = 0;
+                        this.initializeTickers();
+                        this.connectWebSocket();
+                        this.initTradingView(this.state.currentSymbol);
+                        this.renderTickerList();
+                        this.saveState();
+                    });
+                });
+
+                document.querySelectorAll('.tab[data-tab]').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        document.querySelectorAll('.tab[data-tab]').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        this.state.activeTab = tab.dataset.tab;
+
+                        if (this.state.activeTab !== 'flags') {
+                            this.state.activeFlagTab = 'all';
+                            document.querySelectorAll('.tab[data-flag]').forEach(t => {
+                                t.classList.remove('active');
+                                if (t.dataset.flag === 'all') t.classList.add('active');
+                            });
+                        }
+
+                        this.renderTickerList();
+                    });
+                });
+
+                document.querySelectorAll('.tab[data-flag]').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        if (this.state.activeTab !== 'flags') return;
+
+                        document.querySelectorAll('.tab[data-flag]').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        this.state.activeFlagTab = tab.dataset.flag;
+                        this.renderTickerList();
+                    });
+                });
+
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.state.searchQuery = e.target.value.trim().toLowerCase();
+                    this.renderTickerList();
+                });
+
+                document.getElementById('addSymbolBtn').addEventListener('click', () => {
+                    const symbol = document.getElementById('addSymbolInput').value;
+                    if (this.addSymbol(symbol)) {
+                        document.getElementById('addSymbolInput').value = '';
+                        document.getElementById('autocompleteList').innerHTML = '';
+                        this.renderTickerList();
+                    }
+                });
+
+                document.getElementById('addSymbolInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const symbol = document.getElementById('addSymbolInput').value;
+                        if (this.addSymbol(symbol)) {
+                            document.getElementById('addSymbolInput').value = '';
+                            document.getElementById('autocompleteList').innerHTML = '';
+                            this.renderTickerList();
+                        }
+                    }
+                });
+
+                const modal = document.getElementById('multipleSymbolsModal');
+                const closeModalBtns = document.querySelectorAll('.close-modal');
+                const addMultipleBtn = document.getElementById('addMultipleBtn');
+                const addMultipleSymbolsBtn = document.getElementById('addMultipleSymbolsBtn');
+                const symbolsTextarea = document.getElementById('symbolsTextarea');
+                const symbolsFileInput = document.getElementById('symbolsFile');
+                const fileNameElement = document.getElementById('fileName');
+
+                addMultipleBtn.addEventListener('click', () => {
+                    modal.style.display = 'flex';
+                    symbolsTextarea.value = '';
+                    fileNameElement.textContent = '';
+                });
+
+                closeModalBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        modal.style.display = 'none';
+                    });
+                });
+
+                symbolsFileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    fileNameElement.textContent = file.name;
+
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const fileContent = event.target.result;
+                        const symbols = fileContent.split(/[\s,\n]+/)
+                            .map(s => s.trim().toUpperCase())
+                            .filter(s => s !== '' && s.endsWith('USDT'));
+
+                        const newSymbols = symbols.filter(symbol =>
+                            !this.tickers.some(t => t.symbol === symbol && t.marketType === this.state.marketType)
+                        );
+
+                        symbolsTextarea.value = newSymbols.join('\n');
+
+                        if (symbols.length - newSymbols.length > 0) {
+                            alert(`Найдено ${symbols.length - newSymbols.length} дубликатов, которые были исключены`);
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+
+                addMultipleSymbolsBtn.addEventListener('click', () => {
+                    const text = symbolsTextarea.value.trim();
+                    if (!text) {
+                        alert('Введите символы или загрузите файл');
+                        return;
+                    }
+
+                    const symbols = text.split(/[\s,\n]+/)
+                        .map(s => s.trim().toUpperCase())
+                        .filter(s => s !== '' && s.endsWith('USDT'));
+
+                    let addedCount = 0;
+                    let duplicates = 0;
+                    let invalid = 0;
+
+                    symbols.forEach(symbol => {
+                        try {
+                            if (this.tickers.some(t => t.symbol === symbol && t.marketType === this.state.marketType)) {
+                                duplicates++;
+                                return;
+                            }
+
+                            if (!symbol || symbol.length < 3) {
+                                invalid++;
+                                return;
+                            }
+
+                            if (this.addSymbol(symbol)) {
+                                addedCount++;
+                            }
+                        } catch (e) {
+                            invalid++;
+                        }
+                    });
+
+                    this.renderTickerList();
+                    modal.style.display = 'none';
+
+                    alert(`Результат добавления:\n\nДобавлено: ${addedCount}\nДубликаты: ${duplicates}\nНекорректные: ${invalid}`);
+                });
+
+                document.getElementById('removeAllCustomBtn').addEventListener('click', () => {
+                    if (confirm('Удалить все пользовательские символы?')) {
+                        this.tickers = this.tickers.filter(t => !t.custom || t.marketType !== this.state.marketType);
+                        this.state.customSymbols = [];
+                        this.saveState();
+                        this.renderTickerList();
+                    }
+                });
+
+                this.setupAutocomplete();
+            }
+
+            setupAutocomplete() {
+                const input = document.getElementById("addSymbolInput");
+                const container = document.getElementById("autocompleteList");
+                let currentFocus = -1;
+
+                input.addEventListener("input", async (e) => {
+                    const val = input.value.toUpperCase().trim();
+                    container.innerHTML = "";
+
+                    if (val.length === 0) return;
+
+                    if (this.allSymbolsCache.length === 0) {
+                        await this.fetchAllSymbols();
+                    }
+
+                    const [symbolPart, marketTypePart] = val.split(' ');
+                    const marketTypeFilter = marketTypePart ? marketTypePart.toLowerCase() : null;
+
+                    const filteredSymbols = this.allSymbolsCache.filter(s => {
+                        const symbolMatch = s.symbol.includes(symbolPart) ||
+                                          s.baseAsset.includes(symbolPart) ||
+                                          s.quoteAsset.includes(symbolPart);
+
+                        const marketMatch = !marketTypeFilter ||
+                                          s.marketType === marketTypeFilter;
+
+                        return symbolMatch && marketMatch &&
+                               !this.tickers.some(t => t.symbol === s.symbol && t.marketType === this.state.marketType);
+                    }).slice(0, 15);
+
+                    filteredSymbols.sort((a, b) => {
+                        const aExact = a.symbol.startsWith(symbolPart) ? 1 : 0;
+                        const bExact = b.symbol.startsWith(symbolPart) ? 1 : 0;
+                        return bExact - aExact || a.symbol.localeCompare(b.symbol);
+                    });
+
+                    if (filteredSymbols.length === 0) {
+                        container.innerHTML = '<div>Совпадений не найдено</div>';
+                        return;
+                    }
+
+                    filteredSymbols.forEach(symbolData => {
+                        const item = document.createElement("div");
+                        item.innerHTML = `
+                            <span class="autocomplete-symbol">${symbolData.symbol}</span>
+                            <span class="autocomplete-market">
+                                ${symbolData.marketType === 'futures' ? 'Futures' : 'Spot'}
+                            </span>
+                        `;
+
+                        item.addEventListener("click", () => {
+                            input.value = symbolData.symbol;
+                            container.innerHTML = "";
+                        });
+
+                        container.appendChild(item);
+                    });
+                });
+
+                input.addEventListener("keydown", (e) => {
+                    const items = container.getElementsByTagName("div");
+                    if (e.keyCode === 40) {
+                        currentFocus++;
+                        this.addActive(items);
+                    } else if (e.keyCode === 38) {
+                        currentFocus--;
+                        this.addActive(items);
+                    } else if (e.keyCode === 13) {
+                        e.preventDefault();
+                        if (currentFocus > -1 && items.length > 0) {
+                            if (items) items[currentFocus].click();
+                        } else if (input.value.trim().length > 0) {
+                            document.getElementById("addSymbolBtn").click();
+                        }
+                    }
+                });
+
+                document.addEventListener("click", (e) => {
+                    if (e.target !== input && e.target !== container) {
+                        container.innerHTML = "";
+                    }
+                });
+            }
+
+            addActive(items) {
+                if (!items || items.length === 0) return false;
+                this.removeActive(items);
+                if (currentFocus >= items.length) currentFocus = 0;
+                if (currentFocus < 0) currentFocus = (items.length - 1);
+                items[currentFocus].classList.add("autocomplete-active");
+            }
+
+            removeActive(items) {
+                for (let i = 0; i < items.length; i++) {
+                    items[i].classList.remove("autocomplete-active");
+                }
+            }
+        }
+    </script>
+</body>
+</html>
