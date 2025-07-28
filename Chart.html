@@ -40,9 +40,103 @@
             font-weight: 400;
         }
 
+        /* Menu styles */
+        nav {
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            height: 64px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-container i {
+            font-size: 1.5rem;
+            color: var(--accent-blue);
+            margin-right: 8px;
+        }
+
+        .logo-container span {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .menu-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .menu-button {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+
+        .menu-button:hover {
+            background-color: var(--hover-color);
+        }
+
+        .menu-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: var(--bg-secondary);
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 5px 0;
+        }
+
+        .menu-content.show {
+            display: block;
+        }
+
+        .menu-item {
+            color: var(--text-primary);
+            padding: 8px 16px;
+            text-decoration: none;
+            display: block;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: var(--hover-color);
+        }
+
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .menu-divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 5px 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
         .container {
             display: flex;
-            height: 100vh;
+            height: calc(100vh - 64px);
             flex-direction: row;
         }
 
@@ -732,9 +826,88 @@
             color: var(--text-primary);
             font-family: 'JetBrains Mono', monospace;
         }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+        }
+
+        .user-name {
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
+    <!-- Navigation Menu -->
+    <nav>
+        <div class="logo-container">
+            <i class="fas fa-chart-line"></i>
+            <span>Binance Dashboard</span>
+        </div>
+        
+        <div class="user-controls">
+            <div class="menu-container">
+                <button class="menu-button" id="menuButton">
+                    <i class="fas fa-bars mr-2"></i>Меню
+                </button>
+                <div class="menu-content" id="menuContent">
+                    <a href="index.html" class="menu-item">
+                        <i class="fas fa-home mr-2"></i>Главная
+                    </a>
+                    <a href="calculator.html" class="menu-item">
+                        <i class="fas fa-calculator mr-2"></i>Калькулятор
+                    </a>
+                    <a href="Chart.html" class="menu-item">
+                        <i class="fas fa-bell mr-2"></i>График
+                    </a>
+                    <a href="widget.html" class="menu-item">
+                        <i class="fas fa-chart-line mr-2"></i>Виджет
+                    </a>
+                    <div class="menu-divider"></div>
+                    <a href="#" class="menu-item" onclick="showLoginForm()" id="loginMenuItem">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Вход
+                    </a>
+                    <a href="#" class="menu-item" onclick="showRegisterForm()" id="registerMenuItem">
+                        <i class="fas fa-user-plus mr-2"></i>Регистрация
+                    </a>
+                    <a href="#" class="menu-item hidden" onclick="handleLogout()" id="logoutMenuItem">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Выход
+                    </a>
+                    <div class="menu-divider"></div>
+                    <a href="#" class="menu-item" onclick="showTelegramSettings()">
+                        <i class="fab fa-telegram mr-2"></i>Настройки Telegram
+                    </a>
+                </div>
+            </div>
+            
+            <div class="user-profile hidden" id="userProfileBtn">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <span class="user-name">Гость</span>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="chart-container">
             <div id="tradingview-chart" class="chart"></div>
@@ -876,7 +1049,58 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Параллельная загрузка данных и скрипта TradingView
             loadTradingView();
+            
+            // Инициализация меню
+            initMenu();
         });
+
+        // Функции для работы с меню
+        function toggleMenu() {
+            const menuContent = document.getElementById('menuContent');
+            if (menuContent) {
+                menuContent.classList.toggle('show');
+            }
+        }
+
+        function showLoginForm() {
+            toggleMenu();
+            alert('Функция входа будет реализована позже');
+        }
+
+        function showRegisterForm() {
+            toggleMenu();
+            alert('Функция регистрации будет реализована позже');
+        }
+
+        function handleLogout() {
+            toggleMenu();
+            alert('Функция выхода будет реализована позже');
+        }
+
+        function showTelegramSettings() {
+            toggleMenu();
+            alert('Настройки Telegram будут реализованы позже');
+        }
+
+        function initMenu() {
+            // Обработчик для кнопки меню
+            const menuButton = document.getElementById('menuButton');
+            if (menuButton) {
+                menuButton.addEventListener('click', toggleMenu);
+            }
+
+            // Закрываем меню при клике вне его
+            window.addEventListener('click', function(event) {
+                const menuContent = document.getElementById('menuContent');
+                const menuButton = document.getElementById('menuButton');
+
+                if (menuContent && menuButton &&
+                    !menuContent.contains(event.target) &&
+                    !menuButton.contains(event.target)) {
+                    menuContent.classList.remove('show');
+                }
+            });
+        }
 
         class BinanceDashboard {
             constructor() {
