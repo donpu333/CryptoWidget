@@ -854,6 +854,26 @@
         .user-name {
             font-size: 0.9em;
         }
+
+        /* Notes styles */
+        .notes-icon {
+            cursor: pointer;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .notes-icon:hover {
+            color: var(--accent-blue);
+        }
+
+        .notes-icon .has-notes {
+            color: #FFD700;
+        }
+
+        .notes-icon i {
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -950,6 +970,7 @@
         </div>
     </div>
 
+    <!-- Multiple Symbols Modal -->
     <div class="modal" id="multipleSymbolsModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -982,6 +1003,24 @@
         </div>
     </div>
 
+    <!-- Notes Modal -->
+    <div class="modal" id="notesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Заметки для <span id="notesSymbol"></span></div>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <textarea class="modal-textarea" id="notesTextarea" placeholder="Введите ваши заметки здесь..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn close-modal">Отмена</button>
+                <button class="modal-btn primary" id="saveNotesBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu for Flags -->
     <div class="context-menu" id="flagContextMenu">
         <div class="context-menu-item" data-flag="red">
             <div class="flag flag-red"></div>
@@ -1108,6 +1147,7 @@
                     favorites: JSON.parse(localStorage.getItem('favorites')) || [],
                     customSymbols: JSON.parse(localStorage.getItem('customSymbols')) || [],
                     flags: JSON.parse(localStorage.getItem('flags')) || {},
+                    notes: JSON.parse(localStorage.getItem('notes')) || {},
                     activeTab: 'all',
                     activeFlagTab: 'all',
                     currentSymbol: 'BTCUSDT',
@@ -1162,6 +1202,7 @@
                     this.renderTickerList();
                     this.setupUIEventListeners();
                     this.setupDragAndDrop();
+                    this.setupNotesFunctionality();
                 } catch (error) {
                     console.error("Ошибка инициализации данных:", error);
                     // Повторная попытка через 5 секунд
@@ -1370,6 +1411,7 @@
                 const allSymbolsMap = {};
 
                 defaultSymbols.forEach(symbol => {
+                    const key = `${symbol}:${this.state.marketType}`;
                     allSymbolsMap[symbol] = {
                         symbol,
                         price: 0,
@@ -1379,12 +1421,14 @@
                         prevPrice: 0,
                         priceFlash: null,
                         marketType: this.state.marketType,
-                        flag: this.state.flags[`${symbol}:${this.state.marketType}`] || null
+                        flag: this.state.flags[key] || null,
+                        notes: !!this.state.notes[key]
                     };
                 });
 
                 this.state.customSymbols.forEach(symbol => {
                     if (!allSymbolsMap[symbol]) {
+                        const key = `${symbol}:${this.state.marketType}`;
                         allSymbolsMap[symbol] = {
                             symbol,
                             price: 0,
@@ -1394,7 +1438,8 @@
                             prevPrice: 0,
                             priceFlash: null,
                             marketType: this.state.marketType,
-                            flag: this.state.flags[`${symbol}:${this.state.marketType}`] || null
+                            flag: this.state.flags[key] || null,
+                            notes: !!this.state.notes[key]
                         };
                     }
                 });
@@ -1414,6 +1459,7 @@
                     return false;
                 }
 
+                const key = `${symbol}:${this.state.marketType}`;
                 const newTicker = {
                     symbol,
                     price: 0,
@@ -1423,7 +1469,8 @@
                     prevPrice: 0,
                     priceFlash: null,
                     marketType: this.state.marketType,
-                    flag: null
+                    flag: this.state.flags[key] || null,
+                    notes: !!this.state.notes[key]
                 };
 
                 this.tickers.push(newTicker);
@@ -1439,6 +1486,7 @@
             removeSymbol(symbol) {
                 const key = `${symbol}:${this.state.marketType}`;
                 delete this.state.flags[key];
+                delete this.state.notes[key];
 
                 this.tickers = this.tickers.filter(t => t.symbol !== symbol || t.marketType !== this.state.marketType);
                 this.state.customSymbols = this.state.customSymbols.filter(s => s !== symbol);
@@ -1573,6 +1621,9 @@
                                     ${changeFormatted}%
                                 </span>
                                 <span title="Объем: ${volumeFormatted}" data-clickable="true">${volumeFormatted}</span>
+                                <span class="notes-icon" data-symbol="${ticker.symbol}" title="Заметки">
+                                    <i class="fas fa-sticky-note ${ticker.notes ? 'has-notes' : ''}"></i>
+                                </span>
                                 <span class="star" data-symbol="${ticker.symbol}" title="Добавить в избранное">
                                     ${this.state.favorites.includes(ticker.symbol) ? '★' : '☆'}
                                 </span>
@@ -1585,6 +1636,67 @@
                 tickerListElement.innerHTML = html;
                 this.setupTickerItemEvents();
                 this.setupFlagContextMenu();
+                this.setupNotesFunctionality();
+            }
+
+            setupNotesFunctionality() {
+                const notesModal = document.getElementById('notesModal');
+                const notesTextarea = document.getElementById('notesTextarea');
+                const notesSymbol = document.getElementById('notesSymbol');
+                const saveNotesBtn = document.getElementById('saveNotesBtn');
+                const closeModalBtns = document.querySelectorAll('.close-modal');
+
+                document.querySelectorAll('.notes-icon').forEach(icon => {
+                    icon.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const symbol = icon.dataset.symbol;
+                        const marketType = icon.closest('.ticker-item').dataset.marketType;
+                        const key = `${symbol}:${marketType}`;
+                        
+                        notesSymbol.textContent = symbol;
+                        notesTextarea.value = this.state.notes[key] || '';
+                        notesModal.dataset.symbol = symbol;
+                        notesModal.dataset.marketType = marketType;
+                        notesModal.style.display = 'flex';
+                    });
+                });
+
+                saveNotesBtn.addEventListener('click', () => {
+                    const symbol = notesModal.dataset.symbol;
+                    const marketType = notesModal.dataset.marketType;
+                    const key = `${symbol}:${marketType}`;
+                    
+                    if (notesTextarea.value.trim()) {
+                        this.state.notes[key] = notesTextarea.value.trim();
+                        
+                        // Обновляем иконку заметки
+                        const ticker = this.tickers.find(t => 
+                            t.symbol === symbol && t.marketType === marketType
+                        );
+                        if (ticker) {
+                            ticker.notes = true;
+                        }
+                    } else {
+                        delete this.state.notes[key];
+                        
+                        const ticker = this.tickers.find(t => 
+                            t.symbol === symbol && t.marketType === marketType
+                        );
+                        if (ticker) {
+                            ticker.notes = false;
+                        }
+                    }
+                    
+                    this.saveState();
+                    this.renderTickerList();
+                    notesModal.style.display = 'none';
+                });
+
+                closeModalBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        notesModal.style.display = 'none';
+                    });
+                });
             }
 
             setupFlagContextMenu() {
@@ -1736,6 +1848,7 @@
                 localStorage.setItem('favorites', JSON.stringify(this.state.favorites));
                 localStorage.setItem('customSymbols', JSON.stringify(this.state.customSymbols));
                 localStorage.setItem('flags', JSON.stringify(this.state.flags));
+                localStorage.setItem('notes', JSON.stringify(this.state.notes));
                 localStorage.setItem('chartSettings', JSON.stringify(this.state.chartSettings));
                 localStorage.setItem('marketType', this.state.marketType);
             }
@@ -1754,7 +1867,9 @@
                         }
 
                         if (e.target.classList.contains('star') ||
-                            e.target.classList.contains('remove-btn')) return;
+                            e.target.classList.contains('remove-btn') ||
+                            e.target.classList.contains('notes-icon') ||
+                            e.target.closest('.notes-icon')) return;
 
                         const symbol = item.dataset.symbol;
                         if (symbol !== this.state.currentSymbol) {
@@ -2059,4 +2174,4 @@
         }
     </script>
 </body>
-</html>
+</html> можно ли сделать чтоб виджет трейдигвью присваивался каждому тикеру  и не обновлялся и не открывался новый чтобы все элементы рисования оставались  и сохранялись
