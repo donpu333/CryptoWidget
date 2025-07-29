@@ -911,13 +911,21 @@ function hideError(element) {
 function openTradingViewChart(ticker, listType) {
     currentTicker = ticker;
     currentListType = listType;
+    
+    const tickerData = tickersData[listType][ticker];
+    let displayTicker = ticker;
+    
+    // Если это фьючерс, добавляем .P к тикеру
+    if (tickerData.marketType === 'futures') {
+        displayTicker = ticker + '.P';
+    }
 
-    document.getElementById('chartModalTitle').textContent = ticker;
+    document.getElementById('chartModalTitle').textContent = displayTicker;
     document.getElementById('chartModal').style.display = 'flex';
     document.getElementById('chartError').classList.add('hidden');
 
     // Загружаем виджет TradingView
-    loadTradingViewWidget(ticker);
+    loadTradingViewWidget(displayTicker);
 }
 
 function loadTradingViewWidget(ticker) {
@@ -929,11 +937,9 @@ function loadTradingViewWidget(ticker) {
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
     script.async = true;
     script.onload = () => {
-        // Виджет загружен успешно
         document.getElementById('chartError').classList.add('hidden');
     };
     script.onerror = () => {
-        // Ошибка загрузки виджета
         document.getElementById('chartError').classList.remove('hidden');
     };
 
@@ -964,7 +970,6 @@ function loadTradingViewWidget(ticker) {
 
     widgetContainer.appendChild(script);
 }
-
 function closeChartModal() {
     document.getElementById('chartModal').style.display = 'none';
 }
