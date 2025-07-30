@@ -1308,17 +1308,17 @@
             const stopMethodName = stopMethod === 'atr' ? 'По ATR' : 'По цене';
 
             // Рассчитываем стоп-лосс
-            let stopLossPrice;
+            let stopLossPrice, priceDifference;
             if (stopMethod === 'atr') {
-                const atrDifference = atr * (riskPercent / 100);
-                stopLossPrice = isLong ? entryPrice - atrDifference : entryPrice + atrDifference;
+                priceDifference = atr * (riskPercent / 100);
+                stopLossPrice = isLong ? entryPrice - priceDifference : entryPrice + priceDifference;
             } else {
+                priceDifference = Math.abs(entryPrice - stopLossPriceDirect);
                 stopLossPrice = stopLossPriceDirect;
             }
 
             // Рассчитываем размер позиции
-            const priceDifference = Math.abs(entryPrice - stopLossPrice);
-            const positionSize = riskAmount / (priceDifference * (1 + exchangeFee * 2 / 100));
+            const positionSize = priceDifference > 0 ? riskAmount / priceDifference : 0;
 
             // Рассчитываем тейк-профиты
             const takeProfit1 = isLong ? 
@@ -1334,6 +1334,18 @@
             const takeProfit1Percent = calculatePercentageChange(entryPrice, takeProfit1);
             const takeProfit2Percent = calculatePercentageChange(entryPrice, takeProfit2);
 
+            // Рассчитываем цену ликвидации
+            const liquidationPrice = isLong ? 
+                entryPrice * (1 - 1/leverage) : 
+                entryPrice * (1 + 1/leverage);
+            const liquidationPricePercent = calculatePercentageChange(entryPrice, liquidationPrice);
+
+            // Рассчитываем комиссии
+            const entryFee = entryPrice * positionSize * (exchangeFee / 100);
+            const exitFee1 = takeProfit1 * positionSize * (exchangeFee / 100);
+            const exitFee2 = takeProfit2 * positionSize * (exchangeFee / 100);
+            const totalFee = entryFee + exitFee1 + exitFee2;
+
             // Форматируем текст
             const text = `Дата: ${new Date().toLocaleString()}
 ===============================
@@ -1345,13 +1357,16 @@ ATR: ${formatNumber(atr, 8)} USDT
 Риск стоп-лосс: ${riskPercent}% от ATR
 Риск на сделку: ${formatNumber(riskAmount, 8)} USDT
 Соотношение тейк-профита: 1:${rewardRatio1} и 1:${rewardRatio2}
+Комиссия биржи: ${exchangeFee}%
 Результаты:
 ===============================
 Цена входа: ${formatNumber(entryPrice, 8)} USDT
 Размер позиции: ${formatNumber(positionSize, 8)}
 Стоп-лосс: ${formatNumber(stopLossPrice, 8)} USDT (${stopLossPercent}%)
-Тейк-профит 1к${rewardRatio1} ${formatNumber(takeProfit1, 8)} USDT (${takeProfit1Percent}%) +${rewardRatio1 * 100}
-Тейк-профит 1к${rewardRatio2} ${formatNumber(takeProfit2, 8)} USDT (${takeProfit2Percent}%) +${rewardRatio2 * 100}`;
+Тейк-профит 1к${rewardRatio1}: ${formatNumber(takeProfit1, 8)} USDT (${takeProfit1Percent}%)
+Тейк-профит 1к${rewardRatio2}: ${formatNumber(takeProfit2, 8)} USDT (${takeProfit2Percent}%)
+Цена ликвидации: ${formatNumber(liquidationPrice, 8)} USDT (${liquidationPricePercent}%)
+Комиссии: ${formatNumber(totalFee, 8)} USDT (вход: ${formatNumber(entryFee, 8)}, выход: ${formatNumber(exitFee1 + exitFee2, 8)})`;
 
             return text;
         }
@@ -1885,17 +1900,6 @@ ATR: ${formatNumber(atr, 8)} USDT
                 atrResultSpan.textContent = formatNumber(atr, 8) + ' USDT';
             }
 
-            // Расчет цены ликвидации
-            function calculateLiquidationPrice(entryPrice, leverage, isLong) {
-                if (leverage <= 1) return isLong ? 0 : Infinity;
-                
-                if (isLong) {
-                    return Math.max(0, entryPrice * (1 - (1 / leverage)));
-                } else {
-                    return entryPrice * (1 + (1 / leverage));
-                }
-            }
-
             // Основная функция расчета
             function calculateRisk() {
                 const entryPrice = parseFloat(entryPriceInput.value) || 0;
@@ -1908,65 +1912,62 @@ ATR: ${formatNumber(atr, 8)} USDT
                 const stopLossPriceDirect = parseFloat(stopLossPriceInput.value) || 0;
                 const exchangeFee = parseFloat(exchangeFeeInput.value) / 100 || 0.0005; // 0.0500%
 
-                // Расчет стоп-лосса с учетом комиссии
-                let stopLossPrice;
+                // 1. Расчет разницы цен для стоп-лосса
                 let priceDifference;
-                
                 if (stopMethod === 'atr') {
-                    // Рассчитываем разницу цен для стоп-лосса с учетом комиссии
-                    // riskAmount = priceDifference * positionSize * (1 + exchangeFee*2)
-                    // positionSize = riskAmount / (priceDifference * (1 + exchangeFee*2))
-                    // Для метода ATR сначала получаем разницу цен без учета комиссии
-                    const atrDifference = atr * riskPercent;
-                    priceDifference = riskAmount / (riskAmount / atrDifference * (1 + exchangeFee * 2));
-                    
-                    if (isLong) {
-                        stopLossPrice = entryPrice - priceDifference;
-                    } else {
-                        stopLossPrice = entryPrice + priceDifference;
-                    }
+                    priceDifference = atr * riskPercent;
                 } else {
                     if (stopLossPriceDirect > 0) {
                         if ((isLong && stopLossPriceDirect < entryPrice) ||
                             (!isLong && stopLossPriceDirect > entryPrice)) {
                             priceDifference = Math.abs(entryPrice - stopLossPriceDirect);
-                            stopLossPrice = stopLossPriceDirect;
                         } else {
                             // Некорректная цена стоп-лосса - используем расчет через ATR
-                            const atrDifference = atr * riskPercent;
-                            priceDifference = riskAmount / (riskAmount / atrDifference * (1 + exchangeFee * 2));
-                            
-                            if (isLong) {
-                                stopLossPrice = entryPrice - priceDifference;
-                            } else {
-                                stopLossPrice = entryPrice + priceDifference;
-                            }
-                            // Обновляем поле ввода
-                            stopLossPriceInput.value = formatNumber(stopLossPrice, 8);
+                            priceDifference = atr * riskPercent;
+                            stopLossPriceInput.value = formatNumber(
+                                isLong ? entryPrice - priceDifference : entryPrice + priceDifference, 
+                                8
+                            );
                         }
                     } else {
                         // Если цена стоп-лосса не введена, используем расчет через ATR
-                        const atrDifference = atr * riskPercent;
-                        priceDifference = riskAmount / (riskAmount / atrDifference * (1 + exchangeFee * 2));
-                        
-                        if (isLong) {
-                            stopLossPrice = entryPrice - priceDifference;
-                        } else {
-                            stopLossPrice = entryPrice + priceDifference;
-                        }
+                        priceDifference = atr * riskPercent;
                     }
                 }
 
-                // Расчет размера позиции с учетом комиссии
+                // 2. Расчет стоп-лосса
+                const stopLossPrice = isLong ? 
+                    entryPrice - priceDifference : 
+                    entryPrice + priceDifference;
+
+                // 3. Расчет размера позиции
                 const positionSize = priceDifference > 0 ? 
-                    (riskAmount / (priceDifference * (1 + exchangeFee * 2))) : 0;
+                    riskAmount / priceDifference : 0;
 
-                // Расчет цены ликвидации
-                const liquidationPrice = calculateLiquidationPrice(entryPrice, leverage, isLong);
+                // 4. Расчет тейк-профитов
+                const takeProfit1 = isLong ? 
+                    entryPrice + priceDifference * rewardRatio1 : 
+                    entryPrice - priceDifference * rewardRatio1;
+                
+                const takeProfit2 = isLong ? 
+                    entryPrice + priceDifference * rewardRatio2 : 
+                    entryPrice - priceDifference * rewardRatio2;
 
-                // Расчет процентных изменений
+                // 5. Расчет цены ликвидации
+                const liquidationPrice = isLong ? 
+                    entryPrice * (1 - 1/leverage) : 
+                    entryPrice * (1 + 1/leverage);
+
+                // 6. Расчет процентных изменений
                 const stopLossPercent = calculatePercentageChange(entryPrice, stopLossPrice);
+                const takeProfit1Percent = calculatePercentageChange(entryPrice, takeProfit1);
+                const takeProfit2Percent = calculatePercentageChange(entryPrice, takeProfit2);
                 const liquidationPricePercent = calculatePercentageChange(entryPrice, liquidationPrice);
+
+                // 7. Расчет комиссий
+                const entryFee = entryPrice * positionSize * exchangeFee;
+                const exitFee1 = takeProfit1 * positionSize * exchangeFee;
+                const exitFee2 = takeProfit2 * positionSize * exchangeFee;
 
                 // Обновление интерфейса
                 entryPriceResult.textContent = `${formatNumber(entryPrice, 8)} USDT`;
@@ -1974,52 +1975,51 @@ ATR: ${formatNumber(atr, 8)} USDT
                 stopLossSpan.innerHTML = `${formatNumber(stopLossPrice, 8)} USDT <span class="percentage-value">(${stopLossPercent}%)</span>`;
                 liquidationPriceSpan.innerHTML = `${formatNumber(liquidationPrice, 8)} USDT <span class="percentage-value">(${liquidationPricePercent}%)</span>`;
                 exchangeFeeResult.textContent = `${formatNumber(exchangeFee * 100, 4)}%`;
+                atrResultSpan.textContent = `${formatNumber(atr, 8)} USDT`;
 
-                // Генерация уровней тейк-профита с учетом комиссии
-                generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, rewardRatio1, rewardRatio2, positionSize, exchangeFee);
+                // Генерация уровней тейк-профита
+                generateTakeProfitLevels(
+                    entryPrice, 
+                    stopLossPrice, 
+                    isLong, 
+                    rewardRatio1, 
+                    rewardRatio2, 
+                    positionSize, 
+                    exchangeFee
+                );
             }
 
-            // Генерация уровней тейк-профита с учетом комиссии
+            // Генерация уровней тейк-профита
             function generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, ratio1, ratio2, positionSize, exchangeFee) {
                 takeProfitLevelsDiv.innerHTML = '';
 
-                // Рассчитываем разницу цен для стоп-лосса (уже с учетом комиссии)
-                const stopLossDifference = Math.abs(entryPrice - stopLossPrice);
-                
-                // Чистый убыток на стоп-лоссе (учитываем комиссию за вход и выход)
-                const netLoss = stopLossDifference * positionSize * (1 + exchangeFee * 2);
-                
-                // Создаем массив уровней тейк-профита
+                const priceDifference = Math.abs(entryPrice - stopLossPrice);
                 const levels = [ratio1, ratio2];
 
                 levels.forEach(ratio => {
-                    // Целевая чистая прибыль (должна быть в ratio раз больше чистого убытка)
-                    const targetNetProfit = netLoss * ratio;
-                    
-                    // Рассчитываем необходимую разницу цен для достижения целевой прибыли
-                    // Чистая прибыль = (priceDifference * positionSize) * (1 - exchangeFee * 2)
-                    // Поэтому priceDifference = targetNetProfit / (positionSize * (1 - exchangeFee * 2))
-                    const priceDifference = targetNetProfit / (positionSize * (1 - exchangeFee * 2));
-                    
                     let takeProfitPrice;
-                    if (isLong) {
-                        takeProfitPrice = entryPrice + priceDifference;
+                    
+                    if (ratio === ratio1) {
+                        takeProfitPrice = isLong ? 
+                            entryPrice + priceDifference * ratio1 : 
+                            entryPrice - priceDifference * ratio1;
                     } else {
-                        takeProfitPrice = entryPrice - priceDifference;
+                        takeProfitPrice = isLong ? 
+                            entryPrice + priceDifference * ratio2 : 
+                            entryPrice - priceDifference * ratio2;
                     }
 
-                    // Расчет для отображения
-                    const grossProfit = priceDifference * positionSize;
-                    const fee = grossProfit * exchangeFee * 2; // Комиссия за вход и выход
-                    const netProfit = grossProfit - fee;
+                    const profitDifference = Math.abs(entryPrice - takeProfitPrice);
                     const profitPercent = calculatePercentageChange(entryPrice, takeProfitPrice);
+                    const entryFee = entryPrice * positionSize * exchangeFee;
+                    const exitFee = takeProfitPrice * positionSize * exchangeFee;
 
                     const levelDiv = document.createElement('div');
                     levelDiv.className = 'take-profit-item';
                     levelDiv.innerHTML = `
                         <span class="take-profit-ratio">Тейк-профит 1к${ratio}</span>
                         <span class="take-profit-price">${formatNumber(takeProfitPrice, 8)} USDT <span class="percentage-value">(${profitPercent}%)</span></span>
-                        <span class="take-profit-value">+${formatNumber(netProfit, 8)} USDT (комиссия: ${formatNumber(fee, 8)} USDT)</span>
+                        <span class="take-profit-value">+${formatNumber(profitDifference * positionSize, 8)} USDT (комиссия: ${formatNumber(entryFee + exitFee, 8)} USDT)</span>
                     `;
                     takeProfitLevelsDiv.appendChild(levelDiv);
                 });
