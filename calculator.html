@@ -624,6 +624,14 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             z-index: 1100;
             display: none;
+            animation: fadeInOut 3s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
         }
 
         /* Стили для раздела предпосылок */
@@ -1272,6 +1280,18 @@
         const botToken = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30';
         const chatId = '1720793889';
 
+        // Функция для показа уведомления
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.backgroundColor = type === 'success' ? '#4CAF50' : '#C62828';
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
         // Улучшенная функция для форматирования чисел
         function formatNumber(num, decimals = 8) {
             if (isNaN(num)) return '0';
@@ -1336,24 +1356,24 @@
                 riskAmount / (priceDifference * (1 + exchangeFee / 100 * 2)) : 0;
 
             // Рассчитываем тейк-профиты с учетом комиссии (чтобы чистая прибыль была 30 и 50 USDT)
+            const entryFee = entryPrice * positionSize * (exchangeFee / 100);
+            
             const takeProfit1 = isLong ? 
-                entryPrice + (30 + (entryPrice * positionSize * exchangeFee / 100) + (30 * exchangeFee / 100)) / positionSize : 
-                entryPrice - (30 + (entryPrice * positionSize * exchangeFee / 100) + (30 * exchangeFee / 100)) / positionSize;
+                entryPrice + (30 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize : 
+                entryPrice - (30 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize;
             
             const takeProfit2 = isLong ? 
-                entryPrice + (50 + (entryPrice * positionSize * exchangeFee / 100) + (50 * exchangeFee / 100)) / positionSize : 
-                entryPrice - (50 + (entryPrice * positionSize * exchangeFee / 100) + (50 * exchangeFee / 100)) / positionSize;
+                entryPrice + (50 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize : 
+                entryPrice - (50 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize;
 
             // Рассчитываем проценты
             const stopLossPercent = calculatePercentageChange(entryPrice, stopLossPrice);
             const takeProfit1Percent = calculatePercentageChange(entryPrice, takeProfit1);
             const takeProfit2Percent = calculatePercentageChange(entryPrice, takeProfit2);
 
-            // Рассчитываем комиссии
-            const entryFee = entryPrice * positionSize * (exchangeFee / 100);
-            const exitFee1 = takeProfit1 * positionSize * (exchangeFee / 100);
-            const exitFee2 = takeProfit2 * positionSize * (exchangeFee / 100);
-            const totalFee = entryFee + exitFee1 + exitFee2;
+            // Рассчитываем комиссии только для максимального тейка
+            const exitFee = takeProfit2 * positionSize * (exchangeFee / 100);
+            const totalFee = entryFee + exitFee;
 
             // Форматируем текст (без цены ликвидации)
             const text = `Дата: ${new Date().toLocaleString()}
@@ -1372,9 +1392,9 @@ ATR: ${formatNumber(atr, 8)} USDT
 Цена входа: ${formatNumber(entryPrice, 4)} USDT
 Размер позиции: ${formatNumber(positionSize, 1)}
 Стоп-лосс: ${formatNumber(stopLossPrice, 4)} USDT (${stopLossPercent}%)
-Тейк-профит 1к${rewardRatio1}: ${formatNumber(takeProfit1, 4)} USDT (${takeProfit1Percent}%)
-Тейк-профит 1к${rewardRatio2}: ${formatNumber(takeProfit2, 4)} USDT (${takeProfit2Percent}%)
-Комиссии: ${formatNumber(totalFee, 8)} USDT (вход: ${formatNumber(entryFee, 8)}, выход: ${formatNumber(exitFee1 + exitFee2, 8)})`;
+Тейк-профит 1к${rewardRatio1}: ${formatNumber(takeProfit1, 4)} USDT (${takeProfit1Percent}%) (чистая прибыль: 30.00 USDT)
+Тейк-профит 1к${rewardRatio2}: ${formatNumber(takeProfit2, 4)} USDT (${takeProfit2Percent}%) (чистая прибыль: 50.00 USDT)
+Комиссии: ${formatNumber(totalFee, 8)} USDT (вход: ${formatNumber(entryFee, 8)}, выход: ${formatNumber(exitFee, 8)})`;
 
             return text;
         }
@@ -1400,6 +1420,7 @@ ATR: ${formatNumber(atr, 8)} USDT
             a.download = 'расчет_рисков.txt';
             a.click();
             URL.revokeObjectURL(url);
+            showNotification('Расчет экспортирован в файл!', 'success');
         }
 
         // Функция для отправки в Telegram
@@ -1714,13 +1735,15 @@ ATR: ${formatNumber(atr, 8)} USDT
                     riskAmount / (priceDifference * (1 + exchangeFee * 2)) : 0;
 
                 // 4. Расчет тейк-профитов с учетом комиссии (чтобы чистая прибыль была 30 и 50 USDT)
+                const entryFee = entryPrice * positionSize * exchangeFee;
+                
                 const takeProfit1 = isLong ? 
-                    entryPrice + (30 + (entryPrice * positionSize * exchangeFee) + (30 * exchangeFee)) / positionSize : 
-                    entryPrice - (30 + (entryPrice * positionSize * exchangeFee) + (30 * exchangeFee)) / positionSize;
+                    entryPrice + (30 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize : 
+                    entryPrice - (30 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
                 
                 const takeProfit2 = isLong ? 
-                    entryPrice + (50 + (entryPrice * positionSize * exchangeFee) + (50 * exchangeFee)) / positionSize : 
-                    entryPrice - (50 + (entryPrice * positionSize * exchangeFee) + (50 * exchangeFee)) / positionSize;
+                    entryPrice + (50 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize : 
+                    entryPrice - (50 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
 
                 // 5. Расчет цены ликвидации
                 const liquidationPrice = isLong ? 
@@ -1733,10 +1756,9 @@ ATR: ${formatNumber(atr, 8)} USDT
                 const takeProfit2Percent = calculatePercentageChange(entryPrice, takeProfit2);
                 const liquidationPricePercent = calculatePercentageChange(entryPrice, liquidationPrice);
 
-                // 7. Расчет комиссий
-                const entryFee = entryPrice * positionSize * exchangeFee;
-                const exitFee1 = takeProfit1 * positionSize * exchangeFee;
-                const exitFee2 = takeProfit2 * positionSize * exchangeFee;
+                // 7. Расчет комиссий только для максимального тейка
+                const exitFee = takeProfit2 * positionSize * exchangeFee;
+                const totalFee = entryFee + exitFee;
 
                 // Обновление интерфейса
                 entryPriceResult.textContent = `${formatNumber(entryPrice, 4)} USDT`;
@@ -1764,6 +1786,7 @@ ATR: ${formatNumber(atr, 8)} USDT
 
                 const priceDifference = Math.abs(entryPrice - stopLossPrice);
                 const levels = [ratio1, ratio2];
+                const entryFee = entryPrice * positionSize * exchangeFee;
 
                 levels.forEach(ratio => {
                     let takeProfitPrice;
@@ -1772,20 +1795,19 @@ ATR: ${formatNumber(atr, 8)} USDT
                     if (ratio === ratio1) {
                         // Первый тейк-профит - чистая прибыль 30 USDT
                         takeProfitPrice = isLong ? 
-                            entryPrice + (30 + (entryPrice * positionSize * exchangeFee) + (30 * exchangeFee)) / positionSize : 
-                            entryPrice - (30 + (entryPrice * positionSize * exchangeFee) + (30 * exchangeFee)) / positionSize;
+                            entryPrice + (30 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize : 
+                            entryPrice - (30 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
                         netProfit = 30;
                     } else {
                         // Второй тейк-профит - чистая прибыль 50 USDT
                         takeProfitPrice = isLong ? 
-                            entryPrice + (50 + (entryPrice * positionSize * exchangeFee) + (50 * exchangeFee)) / positionSize : 
-                            entryPrice - (50 + (entryPrice * positionSize * exchangeFee) + (50 * exchangeFee)) / positionSize;
+                            entryPrice + (50 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize : 
+                            entryPrice - (50 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
                         netProfit = 50;
                     }
 
                     const profitDifference = Math.abs(entryPrice - takeProfitPrice);
                     const grossProfit = profitDifference * positionSize;
-                    const entryFee = entryPrice * positionSize * exchangeFee;
                     const exitFee = takeProfitPrice * positionSize * exchangeFee;
                     const profitPercent = calculatePercentageChange(entryPrice, takeProfitPrice);
 
@@ -1794,7 +1816,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                     levelDiv.innerHTML = `
                         <span class="take-profit-ratio">Тейк-профит 1к${ratio}</span>
                         <span class="take-profit-price">${formatNumber(takeProfitPrice, 4)} USDT <span class="percentage-value">(${profitPercent}%)</span></span>
-                        <span class="take-profit-value">+${formatNumber(netProfit, 1)} USDT (комиссия: ${formatNumber(entryFee + exitFee, 8)} USDT)</span>
+                        <span class="take-profit-value">+${formatNumber(netProfit, 1)} USDT (чистая прибыль)</span>
                     `;
                     takeProfitLevelsDiv.appendChild(levelDiv);
                 });
