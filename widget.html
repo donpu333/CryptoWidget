@@ -561,6 +561,16 @@
             outline: none;
         }
 
+        .text-edit-input {
+            background: transparent;
+            border: 1px solid #333;
+            color: white;
+            padding: 5px;
+            margin-top: 10px;
+            width: 100%;
+            border-radius: 4px;
+        }
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
@@ -679,6 +689,7 @@
                         <h3>Верхнее фото (5M)</h3>
                         <label class="file-input-label">Выберите изображение:</label>
                         <input type="file" id="topImage" class="collage-file-input" accept="image/*">
+                        <input type="text" id="topTextInput" class="text-edit-input" value="5M" placeholder="Введите текст">
                         <div class="preview-container" id="topPreviewContainer">
                             <img id="topPreview" class="preview-img">
                             <div id="topText" class="draggable-text">5M</div>
@@ -692,6 +703,7 @@
                         <h3>Нижнее левое фото (1D)</h3>
                         <label class="file-input-label">Выберите изображение:</label>
                         <input type="file" id="bottomLeftImage" class="collage-file-input" accept="image/*">
+                        <input type="text" id="bottomLeftTextInput" class="text-edit-input" value="1D" placeholder="Введите текст">
                         <div class="preview-container" id="bottomLeftPreviewContainer">
                             <img id="bottomLeftPreview" class="preview-img">
                             <div id="bottomLeftText" class="draggable-text">1D</div>
@@ -702,6 +714,7 @@
                         <h3>Нижнее правое фото (1H)</h3>
                         <label class="file-input-label">Выберите изображение:</label>
                         <input type="file" id="bottomRightImage" class="collage-file-input" accept="image/*">
+                        <input type="text" id="bottomRightTextInput" class="text-edit-input" value="1H" placeholder="Введите текст">
                         <div class="preview-container" id="bottomRightPreviewContainer">
                             <img id="bottomRightPreview" class="preview-img">
                             <div id="bottomRightText" class="draggable-text">1H</div>
@@ -927,6 +940,11 @@
             const resultCanvas = document.getElementById('collageCanvas');
             const collageText = document.getElementById('collageText');
 
+            // Текстовые инпуты
+            const topTextInput = document.getElementById('topTextInput');
+            const bottomLeftTextInput = document.getElementById('bottomLeftTextInput');
+            const bottomRightTextInput = document.getElementById('bottomRightTextInput');
+
             // Контейнеры превью
             const topPreviewContainer = document.getElementById('topPreviewContainer');
             const bottomLeftPreviewContainer = document.getElementById('bottomLeftPreviewContainer');
@@ -956,7 +974,9 @@
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
-                    imageSize: { width: 0, height: 0 }
+                    imageSize: { width: 0, height: 0 },
+                    textInput: topTextInput,
+                    defaultText: '5M'
                 },
                 bottomLeft: {
                     element: bottomLeftText,
@@ -965,7 +985,9 @@
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
-                    imageSize: { width: 0, height: 0 }
+                    imageSize: { width: 0, height: 0 },
+                    textInput: bottomLeftTextInput,
+                    defaultText: '1D'
                 },
                 bottomRight: {
                     element: bottomRightText,
@@ -974,7 +996,9 @@
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
-                    imageSize: { width: 0, height: 0 }
+                    imageSize: { width: 0, height: 0 },
+                    textInput: bottomRightTextInput,
+                    defaultText: '1H'
                 }
             };
 
@@ -1016,6 +1040,16 @@
                 });
             }
 
+            // Обновление текста при изменении инпута
+            function initTextInputs() {
+                Object.keys(collageData).forEach(section => {
+                    const data = collageData[section];
+                    data.textInput.addEventListener('input', (e) => {
+                        data.element.textContent = e.target.value || data.defaultText;
+                    });
+                });
+            }
+
             // Обновление размеров контейнеров и изображений
             function updateContainerSizes() {
                 Object.keys(collageData).forEach(section => {
@@ -1037,6 +1071,9 @@
 
             // Инициализация перетаскивания для всех секций
             Object.keys(collageData).forEach(section => initDrag(section));
+            
+            // Инициализация текстовых инпутов
+            initTextInputs();
 
             // Обработчики загрузки изображений
             topImageInput.addEventListener('change', (e) => handleImageUpload(e, 'top'));
@@ -1095,7 +1132,7 @@
                 ctx.drawImage(collageData.top.image, 0, 0, topImgWidth, topImgHeight);
 
                 // Текст на верхнем изображении
-                drawText(ctx, 'top', '5M', 0, 0, topImgWidth, topImgHeight);
+                drawText(ctx, 'top', collageData.top.element.textContent, 0, 0, topImgWidth, topImgHeight);
 
                 // Нижние изображения
                 const bottomImgWidth = COLLAGE_WIDTH / 2;
@@ -1112,7 +1149,7 @@
                 drawText(
                     ctx,
                     'bottomLeft',
-                    '1D',
+                    collageData.bottomLeft.element.textContent,
                     0,
                     TOP_PART_HEIGHT,
                     bottomImgWidth,
@@ -1130,7 +1167,7 @@
                 drawText(
                     ctx,
                     'bottomRight',
-                    '1H',
+                    collageData.bottomRight.element.textContent,
                     bottomImgWidth,
                     TOP_PART_HEIGHT,
                     bottomImgWidth,
@@ -1254,6 +1291,7 @@
                 const data = collageData[section];
                 data.element.style.left = data.position.x + 'px';
                 data.element.style.top = data.position.y + 'px';
+                data.element.textContent = data.textInput.value || data.defaultText;
             });
 
             // Обновляем размеры при изменении окна
