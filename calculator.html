@@ -97,7 +97,8 @@
         }
 
         .input-group input[type="number"],
-        .input-group input[type="text"] {
+        .input-group input[type="text"],
+        .input-group select {
             width: 100%;
             padding: 8px 12px;
             border-radius: 6px;
@@ -923,8 +924,28 @@
                     </div>
 
                     <div class="input-group">
+                        <label for="assetType">Точность цены (знаков после запятой)</label>
+                        <select id="assetType">
+                            <option value="1">1 знак (0.1)</option>
+                            <option value="2">2 знака (0.01)</option>
+                            <option value="3">3 знака (0.001)</option>
+                            <option value="4" selected>4 знака (0.0001)</option>
+                            <option value="5">5 знаков (0.00001)</option>
+                            <option value="6">6 знаков (0.000001)</option>
+                            <option value="7">7 знаков (0.0000001)</option>
+                            <option value="8">8 знаков (0.00000001)</option>
+                            <option value="custom">Указать вручную</option>
+                        </select>
+                    </div>
+
+                    <div id="customDecimalsGroup" class="input-group" style="display: none;">
+                        <label for="customDecimals">Количество знаков после запятой (1-8)</label>
+                        <input type="number" id="customDecimals" min="1" max="8" value="4">
+                    </div>
+
+                    <div class="input-group">
                         <label for="entryPrice">Цена входа (USDT)</label>
-                        <input type="number" id="entryPrice" min="0" step="0.0001" value="100.0000">
+                        <input type="number" id="entryPrice" min="0" step="0.00000001" value="100.0000">
                     </div>
 
                     <div class="input-group">
@@ -970,7 +991,7 @@
                     <div class="stop-input-group" id="price-group">
                         <div class="input-group">
                             <label for="stopLossPrice">Цена стоп-лосса (USDT)</label>
-                            <input type="number" id="stopLossPrice" min="0" step="0.0001">
+                            <input type="number" id="stopLossPrice" min="0" step="0.00000001">
                             <div class="preview-value">
                                 Разница: <span id="priceDifference">0.0000 USDT</span>
                             </div>
@@ -1292,10 +1313,28 @@
             }, 3000);
         }
 
-        // Улучшенная функция для форматирования чисел
-        function formatNumber(num, decimals = 8) {
+        // Улучшенная функция для форматирования чисел с учетом типа актива
+        function formatNumber(num, decimals = 8, assetType = null) {
             if (isNaN(num)) return '0';
-            const factor = Math.pow(10, decimals);
+            
+            // Если указан custom, используем значение из поля ввода
+            if (assetType === 'custom') {
+                const customDecimals = parseInt(document.getElementById('customDecimals').value) || 4;
+                const factor = Math.pow(10, customDecimals);
+                const rounded = Math.round(num * factor) / factor;
+                return rounded.toFixed(customDecimals);
+            }
+            
+            // Если не указан тип актива, используем стандартное форматирование
+            if (!assetType) {
+                const factor = Math.pow(10, decimals);
+                const rounded = Math.round(num * factor) / factor;
+                return rounded.toString().replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.$/, '');
+            }
+            
+            // Форматирование в зависимости от типа актива
+            const decimalPlaces = parseInt(assetType);
+            const factor = Math.pow(10, decimalPlaces);
             const rounded = Math.round(num * factor) / factor;
             
             // Для размера позиции - 1 знак после запятой
@@ -1303,9 +1342,9 @@
                 return rounded.toFixed(1);
             }
             
-            // Для цены - 4 знака после запятой
-            if (decimals === 4) {
-                return rounded.toFixed(4);
+            // Для цены - количество знаков в зависимости от типа актива
+            if (decimals === 4 || decimals === 5 || decimals === 6 || decimals === 7 || decimals === 8) {
+                return rounded.toFixed(decimalPlaces);
             }
             
             // Для остальных случаев - убираем лишние нули
@@ -1328,6 +1367,7 @@
             const rewardRatio2 = parseFloat(document.getElementById('rewardRatio2').value) || 5;
             const stopLossPriceDirect = parseFloat(document.getElementById('stopLossPrice').value) || 0;
             const exchangeFee = parseFloat(document.getElementById('exchangeFee').value) || 0.0500;
+            const assetType = document.getElementById('assetType').value;
 
             // Получаем название типа сделки
             let tradeTypeName = '';
@@ -1389,11 +1429,11 @@ ATR: ${formatNumber(atr, 8)} USDT
 Комиссия биржи: ${exchangeFee}%
 Результаты:
 ===============================
-Цена входа: ${formatNumber(entryPrice, 4)} USDT
+Цена входа: ${formatNumber(entryPrice, assetType)} USDT
 Размер позиции: ${formatNumber(positionSize, 1)}
-Стоп-лосс: ${formatNumber(stopLossPrice, 4)} USDT (${stopLossPercent}%)
-Тейк-профит 1к${rewardRatio1}: ${formatNumber(takeProfit1, 4)} USDT (${takeProfit1Percent}%) (чистая прибыль: 30.00 USDT)
-Тейк-профит 1к${rewardRatio2}: ${formatNumber(takeProfit2, 4)} USDT (${takeProfit2Percent}%) (чистая прибыль: 50.00 USDT)
+Стоп-лосс: ${formatNumber(stopLossPrice, assetType)} USDT (${stopLossPercent}%)
+Тейк-профит 1к${rewardRatio1}: ${formatNumber(takeProfit1, assetType)} USDT (${takeProfit1Percent}%) (чистая прибыль: 30.00 USDT)
+Тейк-профит 1к${rewardRatio2}: ${formatNumber(takeProfit2, assetType)} USDT (${takeProfit2Percent}%) (чистая прибыль: 50.00 USDT)
 Комиссии: ${formatNumber(totalFee, 8)} USDT (вход: ${formatNumber(entryFee, 8)}, выход: ${formatNumber(exitFee, 8)})`;
 
             return text;
@@ -1477,6 +1517,9 @@ ATR: ${formatNumber(atr, 8)} USDT
             const priceDifferenceSpan = document.getElementById('priceDifference');
             const exchangeFeeInput = document.getElementById('exchangeFee');
             const exchangeFeeResult = document.getElementById('exchangeFeeResult');
+            const assetTypeSelect = document.getElementById('assetType');
+            const customDecimalsGroup = document.getElementById('customDecimalsGroup');
+            const customDecimalsInput = document.getElementById('customDecimals');
 
             // Элементы результатов
             const positionSizeSpan = document.getElementById('positionSize');
@@ -1586,6 +1629,19 @@ ATR: ${formatNumber(atr, 8)} USDT
                     exchangeFeeResult.textContent = formatNumber(parseFloat(exchangeFeeInput.value) || 0.0500, 4) + '%';
                     calculateRisk();
                 });
+                
+                // Обработчик для выбора типа актива
+                assetTypeSelect.addEventListener('change', () => {
+                    if (assetTypeSelect.value === 'custom') {
+                        customDecimalsGroup.style.display = 'block';
+                    } else {
+                        customDecimalsGroup.style.display = 'none';
+                    }
+                    calculateRisk();
+                });
+                
+                // Обработчик для ручного ввода количества знаков
+                customDecimalsInput.addEventListener('input', calculateRisk);
 
                 // Обработчики для переключателя метода ввода стоп-лосса
                 stopMethodButtons.forEach(button => {
@@ -1616,7 +1672,7 @@ ATR: ${formatNumber(atr, 8)} USDT
 
                     if (entryPrice > 0 && stopLossPrice > 0) {
                         const difference = Math.abs(entryPrice - stopLossPrice);
-                        priceDifferenceSpan.textContent = formatNumber(difference, 4) + ' USDT';
+                        priceDifferenceSpan.textContent = formatNumber(difference, 8) + ' USDT';
                     } else {
                         priceDifferenceSpan.textContent = '0.0000 USDT';
                     }
@@ -1701,6 +1757,10 @@ ATR: ${formatNumber(atr, 8)} USDT
                 const rewardRatio2 = parseFloat(rewardRatio2Input.value) || 5;
                 const stopLossPriceDirect = parseFloat(stopLossPriceInput.value) || 0;
                 const exchangeFee = parseFloat(exchangeFeeInput.value) / 100 || 0.0005; // 0.0500%
+                const assetType = assetTypeSelect.value;
+                const decimalPlaces = assetType === 'custom' ? 
+                    parseInt(document.getElementById('customDecimals').value) || 4 : 
+                    parseInt(assetType);
 
                 // 1. Расчет разницы цен для стоп-лосса
                 let priceDifference;
@@ -1716,7 +1776,8 @@ ATR: ${formatNumber(atr, 8)} USDT
                             priceDifference = atr * riskPercent;
                             stopLossPriceInput.value = formatNumber(
                                 isLong ? entryPrice - priceDifference : entryPrice + priceDifference, 
-                                4
+                                decimalPlaces,
+                                assetType
                             );
                         }
                     } else {
@@ -1760,11 +1821,11 @@ ATR: ${formatNumber(atr, 8)} USDT
                 const exitFee = takeProfit2 * positionSize * exchangeFee;
                 const totalFee = entryFee + exitFee;
 
-                // Обновление интерфейса
-                entryPriceResult.textContent = `${formatNumber(entryPrice, 4)} USDT`;
+                // Обновление интерфейса с учетом типа актива
+                entryPriceResult.textContent = `${formatNumber(entryPrice, decimalPlaces, assetType)} USDT`;
                 positionSizeSpan.textContent = formatNumber(positionSize, 1);
-                stopLossSpan.innerHTML = `${formatNumber(stopLossPrice, 4)} USDT <span class="percentage-value">(${stopLossPercent}%)</span>`;
-                liquidationPriceSpan.innerHTML = `${formatNumber(liquidationPrice, 4)} USDT <span class="percentage-value">(${liquidationPricePercent}%)</span>`;
+                stopLossSpan.innerHTML = `${formatNumber(stopLossPrice, decimalPlaces, assetType)} USDT <span class="percentage-value">(${stopLossPercent}%)</span>`;
+                liquidationPriceSpan.innerHTML = `${formatNumber(liquidationPrice, decimalPlaces, assetType)} USDT <span class="percentage-value">(${liquidationPricePercent}%)</span>`;
                 exchangeFeeResult.textContent = `${formatNumber(exchangeFee * 100, 4)}%`;
                 atrResultSpan.textContent = `${formatNumber(atr, 8)} USDT`;
 
@@ -1776,12 +1837,14 @@ ATR: ${formatNumber(atr, 8)} USDT
                     rewardRatio1, 
                     rewardRatio2, 
                     positionSize, 
-                    exchangeFee
+                    exchangeFee,
+                    decimalPlaces,
+                    assetType
                 );
             }
 
             // Генерация уровней тейк-профита
-            function generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, ratio1, ratio2, positionSize, exchangeFee) {
+            function generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, ratio1, ratio2, positionSize, exchangeFee, decimalPlaces, assetType) {
                 takeProfitLevelsDiv.innerHTML = '';
 
                 const priceDifference = Math.abs(entryPrice - stopLossPrice);
@@ -1815,7 +1878,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                     levelDiv.className = 'take-profit-item';
                     levelDiv.innerHTML = `
                         <span class="take-profit-ratio">Тейк-профит 1к${ratio}</span>
-                        <span class="take-profit-price">${formatNumber(takeProfitPrice, 4)} USDT <span class="percentage-value">(${profitPercent}%)</span></span>
+                        <span class="take-profit-price">${formatNumber(takeProfitPrice, decimalPlaces, assetType)} USDT <span class="percentage-value">(${profitPercent}%)</span></span>
                         <span class="take-profit-value">+${formatNumber(netProfit, 1)} USDT (чистая прибыль)</span>
                     `;
                     takeProfitLevelsDiv.appendChild(levelDiv);
