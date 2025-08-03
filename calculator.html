@@ -1000,7 +1000,7 @@
 
                     <div class="input-group">
                         <label for="riskAmount">Риск на сделку (USDT)</label>
-                        <input type="number" id="riskAmount" min="0" step="0.1" value="100.0">
+                        <input type="number" id="riskAmount" min="0" step="0.1" value="10.0">
                     </div>
 
                     <div class="input-group">
@@ -1432,8 +1432,8 @@ ATR: ${formatNumber(atr, 8)} USDT
 Цена входа: ${formatNumber(entryPrice, assetType)} USDT
 Размер позиции: ${formatNumber(positionSize, 1)}
 Стоп-лосс: ${formatNumber(stopLossPrice, assetType)} USDT (${stopLossPercent}%)
-Тейк-профит 1к${rewardRatio1}: ${formatNumber(takeProfit1, assetType)} USDT (${takeProfit1Percent}%) (чистая прибыль: 30.00 USDT)
-Тейк-профит 1к${rewardRatio2}: ${formatNumber(takeProfit2, assetType)} USDT (${takeProfit2Percent}%) (чистая прибыль: 50.00 USDT)
+Тейк-профит 1к${rewardRatio1}: ${formatNumber(takeProfit1, assetType)} USDT (${takeProfit1Percent}%)
+Тейк-профит 1к${rewardRatio2}: ${formatNumber(takeProfit2, assetType)} USDT (${takeProfit2Percent}%)
 Комиссии: ${formatNumber(totalFee, 8)} USDT (вход: ${formatNumber(entryFee, 8)}, выход: ${formatNumber(exitFee, 8)})`;
 
             return text;
@@ -1879,7 +1879,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                     levelDiv.innerHTML = `
                         <span class="take-profit-ratio">Тейк-профит 1к${ratio}</span>
                         <span class="take-profit-price">${formatNumber(takeProfitPrice, decimalPlaces, assetType)} USDT <span class="percentage-value">(${profitPercent}%)</span></span>
-                        <span class="take-profit-value">+${formatNumber(netProfit, 1)} USDT (чистая прибыль)</span>
+                        <span class="take-profit-value">+${formatNumber(netProfit, 1)} USDT (чистая прибыль, комиссия: ${formatNumber(exitFee, 8)} USDT)</span>
                     `;
                     takeProfitLevelsDiv.appendChild(levelDiv);
                 });
