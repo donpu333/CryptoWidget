@@ -468,6 +468,8 @@ function loadTickersFromStorage() {
                             addTickerToList(ticker, listType);
                         }
                     }
+                    // Сортируем список по звездам
+                    sortTickersByStars(listType);
                 }
             }
             // Обновляем статистику после загрузки
@@ -486,6 +488,24 @@ function saveTickersToStorage() {
     } catch (e) {
         console.error('Ошибка при сохранении данных в localStorage:', e);
     }
+}
+
+// Функция для сортировки тикеров по звездам (по убыванию)
+function sortTickersByStars(listType) {
+    const list = document.getElementById(`${listType}-list`);
+    if (!list) return;
+
+    const items = Array.from(list.children)
+        .filter(item => item.classList.contains('ticker-item'))
+        .sort((a, b) => {
+            const aStars = tickersData[listType][a.dataset.ticker].stars || 0;
+            const bStars = tickersData[listType][b.dataset.ticker].stars || 0;
+            return bStars - aStars; // Сортировка по убыванию
+        });
+
+    // Очищаем список и добавляем отсортированные элементы
+    list.innerHTML = '';
+    items.forEach(item => list.appendChild(item));
 }
 
 // Добавление тикера
@@ -567,6 +587,8 @@ async function addTicker(listType) {
     if (!tickersData[listType][ticker].isBinance) {
         editTicker(ticker, listType);
     }
+    // Сортируем список по звездам
+    sortTickersByStars(listType);
 }
 
 // Добавление тикера в список на странице
@@ -706,6 +728,8 @@ function rateTicker(event, ticker, listType, rating) {
         star.classList.toggle('far', i >= tickerData.stars);
     });
     saveTickersToStorage();
+    // Сортируем список по звездам
+    sortTickersByStars(listType);
 }
 
 // Переместить тикер вверх
