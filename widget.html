@@ -355,6 +355,16 @@
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
 
+        #combinedCollageCanvas {
+            max-width: 100%;
+            border: 1px solid #333;
+            border-radius: 12px;
+            background-color: #1e1e1e;
+            display: none;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+        }
+
         .instructions {
             margin: 1.5rem 0;
             padding: 1.5rem;
@@ -571,6 +581,21 @@
             border-radius: 4px;
         }
 
+        .combine-collage-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            border: 1px solid #333;
+        }
+
+        .combine-collage-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #4cc9f0;
+            text-align: center;
+        }
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
@@ -651,7 +676,7 @@
         <!-- Первый ряд: Фото коллаж -->
         <div class="collage-container">
             <header class="collage-header">
-                <h1 class="collage-title">Фото Коллаж 4000×3000</h1>
+                <h1 class="collage-title">Фото Коллаж 6000×9000</h1>
                 <p class="collage-subtitle">Создайте профессиональный коллаж для ваших проектов</p>
             </header>
 
@@ -738,7 +763,7 @@
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                     </svg>
-                    Скачать PNG (4000×3000)
+                    Скачать PNG (6000×4500)
                 </button>
             </div>
 
@@ -750,6 +775,46 @@
                     <div class="text-column">
                         <textarea id="collageText" placeholder="Введите текст для коллажа здесь..."></textarea>
                     </div>
+                </div>
+            </div>
+
+            <!-- Секция для объединения двух коллажей -->
+            <div class="combine-collage-section">
+                <h3 class="combine-collage-title">Объединить два коллажа</h3>
+                
+                <div class="upload-bottom" style="margin-top: 20px;">
+                    <div class="upload-box">
+                        <h3>Первый коллаж</h3>
+                        <label class="file-input-label">Выберите изображение:</label>
+                        <input type="file" id="firstCollage" class="collage-file-input" accept="image/*">
+                        <div class="preview-container" id="firstCollagePreviewContainer">
+                            <img id="firstCollagePreview" class="preview-img">
+                        </div>
+                    </div>
+
+                    <div class="upload-box">
+                        <h3>Второй коллаж</h3>
+                        <label class="file-input-label">Выберите изображение:</label>
+                        <input type="file" id="secondCollage" class="collage-file-input" accept="image/*">
+                        <div class="preview-container" id="secondCollagePreviewContainer">
+                            <img id="secondCollagePreview" class="preview-img">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="collage-controls">
+                    <button id="combineBtn" class="collage-btn" disabled>
+                        <i class="fas fa-object-group mr-2"></i>
+                        Объединить коллажи
+                    </button>
+                    <button id="downloadCombinedBtn" class="collage-btn" disabled>
+                        <i class="fas fa-download mr-2"></i>
+                        Скачать объединенный коллаж (6000×9000)
+                    </button>
+                </div>
+
+                <div style="width: 100%; text-align: center; margin-top: 20px;">
+                    <canvas id="combinedCollageCanvas"></canvas>
                 </div>
             </div>
         </div>
@@ -955,15 +1020,16 @@
             const bottomLeftText = document.getElementById('bottomLeftText');
             const bottomRightText = document.getElementById('bottomRightText');
 
-            // Размеры коллажа (4000x3000)
-            const COLLAGE_WIDTH = 4000;
-            const COLLAGE_HEIGHT = 3000;
-            const TOP_PART_HEIGHT = 1500; // Половина высоты
-            const BOTTOM_PART_HEIGHT = 1500; // Половина высоты
-            const TEXT_COLUMN_WIDTH = 800; // Ширина текстовой колонки
+            // Размеры коллажа (6000×4500)
+            const COLLAGE_WIDTH = 6000;
+            const COLLAGE_HEIGHT = 4500;
+            const TOP_PART_HEIGHT = 2250; // Половина высоты
+            const BOTTOM_PART_HEIGHT = 2250; // Половина высоты
+            const TEXT_COLUMN_WIDTH = 1200; // Ширина текстовой колонки
 
-            // Переменная для хранения имени файла нижнего левого изображения
+            // Переменные для хранения имен файлов
             let bottomLeftFileName = '';
+            let firstCollageFileName = '';
 
             // Объект для хранения данных о каждом блоке
             const collageData = {
@@ -1196,13 +1262,13 @@
                     const textY = offsetY + (data.position.y / data.containerSize.height) * data.imageSize.height * scaleY;
 
                     // Настройки текста
-                    ctx.font = 'bold 80px Montserrat';
+                    ctx.font = 'bold 120px Montserrat'; // Увеличиваем размер шрифта для большего холста
                     ctx.fillStyle = 'white';
                     ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-                    ctx.shadowBlur = 6;
+                    ctx.shadowBlur = 10; // Увеличиваем тень для большего холста
 
-                    // Рисуем текст (+80 для компенсации размера шрифта)
-                    ctx.fillText(text, textX, textY + 80);
+                    // Рисуем текст (+120 для компенсации размера шрифта)
+                    ctx.fillText(text, textX, textY + 120);
 
                     // Сбрасываем тень
                     ctx.shadowColor = 'transparent';
@@ -1236,10 +1302,10 @@
 
                     // Рисуем текст
                     finalCtx.fillStyle = 'white';
-                    finalCtx.font = '24px Roboto';
+                    finalCtx.font = '36px Roboto'; // Увеличиваем размер шрифта для большего холста
                     const lines = text.split('\n');
-                    const lineHeight = 32;
-                    const margin = 40;
+                    const lineHeight = 48; // Увеличиваем межстрочный интервал
+                    const margin = 60; // Увеличиваем отступы
                     let y = margin;
 
                     lines.forEach(line => {
@@ -1296,6 +1362,108 @@
 
             // Обновляем размеры при изменении окна
             window.addEventListener('resize', updateContainerSizes);
+
+            // Инициализация функционала объединения коллажей
+            initCombineCollage();
+        }
+
+        // Инициализация функционала объединения коллажей
+        function initCombineCollage() {
+            const firstCollageInput = document.getElementById('firstCollage');
+            const secondCollageInput = document.getElementById('secondCollage');
+            const firstCollagePreview = document.getElementById('firstCollagePreview');
+            const secondCollagePreview = document.getElementById('secondCollagePreview');
+            const combineBtn = document.getElementById('combineBtn');
+            const downloadCombinedBtn = document.getElementById('downloadCombinedBtn');
+            const combinedCanvas = document.getElementById('combinedCollageCanvas');
+
+            let firstCollageImage = null;
+            let secondCollageImage = null;
+
+            // Обработчики загрузки изображений для объединения
+            firstCollageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // Сохраняем имя файла первого коллажа
+                firstCollageFileName = file.name.replace(/\.[^/.]+$/, ""); // Удаляем расширение
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        firstCollageImage = img;
+                        firstCollagePreview.src = e.target.result;
+                        firstCollagePreview.style.display = 'block';
+                        checkCollagesLoaded();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            secondCollageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        secondCollageImage = img;
+                        secondCollagePreview.src = e.target.result;
+                        secondCollagePreview.style.display = 'block';
+                        checkCollagesLoaded();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            function checkCollagesLoaded() {
+                combineBtn.disabled = !(firstCollageImage && secondCollageImage);
+            }
+
+            // Объединение коллажей
+            combineBtn.addEventListener('click', () => {
+                if (!firstCollageImage || !secondCollageImage) return;
+
+                // Размеры для объединенного коллажа (6000×9000)
+                const COMBINED_WIDTH = 6000;
+                const COMBINED_HEIGHT = 9000;
+
+                combinedCanvas.width = COMBINED_WIDTH;
+                combinedCanvas.height = COMBINED_HEIGHT;
+                const ctx = combinedCanvas.getContext('2d');
+
+                // Очистка и фон
+                ctx.fillStyle = '#2a2a2a';
+                ctx.fillRect(0, 0, COMBINED_WIDTH, COMBINED_HEIGHT);
+
+                // Первый коллаж (верхний)
+                ctx.drawImage(firstCollageImage, 0, 0, COMBINED_WIDTH, COMBINED_HEIGHT / 2);
+
+                // Второй коллаж (нижний)
+                ctx.drawImage(secondCollageImage, 0, COMBINED_HEIGHT / 2, COMBINED_WIDTH, COMBINED_HEIGHT / 2);
+
+                // Показываем результат
+                combinedCanvas.style.display = 'block';
+                downloadCombinedBtn.disabled = false;
+
+                // Прокрутка к результату
+                combinedCanvas.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            // Скачивание объединенного коллажа
+            downloadCombinedBtn.addEventListener('click', () => {
+                if (!combinedCanvas.style.display || combinedCanvas.style.display === 'none') return;
+
+                const link = document.createElement('a');
+                const fileName = firstCollageFileName ? `${firstCollageFileName}-combined.png` : 'combined-collage.png';
+                link.download = fileName;
+                link.href = combinedCanvas.toDataURL('image/png', 1.0);
+                link.click();
+            });
         }
 
         // Инициализация коллажа при загрузке страницы
