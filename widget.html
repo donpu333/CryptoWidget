@@ -676,7 +676,7 @@
         <!-- Первый ряд: Фото коллаж -->
         <div class="collage-container">
             <header class="collage-header">
-                <h1 class="collage-title">Фото Коллаж 6000×9000</h1>
+                <h1 class="collage-title">Фото Коллаж 4000×3000</h1>
                 <p class="collage-subtitle">Создайте профессиональный коллаж для ваших проектов</p>
             </header>
 
@@ -763,7 +763,7 @@
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                     </svg>
-                    Скачать PNG (6000×4500)
+                    Скачать PNG (4000×3000)
                 </button>
             </div>
 
@@ -809,7 +809,7 @@
                     </button>
                     <button id="downloadCombinedBtn" class="collage-btn" disabled>
                         <i class="fas fa-download mr-2"></i>
-                        Скачать объединенный коллаж (6000×9000)
+                        Скачать объединенный коллаж
                     </button>
                 </div>
 
@@ -1020,16 +1020,15 @@
             const bottomLeftText = document.getElementById('bottomLeftText');
             const bottomRightText = document.getElementById('bottomRightText');
 
-            // Размеры коллажа (6000×4500)
-            const COLLAGE_WIDTH = 6000;
-            const COLLAGE_HEIGHT = 4500;
-            const TOP_PART_HEIGHT = 2250; // Половина высоты
-            const BOTTOM_PART_HEIGHT = 2250; // Половина высоты
-            const TEXT_COLUMN_WIDTH = 1200; // Ширина текстовой колонки
+            // Размеры коллажа (4000x3000)
+            const COLLAGE_WIDTH = 4000;
+            const COLLAGE_HEIGHT = 3000;
+            const TOP_PART_HEIGHT = 1500; // Половина высоты
+            const BOTTOM_PART_HEIGHT = 1500; // Половина высоты
+            const TEXT_COLUMN_WIDTH = 800; // Ширина текстовой колонки
 
-            // Переменные для хранения имен файлов
+            // Переменная для хранения имени файла нижнего левого изображения
             let bottomLeftFileName = '';
-            let firstCollageFileName = '';
 
             // Объект для хранения данных о каждом блоке
             const collageData = {
@@ -1262,13 +1261,13 @@
                     const textY = offsetY + (data.position.y / data.containerSize.height) * data.imageSize.height * scaleY;
 
                     // Настройки текста
-                    ctx.font = 'bold 120px Montserrat'; // Увеличиваем размер шрифта для большего холста
+                    ctx.font = 'bold 80px Montserrat';
                     ctx.fillStyle = 'white';
                     ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-                    ctx.shadowBlur = 10; // Увеличиваем тень для большего холста
+                    ctx.shadowBlur = 6;
 
-                    // Рисуем текст (+120 для компенсации размера шрифта)
-                    ctx.fillText(text, textX, textY + 120);
+                    // Рисуем текст (+80 для компенсации размера шрифта)
+                    ctx.fillText(text, textX, textY + 80);
 
                     // Сбрасываем тень
                     ctx.shadowColor = 'transparent';
@@ -1302,10 +1301,10 @@
 
                     // Рисуем текст
                     finalCtx.fillStyle = 'white';
-                    finalCtx.font = '36px Roboto'; // Увеличиваем размер шрифта для большего холста
+                    finalCtx.font = '24px Roboto';
                     const lines = text.split('\n');
-                    const lineHeight = 48; // Увеличиваем межстрочный интервал
-                    const margin = 60; // Увеличиваем отступы
+                    const lineHeight = 32;
+                    const margin = 40;
                     let y = margin;
 
                     lines.forEach(line => {
@@ -1379,6 +1378,7 @@
 
             let firstCollageImage = null;
             let secondCollageImage = null;
+            let firstCollageFileName = '';
 
             // Обработчики загрузки изображений для объединения
             firstCollageInput.addEventListener('change', (e) => {
@@ -1428,9 +1428,9 @@
             combineBtn.addEventListener('click', () => {
                 if (!firstCollageImage || !secondCollageImage) return;
 
-                // Размеры для объединенного коллажа (6000×9000)
-                const COMBINED_WIDTH = 6000;
-                const COMBINED_HEIGHT = 9000;
+                // Размеры для объединенного коллажа (4000x6000)
+                const COMBINED_WIDTH = 4000;
+                const COMBINED_HEIGHT = 6000;
 
                 combinedCanvas.width = COMBINED_WIDTH;
                 combinedCanvas.height = COMBINED_HEIGHT;
