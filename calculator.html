@@ -860,21 +860,21 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="menu-container">
-                        <button class="menu-button" id="menuButton">
+                        <button class="menu-button" id="menuButton" onclick="toggleMenu()">
                             <i class="fas fa-bars mr-2"></i>Меню
                         </button>
                         <div class="menu-content" id="menuContent">
                             <a href="index.html" class="menu-item">
-                                <i class="fas fa-home mr-2"></i>Главная
+                                 <i class="fas fa-bell mr-2"></i>Алерт
                             </a>
                             <a href="calculator.html" class="menu-item">
                                 <i class="fas fa-calculator mr-2"></i>Калькулятор
                             </a>
                             <a href="Chart.html" class="menu-item">
-                                <i class="fas fa-bell mr-2"></i>График
+                                <i class="fas fa-chart-line mr-2"></i>График
                             </a>
                             <a href="widget.html" class="menu-item">
-                                <i class="fas fa-chart-line mr-2"></i>Виджет
+                                <i class="fas fa-th-large mr-2"></i>Виджет
                             </a>
                             <div class="menu-divider"></div>
                             <a href="#" class="menu-item" onclick="showLoginForm()" id="loginMenuItem">
@@ -886,9 +886,7 @@
                             <a href="#" class="menu-item hidden" onclick="handleLogout()" id="logoutMenuItem">
                                 <i class="fas fa-sign-out-alt mr-2"></i>Выход
                             </a>
-                            <div class="menu-divider"></div>
-                            <a href="#" class="menu-item" onclick="showTelegramSettings()">
-                                <i class="fab fa-telegram mr-2"></i>Настройки Telegram
+                            
                             </a>
                         </div>
                     </div>
@@ -1312,6 +1310,26 @@
                 notification.style.display = 'none';
             }, 3000);
         }
+
+        // Функция для переключения меню
+        function toggleMenu() {
+            const menuContent = document.getElementById('menuContent');
+            if (menuContent) {
+                menuContent.classList.toggle('show');
+            }
+        }
+
+        // Закрытие меню при клике вне его
+        document.addEventListener('click', (event) => {
+            const menuContent = document.getElementById('menuContent');
+            const menuButton = document.getElementById('menuButton');
+            
+            if (menuContent && menuButton && 
+                !menuContent.contains(event.target) && 
+                !menuButton.contains(event.target)) {
+                menuContent.classList.remove('show');
+            }
+        });
 
         // Улучшенная функция для форматирования чисел с учетом типа актива
         function formatNumber(num, decimals = 8, assetType = null) {
@@ -1879,7 +1897,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                     levelDiv.innerHTML = `
                         <span class="take-profit-ratio">Тейк-профит 1к${ratio}</span>
                         <span class="take-profit-price">${formatNumber(takeProfitPrice, decimalPlaces, assetType)} USDT <span class="percentage-value">(${profitPercent}%)</span></span>
-                        <span class="take-profit-value">+${formatNumber(netProfit, 1)} USDT (чистая прибыль)</span>
+                        <span class="take-profit-value">+${formatNumber(netProfit, 1)} USDT (чистая прибыль, комиссия: ${formatNumber(exitFee, 8)} USDT)</span>
                     `;
                     takeProfitLevelsDiv.appendChild(levelDiv);
                 });
@@ -2197,13 +2215,6 @@ ATR: ${formatNumber(atr, 8)} USDT
         }
 
         // Menu functions
-        function toggleMenu() {
-            const menuContent = document.getElementById('menuContent');
-            if (menuContent) {
-                menuContent.classList.toggle('show');
-            }
-        }
-
         function showCalculator() {
             toggleMenu();
             // Перенаправляем на страницу калькулятора
@@ -2246,6 +2257,135 @@ ATR: ${formatNumber(atr, 8)} USDT
             }
         }
 
+        function showTelegramSettings() {
+            toggleMenu();
+            document.getElementById('telegramSettingsModal').classList.add('active');
+        }
+
+        function closeTelegramSettingsModal() {
+            document.getElementById('telegramSettingsModal').classList.remove('active');
+        }
+
+        function saveTelegramSettings() {
+            const botToken = document.getElementById('telegramBotToken').value;
+            const chatId = document.getElementById('telegramChatId').value;
+            
+            localStorage.setItem('telegramBotToken', botToken);
+            localStorage.setItem('telegramChatId', chatId);
+            
+            showNotification('Настройки Telegram сохранены!', 'success');
+        }
+
+        function testTelegramConnection() {
+            const botToken = document.getElementById('telegramBotToken').value || localStorage.getItem('telegramBotToken');
+            const chatId = document.getElementById('telegramChatId').value || localStorage.getItem('telegramChatId');
+            
+            if (!botToken || !chatId) {
+                showNotification('Заполните все поля!', 'error');
+                return;
+            }
+            
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: '✅ Тестовое сообщение от Crypto Tools\nСоединение с Telegram успешно установлено!'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    showNotification('Соединение с Telegram успешно!', 'success');
+                } else {
+                    showNotification('Ошибка: ' + (data.description || 'неизвестная ошибка'), 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('Ошибка соединения: ' + error.message, 'error');
+            });
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Простая валидация
+            if (!email || !password) {
+                showNotification('Заполните все поля!', 'error');
+                return;
+            }
+            
+            // В реальном приложении здесь был бы запрос к серверу
+            const user = {
+                email: email,
+                name: email.split('@')[0]
+            };
+            
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            updateUserUI(email);
+            closeLoginModal();
+            showNotification('Вход выполнен успешно!', 'success');
+        }
+
+        function handleRegister() {
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            
+            // Простая валидация
+            if (!email || !password || !confirmPassword) {
+                showNotification('Заполните все поля!', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showNotification('Пароли не совпадают!', 'error');
+                return;
+            }
+            
+            // В реальном приложении здесь был бы запрос к серверу
+            const user = {
+                email: email,
+                name: email.split('@')[0]
+            };
+            
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            updateUserUI(email);
+            closeRegisterModal();
+            showNotification('Регистрация прошла успешно!', 'success');
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('currentUser');
+            updateUserUI();
+            showNotification('Вы вышли из системы', 'success');
+        }
+
+        function updateUserUI(email = null) {
+            const loginMenuItem = document.getElementById('loginMenuItem');
+            const registerMenuItem = document.getElementById('registerMenuItem');
+            const logoutMenuItem = document.getElementById('logoutMenuItem');
+            const userProfileBtn = document.getElementById('userProfileBtn');
+            const userName = document.getElementById('userName');
+            
+            if (email) {
+                loginMenuItem.classList.add('hidden');
+                registerMenuItem.classList.add('hidden');
+                logoutMenuItem.classList.remove('hidden');
+                userProfileBtn.classList.remove('hidden');
+                userName.textContent = email.split('@')[0];
+            } else {
+                loginMenuItem.classList.remove('hidden');
+                registerMenuItem.classList.remove('hidden');
+                logoutMenuItem.classList.add('hidden');
+                userProfileBtn.classList.add('hidden');
+                userName.textContent = 'Гость';
+            }
+        }
+
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
             // Проверяем авторизацию пользователя
@@ -2254,23 +2394,17 @@ ATR: ${formatNumber(atr, 8)} USDT
                 updateUserUI(currentUser.email);
             }
 
-            // Обработчик для меню
-            const menuButton = document.getElementById('menuButton');
-            if (menuButton) {
-                menuButton.addEventListener('click', toggleMenu);
+            // Загружаем настройки Telegram
+            const savedBotToken = localStorage.getItem('telegramBotToken');
+            const savedChatId = localStorage.getItem('telegramChatId');
+            
+            if (savedBotToken) {
+                document.getElementById('telegramBotToken').value = savedBotToken;
             }
-
-            // Закрываем меню при клике вне его
-            window.addEventListener('click', function(event) {
-                const menuContent = document.getElementById('menuContent');
-                const menuButton = document.getElementById('menuButton');
-
-                if (menuContent && menuButton &&
-                    !menuContent.contains(event.target) &&
-                    !menuButton.contains(event.target)) {
-                    menuContent.classList.remove('show');
-                }
-            });
+            
+            if (savedChatId) {
+                document.getElementById('telegramChatId').value = savedChatId;
+            }
 
             // Закрываем ТВХ текст при клике на оверлей
             document.getElementById('tvhOverlay').addEventListener('click', closeTvhText);
@@ -2297,6 +2431,9 @@ ATR: ${formatNumber(atr, 8)} USDT
         window.copySelectedText = copySelectedText;
         window.exportSelectedToTelegram = exportSelectedToTelegram;
         window.resetCheckboxes = resetCheckboxes;
+        window.handleLogin = handleLogin;
+        window.handleRegister = handleRegister;
+        window.handleLogout = handleLogout;
     </script>
 </body>
 </html>
