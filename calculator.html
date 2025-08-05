@@ -865,13 +865,13 @@
                         </button>
                         <div class="menu-content" id="menuContent">
                             <a href="index.html" class="menu-item">
-                                <i class="fas fa-bell mr-2"></i>Алерт
+                                <i class="fas fa-home mr-2"></i>Главная
                             </a>
                             <a href="calculator.html" class="menu-item">
                                 <i class="fas fa-calculator mr-2"></i>Калькулятор
                             </a>
                             <a href="Chart.html" class="menu-item">
-                                <i class="fas fa-chart-line mr-2"></i>График
+                                <i class="fas fa-bell mr-2"></i>График
                             </a>
                             <a href="widget.html" class="menu-item">
                                 <i class="fas fa-chart-line mr-2"></i>Виджет
@@ -1879,7 +1879,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                     levelDiv.innerHTML = `
                         <span class="take-profit-ratio">Тейк-профит 1к${ratio}</span>
                         <span class="take-profit-price">${formatNumber(takeProfitPrice, decimalPlaces, assetType)} USDT <span class="percentage-value">(${profitPercent}%)</span></span>
-                        <span class="take-profit-value">+${formatNumber(netProfit, 1)} USDT (чистая прибыль, комиссия: ${formatNumber(exitFee, 8)} USDT)</span>
+                        <span class="take-profit-value">+${formatNumber(netProfit, 1)} USDT (чистая прибыль)</span>
                     `;
                     takeProfitLevelsDiv.appendChild(levelDiv);
                 });
