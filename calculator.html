@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Tools - Calculator & Signals</title>
- <link rel="shortcut icon" href="favicon.ico">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -848,6 +848,13 @@
             color: var(--warning-color);
             font-weight: 500;
         }
+        
+        /* Стили для убытка в USDT */
+        .loss-usdt {
+            color: var(--accent-red);
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -888,8 +895,6 @@
                             <a href="#" class="menu-item hidden" onclick="handleLogout()" id="logoutMenuItem">
                                 <i class="fas fa-sign-out-alt mr-2"></i>Выход
                             </a>
-                            
-                            </a>
                         </div>
                     </div>
                     <button id="userProfileBtn" class="hidden items-center text-gray-300 hover:text-white">
@@ -916,7 +921,7 @@
                     </div>
 
                     <!-- Выбор типа сделки -->
-                    <div class="trade-type-selector" id="tradeTypeSelector" style="display: none;">
+                    <div class="trade-type-selector" id="tradeTypeSelector">
                         <button class="trade-type-btn long-breakout active" data-type="long-breakout">Лонг Пробой</button>
                         <button class="trade-type-btn long-fakeout" data-type="long-fakeout">Лонг Ложный пробой</button>
                         <button class="trade-type-btn short-breakout" data-type="short-breakout">Шорт Пробой</button>
@@ -945,7 +950,7 @@
 
                     <div class="input-group">
                         <label for="entryPrice">Цена входа (USDT)</label>
-                        <input type="number" id="entryPrice" min="0" step="0.00000001" value="100.0000">
+                        <input type="number" id="entryPrice" min="0" step="0.00000001" placeholder="Введите цену входа">
                     </div>
 
                     <div class="input-group">
@@ -969,9 +974,9 @@
                     <div class="stop-input-group active" id="atr-group">
                         <div class="input-group">
                             <label for="atr">ATR (USDT)</label>
-                            <input type="number" id="atr" min="0" step="0.00000001" value="5.00">
+                            <input type="number" id="atr" min="0" step="0.00000001" placeholder="Введите значение ATR">
                             <div class="preview-value">
-                                Размер ATR: <span id="atrValue">5.00 USDT</span>
+                                Размер ATR: <span id="atrValue">0.0000 USDT</span>
                             </div>
                         </div>
 
@@ -982,7 +987,7 @@
                                 <span class="slider-value" id="riskPercentValue">10</span>%
                             </div>
                             <div class="preview-value">
-                                Стоп-лосс: минус <span id="previewAtrPercent">0.50 USDT</span> (<span id="previewAtrPercentValue">10%</span> от ATR)
+                                Стоп-лосс: минус <span id="previewAtrPercent">0.0000 USDT</span> (<span id="previewAtrPercentValue">10%</span> от ATR)
                             </div>
                         </div>
                     </div>
@@ -991,7 +996,7 @@
                     <div class="stop-input-group" id="price-group">
                         <div class="input-group">
                             <label for="stopLossPrice">Цена стоп-лосса (USDT)</label>
-                            <input type="number" id="stopLossPrice" min="0" step="0.00000001">
+                            <input type="number" id="stopLossPrice" min="0" step="0.00000001" placeholder="Введите цену стоп-лосса">
                             <div class="preview-value">
                                 Разница: <span id="priceDifference">0.0000 USDT</span>
                             </div>
@@ -1030,22 +1035,22 @@
 
                     <div class="result-item">
                         <span>Цена входа:</span>
-                        <span class="result-value" id="entryPriceResult">100.0000 USDT</span>
+                        <span class="result-value" id="entryPriceResult">0.0000 USDT</span>
                     </div>
 
                     <div class="result-item">
                         <span>Размер позиции:</span>
-                        <span class="result-value" id="positionSize">200.0</span>
+                        <span class="result-value" id="positionSize">0.0</span>
                     </div>
 
                     <div class="result-item">
                         <span>Стоп-лосс:</span>
-                        <span class="result-value loss" id="stopLoss">99.5000 USDT <span class="percentage-value" id="stopLossPercent"></span></span>
+                        <span class="result-value loss" id="stopLoss">0.0000 USDT <span class="percentage-value" id="stopLossPercent"></span><span class="loss-usdt" id="stopLossUsdt"></span></span>
                     </div>
 
                     <div class="result-item">
                         <span>ATR:</span>
-                        <span class="result-value" id="atrResult">5.00 USDT</span>
+                        <span class="result-value" id="atrResult">0.0000 USDT</span>
                     </div>
                     
                     <div class="result-item">
@@ -1059,7 +1064,7 @@
 
                     <div class="result-item">
                         <span>Цена ликвидации:</span>
-                        <span class="result-value loss" id="liquidationPrice">95.0000 USDT <span class="percentage-value" id="liquidationPricePercent"></span></span>
+                        <span class="result-value loss" id="liquidationPrice">0.0000 USDT <span class="percentage-value" id="liquidationPricePercent"></span></span>
                     </div>
                 </div>
 
@@ -1415,16 +1420,16 @@
             const positionSize = priceDifference > 0 ? 
                 riskAmount / (priceDifference * (1 + exchangeFee / 100 * 2)) : 0;
 
-            // Рассчитываем тейк-профиты с учетом комиссии (чтобы чистая прибыль была 30 и 50 USDT)
+            // Рассчитываем тейк-профиты с учетом комиссии (чтобы чистая прибыль была riskAmount * rewardRatio)
             const entryFee = entryPrice * positionSize * (exchangeFee / 100);
             
             const takeProfit1 = isLong ? 
-                entryPrice + (30 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize : 
-                entryPrice - (30 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize;
+                entryPrice + (riskAmount * rewardRatio1 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize : 
+                entryPrice - (riskAmount * rewardRatio1 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize;
             
             const takeProfit2 = isLong ? 
-                entryPrice + (50 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize : 
-                entryPrice - (50 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize;
+                entryPrice + (riskAmount * rewardRatio2 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize : 
+                entryPrice - (riskAmount * rewardRatio2 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize;
 
             // Рассчитываем проценты
             const stopLossPercent = calculatePercentageChange(entryPrice, stopLossPrice);
@@ -1545,6 +1550,7 @@ ATR: ${formatNumber(atr, 8)} USDT
             const positionSizeSpan = document.getElementById('positionSize');
             const stopLossSpan = document.getElementById('stopLoss');
             const stopLossPercentSpan = document.getElementById('stopLossPercent');
+            const stopLossUsdtSpan = document.getElementById('stopLossUsdt');
             const takeProfitLevelsDiv = document.getElementById('takeProfitLevels');
             const liquidationPriceSpan = document.getElementById('liquidationPrice');
             const liquidationPricePercentSpan = document.getElementById('liquidationPricePercent');
@@ -1564,15 +1570,10 @@ ATR: ${formatNumber(atr, 8)} USDT
                 leverageInput.value = 10;
                 leverageValue.textContent = '10x';
 
-                // Установка ATR по умолчанию на 5
-                atrInput.value = 5.00;
-                atrValueSpan.textContent = '5.00 USDT';
-                atrResultSpan.textContent = '5.00 USDT';
-
                 // Установка риска по умолчанию на 10%
                 riskPercentInput.value = 10;
                 riskPercentValue.textContent = '10';
-                previewAtrPercent.textContent = '0.50 USDT';
+                previewAtrPercent.textContent = '0.0000 USDT';
                 previewAtrPercentValue.textContent = '10%';
 
                 // Установка комиссии по умолчанию на 0.0500%
@@ -1815,16 +1816,16 @@ ATR: ${formatNumber(atr, 8)} USDT
                 const positionSize = priceDifference > 0 ? 
                     riskAmount / (priceDifference * (1 + exchangeFee * 2)) : 0;
 
-                // 4. Расчет тейк-профитов с учетом комиссии (чтобы чистая прибыль была 30 и 50 USDT)
+                // 4. Расчет тейк-профитов с учетом комиссии (чтобы чистая прибыль была riskAmount * rewardRatio)
                 const entryFee = entryPrice * positionSize * exchangeFee;
                 
                 const takeProfit1 = isLong ? 
-                    entryPrice + (30 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize : 
-                    entryPrice - (30 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
+                    entryPrice + (riskAmount * rewardRatio1 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize : 
+                    entryPrice - (riskAmount * rewardRatio1 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
                 
                 const takeProfit2 = isLong ? 
-                    entryPrice + (50 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize : 
-                    entryPrice - (50 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
+                    entryPrice + (riskAmount * rewardRatio2 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize : 
+                    entryPrice - (riskAmount * rewardRatio2 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
 
                 // 5. Расчет цены ликвидации
                 const liquidationPrice = isLong ? 
@@ -1837,14 +1838,17 @@ ATR: ${formatNumber(atr, 8)} USDT
                 const takeProfit2Percent = calculatePercentageChange(entryPrice, takeProfit2);
                 const liquidationPricePercent = calculatePercentageChange(entryPrice, liquidationPrice);
 
-                // 7. Расчет комиссий только для максимального тейка
+                // 7. Расчет убытка в USDT для стоп-лосса
+                const stopLossUsdt = priceDifference * positionSize;
+
+                // 8. Расчет комиссий только для максимального тейка
                 const exitFee = takeProfit2 * positionSize * exchangeFee;
                 const totalFee = entryFee + exitFee;
 
                 // Обновление интерфейса с учетом типа актива
                 entryPriceResult.textContent = `${formatNumber(entryPrice, decimalPlaces, assetType)} USDT`;
                 positionSizeSpan.textContent = formatNumber(positionSize, 1);
-                stopLossSpan.innerHTML = `${formatNumber(stopLossPrice, decimalPlaces, assetType)} USDT <span class="percentage-value">(${stopLossPercent}%)</span>`;
+                stopLossSpan.innerHTML = `${formatNumber(stopLossPrice, decimalPlaces, assetType)} USDT <span class="percentage-value">(${stopLossPercent}%)</span><span class="loss-usdt">-${formatNumber(stopLossUsdt, 2)} USDT</span>`;
                 liquidationPriceSpan.innerHTML = `${formatNumber(liquidationPrice, decimalPlaces, assetType)} USDT <span class="percentage-value">(${liquidationPricePercent}%)</span>`;
                 exchangeFeeResult.textContent = `${formatNumber(exchangeFee * 100, 4)}%`;
                 atrResultSpan.textContent = `${formatNumber(atr, 8)} USDT`;
@@ -1856,6 +1860,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                     isLong, 
                     rewardRatio1, 
                     rewardRatio2, 
+                    riskAmount,
                     positionSize, 
                     exchangeFee,
                     decimalPlaces,
@@ -1864,7 +1869,7 @@ ATR: ${formatNumber(atr, 8)} USDT
             }
 
             // Генерация уровней тейк-профита
-            function generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, ratio1, ratio2, positionSize, exchangeFee, decimalPlaces, assetType) {
+            function generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, ratio1, ratio2, riskAmount, positionSize, exchangeFee, decimalPlaces, assetType) {
                 takeProfitLevelsDiv.innerHTML = '';
 
                 const priceDifference = Math.abs(entryPrice - stopLossPrice);
@@ -1873,21 +1878,11 @@ ATR: ${formatNumber(atr, 8)} USDT
 
                 levels.forEach(ratio => {
                     let takeProfitPrice;
-                    let netProfit;
+                    let targetProfit = riskAmount * ratio;
                     
-                    if (ratio === ratio1) {
-                        // Первый тейк-профит - чистая прибыль 30 USDT
-                        takeProfitPrice = isLong ? 
-                            entryPrice + (30 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize : 
-                            entryPrice - (30 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
-                        netProfit = 30;
-                    } else {
-                        // Второй тейк-профит - чистая прибыль 50 USDT
-                        takeProfitPrice = isLong ? 
-                            entryPrice + (50 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize : 
-                            entryPrice - (50 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
-                        netProfit = 50;
-                    }
+                    takeProfitPrice = isLong ? 
+                        entryPrice + (targetProfit + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize : 
+                        entryPrice - (targetProfit + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
 
                     const profitDifference = Math.abs(entryPrice - takeProfitPrice);
                     const grossProfit = profitDifference * positionSize;
@@ -1899,7 +1894,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                     levelDiv.innerHTML = `
                         <span class="take-profit-ratio">Тейк-профит 1к${ratio}</span>
                         <span class="take-profit-price">${formatNumber(takeProfitPrice, decimalPlaces, assetType)} USDT <span class="percentage-value">(${profitPercent}%)</span></span>
-                        <span class="take-profit-value">+${formatNumber(netProfit, 1)} USDT (чистая прибыль, комиссия: ${formatNumber(exitFee, 8)} USDT)</span>
+                        <span class="take-profit-value">+${formatNumber(targetProfit, 1)} USDT (чистая прибыль, комиссия: ${formatNumber(exitFee, 8)} USDT)</span>
                     `;
                     takeProfitLevelsDiv.appendChild(levelDiv);
                 });
@@ -2438,4 +2433,4 @@ ATR: ${formatNumber(atr, 8)} USDT
         window.handleLogout = handleLogout;
     </script>
 </body>
-</html>
+</html> 
