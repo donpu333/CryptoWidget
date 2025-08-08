@@ -1788,29 +1788,18 @@ ATR: ${formatNumber(atr, 8)} USDT
                 if (stopMethod === 'atr') {
                     priceDifference = atr * riskPercent;
                 } else {
-                    if (stopLossPriceDirect > 0) {
-                        if ((isLong && stopLossPriceDirect < entryPrice) ||
-                            (!isLong && stopLossPriceDirect > entryPrice)) {
-                            priceDifference = Math.abs(entryPrice - stopLossPriceDirect);
-                        } else {
-                            // Некорректная цена стоп-лосса - используем расчет через ATR
-                            priceDifference = atr * riskPercent;
-                            stopLossPriceInput.value = formatNumber(
-                                isLong ? entryPrice - priceDifference : entryPrice + priceDifference, 
-                                decimalPlaces,
-                                assetType
-                            );
-                        }
-                    } else {
-                        // Если цена стоп-лосса не введена, используем расчет через ATR
-                        priceDifference = atr * riskPercent;
-                    }
+                    priceDifference = Math.abs(entryPrice - stopLossPriceDirect);
                 }
 
                 // 2. Расчет стоп-лосса
-                const stopLossPrice = isLong ? 
-                    entryPrice - priceDifference : 
-                    entryPrice + priceDifference;
+                let stopLossPrice;
+                if (stopMethod === 'atr') {
+                    stopLossPrice = isLong ? 
+                        entryPrice - priceDifference : 
+                        entryPrice + priceDifference;
+                } else {
+                    stopLossPrice = stopLossPriceDirect;
+                }
 
                 // 3. Расчет размера позиции с учетом комиссии
                 const positionSize = priceDifference > 0 ? 
@@ -2433,4 +2422,4 @@ ATR: ${formatNumber(atr, 8)} USDT
         window.handleLogout = handleLogout;
     </script>
 </body>
-</html> 
+</html>
