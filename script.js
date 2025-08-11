@@ -13,7 +13,8 @@ const API_CONFIG = {
     PRICE_COMPARISON_EPSILON: 0.00000001,
     TREND_ANALYSIS_PERIOD: 14 // Days for trend analysis
 };
-const TG_BOT_TOKEN = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30'; // Замените на реальный токен из @BotFather
+
+const TG_BOT_TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN';
 
 // Объект для хранения данных о тикерах
 const tickersData = {
@@ -26,8 +27,6 @@ const tickersData = {
 // Кэш для всех тикеров Binance
 let allBinanceTickers = {};
 let tickersLoaded = false;
-let allFutures = [];
-let allSpot = [];
 
 // Переменные для модальных окон
 const priceModal = document.getElementById('priceModal');
@@ -40,45 +39,14 @@ const commentInput = document.getElementById('commentInput');
 let currentTicker = '';
 let currentListType = '';
 
-// Переменная для хранения виджета TradingView
-let tradingViewWidget = null;
-let apiManager;
-
-// Кэш для популярных тикеров
-const popularTickers = {
-    'BTCUSDT': { name: 'Bitcoin', type: 'spot' },
-    'ETHUSDT': { name: 'Ethereum', type: 'spot' },
-    'BNBUSDT': { name: 'Binance Coin', type: 'spot' },
-    'SOLUSDT': { name: 'Solana', type: 'spot' },
-    'XRPUSDT': { name: 'Ripple', type: 'spot' },
-    'ADAUSDT': { name: 'Cardano', type: 'spot' },
-    'DOGEUSDT': { name: 'Dogecoin', type: 'spot' },
-    'DOTUSDT': { name: 'Polkadot', type: 'spot' },
-    'SHIBUSDT': { name: 'Shiba Inu', type: 'spot' },
-    'MATICUSDT': { name: 'Polygon', type: 'spot' },
-    'BTCUSDT.P': { name: 'Bitcoin Futures', type: 'futures' },
-    'ETHUSDT.P': { name: 'Ethereum Futures', type: 'futures' },
-    'SOLUSDT.P': { name: 'Solana Futures', type: 'futures' },
-    'XRPUSDT.P': { name: 'Ripple Futures', type: 'futures' },
-    'ADAUSDT.P': { name: 'Cardano Futures', type: 'futures' },
-    'LINKUSDT': { name: 'Chainlink', type: 'spot' },
-    'AVAXUSDT': { name: 'Avalanche', type: 'spot' },
-    'LTCUSDT': { name: 'Litecoin', type: 'spot' },
-    'ATOMUSDT': { name: 'Cosmos', type: 'spot' },
-    'UNIUSDT': { name: 'Uniswap', type: 'spot' },
-    'LINKUSDT.P': { name: 'Chainlink Futures', type: 'futures' },
-    'AVAXUSDT.P': { name: 'Avalanche Futures', type: 'futures' },
-    'LTCUSDT.P': { name: 'Litecoin Futures', type: 'futures' },
-    'ATOMUSDT.P': { name: 'Cosmos Futures', type: 'futures' },
-    'UNIUSDT.P': { name: 'Uniswap Futures', type: 'futures' }
-};
-
 // Переменные для алертов
 let userAlerts = [];
 let currentAlertFilter = 'active';
 let alertCooldowns = {};
 let activeTriggeredAlerts = {};
 let currentPrices = {};
+let allFutures = [];
+let allSpot = [];
 
 class BinanceAPIManager {
     constructor() {
@@ -265,10 +233,6 @@ class BinanceAPIManager {
             const response = await this._fetchWithTimeout(endpoint);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
-            if (!data || typeof data.price !== 'string') {
-                console.error('Invalid price data:', data);
-                return null;
-            }
             const price = parseFloat(data.price);
             return isNaN(price) ? null : price;
         } catch (error) {
@@ -327,16 +291,7 @@ class BinanceAPIManager {
     }
 }
 
-// Функции для работы с тикерами
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        showNotification('Успех', `Тикер ${text} скопирован в буфер`);
-    }).catch(err => {
-        console.error('Ошибка копирования:', err);
-        showNotification('Ошибка', 'Не удалось скопировать тикер');
-    });
-}
-
+// Watchlist Functions
 function initializeSortableLists() {
     document.querySelectorAll('.ticker-list').forEach(list => {
         new Sortable(list, {
@@ -393,20 +348,20 @@ function setupInputHandlers() {
 function showTickerSuggestions(query, listType) {
     const suggestionsContainer = document.getElementById(`${listType}-suggestions`);
     suggestionsContainer.innerHTML = '';
-    if (!query || query.length < 1) {
+    if (!query || query.length < 2) {
         suggestionsContainer.style.display = 'none';
         return;
     }
-
+    
     const filteredTickers = Object.keys(allBinanceTickers)
         .filter(ticker => ticker.includes(query))
         .slice(0, 10);
-
+        
     if (filteredTickers.length === 0) {
         suggestionsContainer.style.display = 'none';
         return;
     }
-
+    
     filteredTickers.forEach(ticker => {
         const suggestionItem = document.createElement('div');
         suggestionItem.className = 'suggestion-item';
@@ -482,65 +437,54 @@ async function addTicker(listType) {
     const input = document.getElementById(`${listType}-input`);
     const errorElement = document.getElementById(`${listType}-error`);
     let ticker = input.value.trim().toUpperCase();
-    
-    // Удаляем все не-буквы и не-цифры, кроме точки
     ticker = ticker.replace(/[^A-Z0-9.]/g, '');
     
     if (!ticker) {
         showError(errorElement, 'Введите тикер');
         return;
     }
-
-    // Проверяем, есть ли такой тикер в Binance (spot или futures)
-    const isBinanceTicker = allBinanceTickers.hasOwnProperty(ticker);
     
-    // Если тикер не найден, проверяем без USDT
-    if (!isBinanceTicker && !ticker.endsWith('USDT')) {
-        const tickerWithUSDT = ticker + 'USDT';
-        if (allBinanceTickers.hasOwnProperty(tickerWithUSDT)) {
-            ticker = tickerWithUSDT;
-        }
+    if (ticker.includes('.P')) {
+        ticker = ticker.replace('.P', '');
     }
-
+    else if (!ticker.endsWith('USDT')) {
+        ticker += 'USDT';
+    }
+    
     if (tickersData[listType][ticker]) {
         showError(errorElement, 'Этот тикер уже добавлен');
         return;
     }
-
+    
     const now = new Date();
-    const tickerInfo = allBinanceTickers[ticker] || { 
-        name: ticker.replace(/USDT$/, ''),
-        type: 'spot' 
-    };
+    const isBinanceTicker = allBinanceTickers.hasOwnProperty(ticker);
 
     tickersData[listType][ticker] = {
-        name: tickerInfo.name,
+        name: isBinanceTicker ? allBinanceTickers[ticker].name : ticker.replace(/USDT$/, ''),
         price: '0.000000',
         change: '0.00',
         isBinance: isBinanceTicker,
         addedDate: now.toISOString(),
         stars: 0,
-        marketType: tickerInfo.type,
+        marketType: isBinanceTicker ? allBinanceTickers[ticker].type : 'spot',
         comment: '',
         trend: null
     };
-
+    
     if (isBinanceTicker) {
         try {
-            const marketType = tickerInfo.type;
             let apiUrl;
+            const marketType = tickersData[listType][ticker].marketType;
             if (marketType === 'futures') {
                 apiUrl = `https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${ticker}`;
             } else {
                 apiUrl = `https://api.binance.com/api/v3/ticker/24hr?symbol=${ticker}`;
             }
-            
             const response = await fetch(apiUrl);
             if (response.ok) {
                 const data = await response.json();
                 tickersData[listType][ticker].price = parseFloat(data.lastPrice).toFixed(6);
                 tickersData[listType][ticker].change = parseFloat(data.priceChangePercent).toFixed(2);
-                
                 const trend = await apiManager.analyzeTrend(ticker, marketType);
                 if (trend) {
                     tickersData[listType][ticker].trend = trend;
@@ -550,7 +494,7 @@ async function addTicker(listType) {
             console.error(`Ошибка при проверке тикера ${ticker}:`, error);
         }
     }
-
+    
     const list = document.getElementById(`${listType}-list`);
     addTickerToList(ticker, listType);
     saveTickersToStorage();
@@ -592,7 +536,7 @@ function addTickerToList(ticker, listType) {
             </span>
         `;
     }
-
+    
     const listItem = document.createElement('li');
     listItem.className = 'ticker-item';
     listItem.dataset.ticker = ticker;
@@ -633,6 +577,7 @@ function addTickerToList(ticker, listType) {
     listItem.querySelector('.ticker-info').addEventListener('click', function() {
         openTradingViewChart(ticker, listType);
     });
+    
     list.appendChild(listItem);
 }
 
@@ -722,12 +667,11 @@ function updateTickersOrder(listType) {
     const tickers = Array.from(list.children)
         .filter(item => item.classList.contains('ticker-item'))
         .map(item => item.dataset.ticker);
-    
+        
     const reorderedData = {};
     tickers.forEach(ticker => {
         reorderedData[ticker] = tickersData[listType][ticker];
     });
-    
     tickersData[listType] = reorderedData;
     saveTickersToStorage();
 }
@@ -795,8 +739,8 @@ async function updateTickerPrice(ticker, listType) {
     if (!tickerData.isBinance) return;
     
     try {
-        const marketType = tickerData.marketType;
         let apiUrl;
+        const marketType = tickerData.marketType;
         if (marketType === 'futures') {
             apiUrl = `https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${ticker}`;
         } else {
@@ -812,12 +756,10 @@ async function updateTickerPrice(ticker, listType) {
             if (tickerData.price !== newPrice || tickerData.change !== newChange) {
                 tickerData.price = newPrice;
                 tickerData.change = newChange;
-                
                 const trend = await apiManager.analyzeTrend(ticker, marketType);
                 if (trend) {
                     tickerData.trend = trend;
                 }
-                
                 updateTickerOnPage(ticker, listType);
                 saveTickersToStorage();
             }
@@ -941,112 +883,7 @@ function closeChartModal() {
     document.getElementById('chartModal').style.display = 'none';
 }
 
-// Функции для работы с пользователями
-function isValidEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-}
-
-function handleRegister() {
-    const email = document.getElementById('registerEmail').value.trim();
-    const password = document.getElementById('registerPassword').value;
-    const confirmPassword = document.getElementById('registerConfirmPassword')?.value;
-
-    if (!email || !password || !confirmPassword) {
-        showNotification('Ошибка', 'Все поля обязательны для заполнения');
-        return;
-    }
-
-    if (!isValidEmail(email)) {
-        showNotification('Ошибка', 'Введите корректный email');
-        return;
-    }
-
-    if (password.length < 8) {
-        showNotification('Ошибка', 'Пароль должен содержать минимум 8 символов');
-        return;
-    }
-
-    if (password !== confirmPassword) {
-        showNotification('Ошибка', 'Пароли не совпадают');
-        return;
-    }
-
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const userExists = users.some(user => user.email === email);
-
-    if (userExists) {
-        showNotification('Ошибка', 'Пользователь с таким email уже зарегистрирован');
-        return;
-    }
-
-    const newUser = {
-        email: email,
-        password: btoa(password),
-        createdAt: new Date().toISOString(),
-        alerts: []
-    };
-
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    localStorage.setItem('currentUser', JSON.stringify({ email: email }));
-
-    showNotification('Успех', 'Регистрация прошла успешно!');
-    closeRegisterModal();
-    updateUserUI(email);
-}
-
-function handleLogin() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-
-    if (!email || !password) {
-        showNotification('Ошибка', 'Введите email и пароль');
-        return;
-    }
-
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find(u => u.email === email && atob(u.password) === password);
-
-    if (!user) {
-        showNotification('Ошибка', 'Неверный email или пароль');
-        return;
-    }
-
-    localStorage.setItem('currentUser', JSON.stringify({ email: email }));
-    showNotification('Успех', 'Вход выполнен успешно!');
-    closeLoginModal();
-    updateUserUI(email);
-}
-
-function handleLogout() {
-    localStorage.removeItem('currentUser');
-    showNotification('Успех', 'Вы успешно вышли из системы');
-    updateUserUI(null);
-    toggleMenu();
-}
-
-function updateUserUI(email) {
-    const userProfileBtn = document.getElementById('userProfileBtn');
-    const userName = document.getElementById('userName');
-    const loginMenuItem = document.getElementById('loginMenuItem');
-    const registerMenuItem = document.getElementById('registerMenuItem');
-    const logoutMenuItem = document.getElementById('logoutMenuItem');
-
-    if (email) {
-        if (userProfileBtn) userProfileBtn.classList.remove('hidden');
-        if (userName) userName.textContent = email.split('@')[0];
-        if (loginMenuItem) loginMenuItem.classList.add('hidden');
-        if (registerMenuItem) registerMenuItem.classList.add('hidden');
-        if (logoutMenuItem) logoutMenuItem.classList.remove('hidden');
-    } else {
-        if (userProfileBtn) userProfileBtn.classList.add('hidden');
-        if (loginMenuItem) loginMenuItem.classList.remove('hidden');
-        if (registerMenuItem) registerMenuItem.classList.remove('hidden');
-        if (logoutMenuItem) logoutMenuItem.classList.add('hidden');
-    }
-}
-
+// Alert Functions
 function saveTriggeredAlert(alert) {
     const history = JSON.parse(localStorage.getItem('triggeredAlertsHistory') || '[]');
     history.push({
@@ -1064,13 +901,13 @@ function saveAppState() {
     try {
         localStorage.setItem('cryptoAlerts', JSON.stringify(userAlerts));
         localStorage.setItem('alertFilter', currentAlertFilter);
+        
         const telegramCheckbox = document.getElementById('telegram');
         const tgSettings = {
             chatId: localStorage.getItem('tg_chat_id'),
             enabled: telegramCheckbox ? telegramCheckbox.checked : false
         };
         localStorage.setItem('tgSettings', JSON.stringify(tgSettings));
-        console.log("Состояние сохранено");
         return true;
     } catch (error) {
         console.error("Ошибка при сохранении состояния:", error);
@@ -1107,7 +944,6 @@ function loadAppState() {
             }
         }
 
-        console.log("Состояние загружено");
         return true;
     } catch (error) {
         console.error("Ошибка при загрузке состояния:", error);
@@ -1336,16 +1172,9 @@ function applyCurrentPriceForEdit() {
 }
 
 function getMarketTypeBySymbol(symbol) {
-    // Сначала проверяем в общем списке Binance тикеров
-    if (allBinanceTickers[symbol]) {
-        return allBinanceTickers[symbol].type;
-    }
-
-    // Затем проверяем фьючерсы
     const futuresMatch = allFutures.find(c => c.symbol === symbol);
     if (futuresMatch) return 'futures';
 
-    // Затем проверяем спотовые
     const spotMatch = allSpot.find(c => c.symbol === symbol);
     if (spotMatch) return 'spot';
 
@@ -1472,7 +1301,6 @@ async function loadMarketData() {
             }
         }
 
-        // Загрузка фьючерсных данных
         const futuresResponse = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
         if (!futuresResponse.ok) throw new Error(`Futures API error: ${futuresResponse.status}`);
         const futuresData = await futuresResponse.json();
@@ -1487,7 +1315,6 @@ async function loadMarketData() {
                 marketType: 'futures'
             }));
 
-        // Загрузка спотовых данных
         const spotResponse = await fetch('https://api.binance.com/api/v3/exchangeInfo');
         if (!spotResponse.ok) throw new Error(`Spot API error: ${spotResponse.status}`);
         const spotData = await spotResponse.json();
@@ -1603,11 +1430,6 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
         }
 
         const marketType = getMarketTypeBySymbol(symbol);
-        if (!marketType) {
-            showNotification('Ошибка', 'Не удалось определить тип рынка для символа');
-            return false;
-        }
-
         const newAlert = {
             id: Date.now(),
             symbol,
@@ -2256,79 +2078,80 @@ function closeRegisterModal() {
 
 function resetForm() {
     const alertForm = document.getElementById('alertForm');
-    if (alertForm) {
-        alertForm.reset();
-        const coinSearch = document.getElementById('coinSearch');
-        if (coinSearch) {
-            coinSearch.value = '';
-            coinSearch.focus();
-        }
+    if (!alertForm) return;
 
-        const symbolSelect = document.getElementById('symbol');
-        if (symbolSelect) {
-            symbolSelect.innerHTML = '';
-            symbolSelect.classList.add('hidden');
-        }
-
-        const symbolInput = document.getElementById('symbol');
-        if (symbolInput) {
-            symbolInput.value = '';
-        }
-
-        const marketTypeHint = document.getElementById('marketTypeHint');
-        if (marketTypeHint) {
-            marketTypeHint.innerHTML = '';
-        }
-
-        const currentPriceContainer = document.getElementById('currentPriceContainer');
-        if (currentPriceContainer) {
-            currentPriceContainer.classList.add('hidden');
-        }
-
-        const editAlertId = document.getElementById('editAlertId');
-        if (editAlertId) {
-            editAlertId.value = '';
-        }
-
-        const submitBtnText = document.getElementById('submitBtnText');
-        if (submitBtnText) {
-            submitBtnText.textContent = 'Создать алерт';
-        }
-
-        const telegramCheckbox = document.getElementById('telegram');
-        if (telegramCheckbox) {
-            telegramCheckbox.checked = true;
-        }
-
-        const emailCheckbox = document.getElementById('email');
-        if (emailCheckbox) {
-            emailCheckbox.checked = false;
-        }
-
-        const userChatIdInput = document.getElementById('userChatId');
-        if (userChatIdInput) {
-            userChatIdInput.value = '';
-            userChatIdInput.classList.add('hidden');
-        }
-
-        const userEmailInput = document.getElementById('userEmail');
-        if (userEmailInput) {
-            userEmailInput.value = '';
-            userEmailInput.classList.add('hidden');
-        }
-
-        const notificationCountSelect = document.getElementById('notificationCount');
-        if (notificationCountSelect) {
-            notificationCountSelect.value = '5';
-        }
-
-        document.querySelectorAll('.validation-message').forEach(el => {
-            el.style.display = 'none';
-        });
-        document.querySelectorAll('.validation-error').forEach(el => {
-            el.classList.remove('validation-error');
-        });
+    alertForm.reset();
+    
+    const coinSearch = document.getElementById('coinSearch');
+    if (coinSearch) {
+        coinSearch.value = '';
+        coinSearch.focus();
     }
+
+    const symbolSelect = document.getElementById('symbol');
+    if (symbolSelect) {
+        symbolSelect.innerHTML = '';
+        symbolSelect.classList.add('hidden');
+    }
+
+    const symbolInput = document.getElementById('symbol');
+    if (symbolInput) {
+        symbolInput.value = '';
+    }
+
+    const marketTypeHint = document.getElementById('marketTypeHint');
+    if (marketTypeHint) {
+        marketTypeHint.innerHTML = '';
+    }
+
+    const currentPriceContainer = document.getElementById('currentPriceContainer');
+    if (currentPriceContainer) {
+        currentPriceContainer.classList.add('hidden');
+    }
+
+    const editAlertId = document.getElementById('editAlertId');
+    if (editAlertId) {
+        editAlertId.value = '';
+    }
+
+    const submitBtnText = document.getElementById('submitBtnText');
+    if (submitBtnText) {
+        submitBtnText.textContent = 'Создать алерт';
+    }
+
+    const telegramCheckbox = document.getElementById('telegram');
+    if (telegramCheckbox) {
+        telegramCheckbox.checked = true;
+    }
+
+    const emailCheckbox = document.getElementById('email');
+    if (emailCheckbox) {
+        emailCheckbox.checked = false;
+    }
+
+    const userChatIdInput = document.getElementById('userChatId');
+    if (userChatIdInput) {
+        userChatIdInput.value = '';
+        userChatIdInput.classList.add('hidden');
+    }
+
+    const userEmailInput = document.getElementById('userEmail');
+    if (userEmailInput) {
+        userEmailInput.value = '';
+        userEmailInput.classList.add('hidden');
+    }
+
+    const notificationCountSelect = document.getElementById('notificationCount');
+    if (notificationCountSelect) {
+        notificationCountSelect.value = '5';
+    }
+
+    document.querySelectorAll('.validation-message').forEach(el => {
+        el.style.display = 'none';
+    });
+    document.querySelectorAll('.validation-error').forEach(el => {
+        el.classList.remove('validation-error');
+    });
 }
 
 function setupEventListeners() {
@@ -2338,7 +2161,7 @@ function setupEventListeners() {
             updateCoinSelect();
 
             const searchTerm = this.value.toLowerCase();
-            if (searchTerm.length >= 1) {
+            if (searchTerm.length >= 2) {
                 const marketType = getMarketTypeBySymbol(searchTerm.toUpperCase());
                 if (marketType) {
                     const badge = marketType === 'spot'
