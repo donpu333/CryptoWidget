@@ -6,14 +6,14 @@ const API_CONFIG = {
     ENDPOINTS: {
         TEST: 'https://api.binance.com/api/v3/ping',
         FUTURES: 'https://fapi.binance.com',
-        SPOT: 'https://api.binance.com/api/v3',
+        SPOT: 'https://api.binance.com',
         HISTORICAL: 'https://api.binance.com/api/v3/klines',
         ALL_TICKERS: 'https://api.binance.com/api/v3/exchangeInfo'
     },
     PRICE_COMPARISON_EPSILON: 0.00000001,
     TREND_ANALYSIS_PERIOD: 14 // Days for trend analysis
 };
-const TG_BOT_TOKEN = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30';
+const TG_BOT_TOKEN = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30'; // Замените на реальный токен из @BotFather
 
 // Объект для хранения данных о тикерах
 const tickersData = {
@@ -1336,18 +1336,18 @@ function applyCurrentPriceForEdit() {
 }
 
 function getMarketTypeBySymbol(symbol) {
-    // Сначала проверяем фьючерсы
+    // Сначала проверяем в общем списке Binance тикеров
+    if (allBinanceTickers[symbol]) {
+        return allBinanceTickers[symbol].type;
+    }
+
+    // Затем проверяем фьючерсы
     const futuresMatch = allFutures.find(c => c.symbol === symbol);
     if (futuresMatch) return 'futures';
 
     // Затем проверяем спотовые
     const spotMatch = allSpot.find(c => c.symbol === symbol);
     if (spotMatch) return 'spot';
-
-    // Если не нашли, проверяем в общем списке Binance тикеров
-    if (allBinanceTickers[symbol]) {
-        return allBinanceTickers[symbol].type;
-    }
 
     return null;
 }
