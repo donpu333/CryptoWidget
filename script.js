@@ -6,14 +6,14 @@ const API_CONFIG = {
     ENDPOINTS: {
         TEST: 'https://api.binance.com/api/v3/ping',
         FUTURES: 'https://fapi.binance.com',
-        SPOT: 'https://api.binance.com',
+        SPOT: 'https://api.binance.com/api/v3',
         HISTORICAL: 'https://api.binance.com/api/v3/klines',
         ALL_TICKERS: 'https://api.binance.com/api/v3/exchangeInfo'
     },
     PRICE_COMPARISON_EPSILON: 0.00000001,
     TREND_ANALYSIS_PERIOD: 14 // Days for trend analysis
 };
-const TG_BOT_TOKEN = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30'; // Замените на реальный токен из @BotFather
+const TG_BOT_TOKEN = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30';
 
 // Объект для хранения данных о тикерах
 const tickersData = {
@@ -29,56 +29,8 @@ let tickersLoaded = false;
 let allFutures = [];
 let allSpot = [];
 
-// Переменные для модальных окон
-const priceModal = document.getElementById('priceModal');
-const modalTicker = document.getElementById('modalTicker');
-const priceInput = document.getElementById('priceInput');
-const changeInput = document.getElementById('changeInput');
-const commentModal = document.getElementById('commentModal');
-const commentModalTicker = document.getElementById('commentModalTicker');
-const commentInput = document.getElementById('commentInput');
-let currentTicker = '';
-let currentListType = '';
-
-// Переменная для хранения виджета TradingView
-let tradingViewWidget = null;
+// Инициализация API менеджера
 let apiManager;
-
-// Кэш для популярных тикеров
-const popularTickers = {
-    'BTCUSDT': { name: 'Bitcoin', type: 'spot' },
-    'ETHUSDT': { name: 'Ethereum', type: 'spot' },
-    'BNBUSDT': { name: 'Binance Coin', type: 'spot' },
-    'SOLUSDT': { name: 'Solana', type: 'spot' },
-    'XRPUSDT': { name: 'Ripple', type: 'spot' },
-    'ADAUSDT': { name: 'Cardano', type: 'spot' },
-    'DOGEUSDT': { name: 'Dogecoin', type: 'spot' },
-    'DOTUSDT': { name: 'Polkadot', type: 'spot' },
-    'SHIBUSDT': { name: 'Shiba Inu', type: 'spot' },
-    'MATICUSDT': { name: 'Polygon', type: 'spot' },
-    'BTCUSDT.P': { name: 'Bitcoin Futures', type: 'futures' },
-    'ETHUSDT.P': { name: 'Ethereum Futures', type: 'futures' },
-    'SOLUSDT.P': { name: 'Solana Futures', type: 'futures' },
-    'XRPUSDT.P': { name: 'Ripple Futures', type: 'futures' },
-    'ADAUSDT.P': { name: 'Cardano Futures', type: 'futures' },
-    'LINKUSDT': { name: 'Chainlink', type: 'spot' },
-    'AVAXUSDT': { name: 'Avalanche', type: 'spot' },
-    'LTCUSDT': { name: 'Litecoin', type: 'spot' },
-    'ATOMUSDT': { name: 'Cosmos', type: 'spot' },
-    'UNIUSDT': { name: 'Uniswap', type: 'spot' },
-    'LINKUSDT.P': { name: 'Chainlink Futures', type: 'futures' },
-    'AVAXUSDT.P': { name: 'Avalanche Futures', type: 'futures' },
-    'LTCUSDT.P': { name: 'Litecoin Futures', type: 'futures' },
-    'ATOMUSDT.P': { name: 'Cosmos Futures', type: 'futures' },
-    'UNIUSDT.P': { name: 'Uniswap Futures', type: 'futures' }
-};
-
-// Переменные для алертов
-let userAlerts = [];
-let currentAlertFilter = 'active';
-let alertCooldowns = {};
-let activeTriggeredAlerts = {};
-let currentPrices = {};
 
 class BinanceAPIManager {
     constructor() {
@@ -941,110 +893,16 @@ function closeChartModal() {
     document.getElementById('chartModal').style.display = 'none';
 }
 
-// Функции для работы с пользователями
+// Функции для работы с алертами
+let userAlerts = [];
+let currentAlertFilter = 'active';
+let alertCooldowns = {};
+let activeTriggeredAlerts = {};
+let currentPrices = {};
+
 function isValidEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
-}
-
-function handleRegister() {
-    const email = document.getElementById('registerEmail').value.trim();
-    const password = document.getElementById('registerPassword').value;
-    const confirmPassword = document.getElementById('registerConfirmPassword')?.value;
-
-    if (!email || !password || !confirmPassword) {
-        showNotification('Ошибка', 'Все поля обязательны для заполнения');
-        return;
-    }
-
-    if (!isValidEmail(email)) {
-        showNotification('Ошибка', 'Введите корректный email');
-        return;
-    }
-
-    if (password.length < 8) {
-        showNotification('Ошибка', 'Пароль должен содержать минимум 8 символов');
-        return;
-    }
-
-    if (password !== confirmPassword) {
-        showNotification('Ошибка', 'Пароли не совпадают');
-        return;
-    }
-
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const userExists = users.some(user => user.email === email);
-
-    if (userExists) {
-        showNotification('Ошибка', 'Пользователь с таким email уже зарегистрирован');
-        return;
-    }
-
-    const newUser = {
-        email: email,
-        password: btoa(password),
-        createdAt: new Date().toISOString(),
-        alerts: []
-    };
-
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    localStorage.setItem('currentUser', JSON.stringify({ email: email }));
-
-    showNotification('Успех', 'Регистрация прошла успешно!');
-    closeRegisterModal();
-    updateUserUI(email);
-}
-
-function handleLogin() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-
-    if (!email || !password) {
-        showNotification('Ошибка', 'Введите email и пароль');
-        return;
-    }
-
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find(u => u.email === email && atob(u.password) === password);
-
-    if (!user) {
-        showNotification('Ошибка', 'Неверный email или пароль');
-        return;
-    }
-
-    localStorage.setItem('currentUser', JSON.stringify({ email: email }));
-    showNotification('Успех', 'Вход выполнен успешно!');
-    closeLoginModal();
-    updateUserUI(email);
-}
-
-function handleLogout() {
-    localStorage.removeItem('currentUser');
-    showNotification('Успех', 'Вы успешно вышли из системы');
-    updateUserUI(null);
-    toggleMenu();
-}
-
-function updateUserUI(email) {
-    const userProfileBtn = document.getElementById('userProfileBtn');
-    const userName = document.getElementById('userName');
-    const loginMenuItem = document.getElementById('loginMenuItem');
-    const registerMenuItem = document.getElementById('registerMenuItem');
-    const logoutMenuItem = document.getElementById('logoutMenuItem');
-
-    if (email) {
-        if (userProfileBtn) userProfileBtn.classList.remove('hidden');
-        if (userName) userName.textContent = email.split('@')[0];
-        if (loginMenuItem) loginMenuItem.classList.add('hidden');
-        if (registerMenuItem) registerMenuItem.classList.add('hidden');
-        if (logoutMenuItem) logoutMenuItem.classList.remove('hidden');
-    } else {
-        if (userProfileBtn) userProfileBtn.classList.add('hidden');
-        if (loginMenuItem) loginMenuItem.classList.remove('hidden');
-        if (registerMenuItem) registerMenuItem.classList.remove('hidden');
-        if (logoutMenuItem) logoutMenuItem.classList.add('hidden');
-    }
 }
 
 function saveTriggeredAlert(alert) {
@@ -1336,18 +1194,22 @@ function applyCurrentPriceForEdit() {
 }
 
 function getMarketTypeBySymbol(symbol) {
-    // Сначала проверяем фьючерсы
+    // Проверяем сначала фьючерсы
+    if (allBinanceTickers[symbol] && allBinanceTickers[symbol].type === 'futures') {
+        return 'futures';
+    }
+    
+    // Затем проверяем спотовые
+    if (allBinanceTickers[symbol] && allBinanceTickers[symbol].type === 'spot') {
+        return 'spot';
+    }
+    
+    // Если не нашли, проверяем вручную
     const futuresMatch = allFutures.find(c => c.symbol === symbol);
     if (futuresMatch) return 'futures';
 
-    // Затем проверяем спотовые
     const spotMatch = allSpot.find(c => c.symbol === symbol);
     if (spotMatch) return 'spot';
-
-    // Если не нашли, проверяем в общем списке Binance тикеров
-    if (allBinanceTickers[symbol]) {
-        return allBinanceTickers[symbol].type;
-    }
 
     return null;
 }
