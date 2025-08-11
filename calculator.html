@@ -440,7 +440,7 @@
         }
 
         .trade-type-selector {
-            display: flex;
+            display: none;
             flex-wrap: wrap;
             gap: 8px;
             margin-bottom: 15px;
@@ -1563,6 +1563,7 @@ ATR: ${formatNumber(atr, 8)} USDT
 
             // Кнопки типа сделки
             const tradeTypeButtons = document.querySelectorAll('.trade-type-btn');
+            const tradeTypeSelector = document.getElementById('tradeTypeSelector');
 
             // Инициализация
             function init() {
@@ -1590,8 +1591,14 @@ ATR: ${formatNumber(atr, 8)} USDT
                     longBtn.classList.add('active');
                     shortBtn.classList.remove('active');
 
-                    // Обновляем кнопки типа сделки
-                    updateTradeTypeButtons();
+                    // Показываем/скрываем кнопки типа сделки при нажатии
+                    if (tradeTypeSelector.style.display === 'flex') {
+                        tradeTypeSelector.style.display = 'none';
+                    } else {
+                        tradeTypeSelector.style.display = 'flex';
+                        updateTradeTypeButtons();
+                    }
+                    
                     calculateRisk();
                 });
 
@@ -1600,8 +1607,14 @@ ATR: ${formatNumber(atr, 8)} USDT
                     shortBtn.classList.add('active');
                     longBtn.classList.remove('active');
 
-                    // Обновляем кнопки типа сделки
-                    updateTradeTypeButtons();
+                    // Показываем/скрываем кнопки типа сделки при нажатии
+                    if (tradeTypeSelector.style.display === 'flex') {
+                        tradeTypeSelector.style.display = 'none';
+                    } else {
+                        tradeTypeSelector.style.display = 'flex';
+                        updateTradeTypeButtons();
+                    }
+                    
                     calculateRisk();
                 });
 
@@ -1715,9 +1728,6 @@ ATR: ${formatNumber(atr, 8)} USDT
 
             // Обновление кнопок типа сделки в зависимости от направления
             function updateTradeTypeButtons() {
-                const tradeTypeSelector = document.getElementById('tradeTypeSelector');
-                tradeTypeSelector.style.display = 'flex';
-
                 const longBreakoutBtn = document.querySelector('.trade-type-btn.long-breakout');
                 const longFakeoutBtn = document.querySelector('.trade-type-btn.long-fakeout');
                 const shortBreakoutBtn = document.querySelector('.trade-type-btn.short-breakout');
