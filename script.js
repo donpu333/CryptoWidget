@@ -1,4 +1,6 @@
 
+
+```javascript
 // Конфигурация API
 const API_CONFIG = {
     RECONNECT_INTERVAL: 5000,
@@ -2983,4 +2985,5 @@ window.resetForm = resetForm;
 window.reactivateAlert = reactivateAlert;
 window.exportAlertToTelegram = exportAlertToTelegram;
 window.exportAllActiveAlerts = exportAllActiveAlerts;
-к алертов и счетчики. Все остальные функции приложения остались без изменений.
+```
+
