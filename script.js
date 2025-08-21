@@ -2669,7 +2669,7 @@ function setupEventListeners() {
         setTimeout(() => {
             location.reload();
         }, 1000);
-          });
+         
             }
         });
     }
