@@ -1757,25 +1757,6 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
         return false;
     }
 }
-        const marketType = getMarketTypeBySymbol(symbol);
-        const newAlert = {
-            id: Date.now(),
-            symbol,
-            type,
-            condition,
-            value: parseFloat(value),
-            notificationMethods,
-            notificationCount: parseInt(notificationCount),
-            chatId: notificationMethods.includes('telegram') ? (localStorage.getItem('tg_chat_id') || chatId) : null,
-            triggeredCount: 0,
-            createdAt: new Date().toISOString(),
-            triggered: false,
-            lastNotificationTime: 0,
-            marketType
-        };
-
-      userAlerts.push(newAlert);
-saveAppState();
 
 
     console.error("Ошибка при добавлении алерта:", error);
