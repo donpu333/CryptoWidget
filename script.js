@@ -1,3 +1,6 @@
+Вот полный исправленный код вашего проекта с решением проблемы создания нескольких алертов подряд без обновления страницы:
+
+```javascript
 // Конфигурация API
 const API_CONFIG = {
     RECONNECT_INTERVAL: 5000,
@@ -76,6 +79,7 @@ let currentAlertFilter = 'active';
 let alertCooldowns = {};
 let activeTriggeredAlerts = {};
 let currentPrices = {}; // Добавлено: кэш текущих цен
+let isSubmitting = false; // Флаг для предотвращения повторной отправки формы
 
 class BinanceAPIManager {
     constructor() {
@@ -1799,7 +1803,7 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
 
         const marketType = getMarketTypeBySymbol(symbol);
         const newAlert = {
-            id: Date.now(),
+            id: Date.now() + Math.random(), // Добавляем случайность для уникальности ID
             symbol,
             type,
             condition,
@@ -2468,24 +2472,17 @@ function closeRegisterModal() {
     }
 }
 
-// Улучшенная функция resetForm для корректного сброса после создания алерта
+// Улучшенная функция resetForm для полного сброса формы
 function resetForm() {
     const alertForm = document.getElementById('alertForm');
     if (alertForm) {
-        // Сбрасываем форму
+        // Полный сброс формы
         alertForm.reset();
         
-        // Дополнительные сбросы
+        // Очищаем все поля ввода вручную
         const coinSearch = document.getElementById('coinSearch');
         if (coinSearch) {
             coinSearch.value = '';
-            coinSearch.focus();
-        }
-
-        const symbolSelect = document.getElementById('symbol');
-        if (symbolSelect) {
-            symbolSelect.innerHTML = '';
-            symbolSelect.classList.add('hidden');
         }
 
         const symbolInput = document.getElementById('symbol');
@@ -2493,16 +2490,31 @@ function resetForm() {
             symbolInput.value = '';
         }
 
+        const valueInput = document.getElementById('value');
+        if (valueInput) {
+            valueInput.value = '';
+        }
+
+        // Скрываем выпадающий список
+        const symbolSelect = document.getElementById('symbol');
+        if (symbolSelect) {
+            symbolSelect.innerHTML = '';
+            symbolSelect.classList.add('hidden');
+        }
+
+        // Очищаем подсказку типа рынка
         const marketTypeHint = document.getElementById('marketTypeHint');
         if (marketTypeHint) {
             marketTypeHint.innerHTML = '';
         }
 
+        // Скрываем контейнер текущей цены
         const currentPriceContainer = document.getElementById('currentPriceContainer');
         if (currentPriceContainer) {
             currentPriceContainer.classList.add('hidden');
         }
 
+        // Сбрасываем ID редактирования
         const editAlertId = document.getElementById('editAlertId');
         if (editAlertId) {
             editAlertId.value = '';
@@ -2519,7 +2531,7 @@ function resetForm() {
             emailCheckbox.checked = false;
         }
 
-        // Скрываем дополнительные поля и очищаем их
+        // Скрываем и очищаем дополнительные поля
         const userChatIdInput = document.getElementById('userChatId');
         if (userChatIdInput) {
             userChatIdInput.value = '';
@@ -2546,8 +2558,18 @@ function resetForm() {
             el.classList.remove('validation-error');
         });
 
+        // Удаляем классы валидации Bootstrap, если они используются
+        alertForm.classList.remove('was-validated');
+        
         // Принудительно обновляем состояние формы
         alertForm.dispatchEvent(new Event('reset', { bubbles: true }));
+        
+        // Устанавливаем фокус на первое поле
+        setTimeout(() => {
+            if (coinSearch) {
+                coinSearch.focus();
+            }
+        }, 50);
     }
 }
 
@@ -2654,84 +2676,94 @@ function setupEventListeners() {
     if (alertForm) {
         alertForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-
-            // Добавляем проверку подключения к боту
-            const telegramCheckbox = document.getElementById('telegram');
-            if (telegramCheckbox && telegramCheckbox.checked && !localStorage.getItem('tg_chat_id')) {
-                showBotConnectionHint();
+            
+            // Проверяем, не отправляется ли форма уже
+            if (isSubmitting) {
                 return;
             }
-
-            // Валидация формы
-            if (!validateForm()) return;
-
-            const symbol = document.getElementById('symbol')?.value;
-            const alertType = document.getElementById('alertType')?.value;
-            const condition = document.getElementById('condition')?.value;
-            const value = document.getElementById('value')?.value;
-            const useTelegram = document.getElementById('telegram')?.checked;
-            const useEmail = document.getElementById('email')?.checked;
-            const userEmail = useEmail ? document.getElementById('userEmail')?.value : '';
-            const userChatId = useTelegram ? document.getElementById('userChatId')?.value : '';
-            const notificationCount = document.getElementById('notificationCount')?.value;
-
-            if (!symbol || !alertType || !condition || !value || notificationCount === undefined) {
-                showNotification('Ошибка', 'Не все обязательные поля заполнены');
-                return;
-            }
-
-            if (useTelegram && !userChatId && !localStorage.getItem('tg_chat_id')) {
-                showNotification('Ошибка', 'Пожалуйста, укажите Telegram Chat ID');
-                return;
-            }
-
-            if (useEmail && !userEmail) {
-                showNotification('Ошибка', 'Пожалуйста, укажите email');
-                return;
-            }
-
-            const notificationMethods = [];
-            if (useTelegram) notificationMethods.push('telegram');
-            if (useEmail) notificationMethods.push('email');
-
-            if (notificationMethods.length === 0) {
-                showNotification('Ошибка', 'Выберите хотя бы один метод уведомления');
-                return;
-            }
-
-            const editAlertId = document.getElementById('editAlertId')?.value;
-
-            if (editAlertId) {
-                // Редактирование существующего алерта
-                const updatedAlert = {
-                    id: parseInt(editAlertId),
-                    symbol,
-                    type: alertType,
-                    condition,
-                    value: parseFloat(value),
-                    notificationMethods,
-                    notificationCount: parseInt(notificationCount),
-                    chatId: useTelegram ? (localStorage.getItem('tg_chat_id') || userChatId) : null,
-                    triggeredCount: userAlerts.find(a => a.id === parseInt(editAlertId))?.triggeredCount || 0,
-                    createdAt: userAlerts.find(a => a.id === parseInt(editAlertId))?.createdAt || new Date().toISOString(),
-                    triggered: false,
-                    lastNotificationTime: 0,
-                    marketType: getMarketTypeBySymbol(symbol)
-                };
-
-                userAlerts = userAlerts.map(a => a.id === parseInt(editAlertId) ? updatedAlert : a);
-                saveAppState();
-
-                if (useEmail) {
-                    localStorage.setItem('userEmail', userEmail);
+            
+            // Устанавливаем флаг отправки
+            isSubmitting = true;
+            
+            try {
+                // Добавляем проверку подключения к боту
+                const telegramCheckbox = document.getElementById('telegram');
+                if (telegramCheckbox && telegramCheckbox.checked && !localStorage.getItem('tg_chat_id')) {
+                    showBotConnectionHint();
+                    return;
                 }
 
-                loadUserAlerts(currentAlertFilter);
-                showNotification('Успешно', `Алерт для ${symbol} обновлен`);
-                resetForm();
-            } else {
-                // Создание нового алерта
-                try {
+                // Валидация формы
+                if (!validateForm()) {
+                    return;
+                }
+
+                const symbol = document.getElementById('symbol')?.value;
+                const alertType = document.getElementById('alertType')?.value;
+                const condition = document.getElementById('condition')?.value;
+                const value = document.getElementById('value')?.value;
+                const useTelegram = document.getElementById('telegram')?.checked;
+                const useEmail = document.getElementById('email')?.checked;
+                const userEmail = useEmail ? document.getElementById('userEmail')?.value : '';
+                const userChatId = useTelegram ? document.getElementById('userChatId')?.value : '';
+                const notificationCount = document.getElementById('notificationCount')?.value;
+
+                if (!symbol || !alertType || !condition || !value || notificationCount === undefined) {
+                    showNotification('Ошибка', 'Не все обязательные поля заполнены');
+                    return;
+                }
+
+                if (useTelegram && !userChatId && !localStorage.getItem('tg_chat_id')) {
+                    showNotification('Ошибка', 'Пожалуйста, укажите Telegram Chat ID');
+                    return;
+                }
+
+                if (useEmail && !userEmail) {
+                    showNotification('Ошибка', 'Пожалуйста, укажите email');
+                    return;
+                }
+
+                const notificationMethods = [];
+                if (useTelegram) notificationMethods.push('telegram');
+                if (useEmail) notificationMethods.push('email');
+
+                if (notificationMethods.length === 0) {
+                    showNotification('Ошибка', 'Выберите хотя бы один метод уведомления');
+                    return;
+                }
+
+                const editAlertId = document.getElementById('editAlertId')?.value;
+
+                if (editAlertId) {
+                    // Редактирование существующего алерта
+                    const updatedAlert = {
+                        id: parseInt(editAlertId),
+                        symbol,
+                        type: alertType,
+                        condition,
+                        value: parseFloat(value),
+                        notificationMethods,
+                        notificationCount: parseInt(notificationCount),
+                        chatId: useTelegram ? (localStorage.getItem('tg_chat_id') || userChatId) : null,
+                        triggeredCount: userAlerts.find(a => a.id === parseInt(editAlertId))?.triggeredCount || 0,
+                        createdAt: userAlerts.find(a => a.id === parseInt(editAlertId))?.createdAt || new Date().toISOString(),
+                        triggered: false,
+                        lastNotificationTime: 0,
+                        marketType: getMarketTypeBySymbol(symbol)
+                    };
+
+                    userAlerts = userAlerts.map(a => a.id === parseInt(editAlertId) ? updatedAlert : a);
+                    saveAppState();
+
+                    if (useEmail) {
+                        localStorage.setItem('userEmail', userEmail);
+                    }
+
+                    loadUserAlerts(currentAlertFilter);
+                    showNotification('Успешно', `Алерт для ${symbol} обновлен`);
+                    resetForm();
+                } else {
+                    // Создание нового алерта
                     const success = await addUserAlert(symbol, alertType, condition, value, notificationMethods, notificationCount, userChatId);
                     if (success) {
                         showNotification('Успешно', `Алерт для ${symbol} создан`);
@@ -2739,10 +2771,13 @@ function setupEventListeners() {
                         // Обновляем список алертов
                         loadUserAlerts(currentAlertFilter);
                     }
-                } catch (error) {
-                    console.error('Error creating alert:', error);
-                    showNotification('Ошибка', 'Не удалось создать алерт');
                 }
+            } catch (error) {
+                console.error('Error creating alert:', error);
+                showNotification('Ошибка', 'Не удалось создать алерт');
+            } finally {
+                // Сбрасываем флаг отправки
+                isSubmitting = false;
             }
         });
     }
