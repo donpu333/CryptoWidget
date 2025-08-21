@@ -1759,9 +1759,6 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
 }
 
 
-    console.error("Ошибка при добавлении алерта:", error);
-    showNotification('Ошибка', 'Не удалось создать алерт');
-    return false;
 }
       
 function loadUserAlerts(filter = 'active') {
