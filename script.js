@@ -1739,19 +1739,24 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
             marketType
         };
 
-        userAlerts.push(newAlert);
-        saveAppState();
+      userAlerts.push(newAlert);
+saveAppState();
 
-        // Обновляем список алертов сразу после добавления
-        loadUserAlerts(currentAlertFilter);
-        return true;
-    } catch (error) {
-        console.error("Ошибка при добавлении алерта:", error);
-        showNotification('Ошибка', 'Не удалось создать алерт');
-        return false;
-    }
+// Обновляем список алертов сразу после добавления
+loadUserAlerts(currentAlertFilter);
+
+// ДОБАВЬТЕ ЭТОТ КОД - обновление страницы через 1 секунду
+setTimeout(() => {
+    location.reload();
+}, 1000);
+
+return true;
+} catch (error) {
+    console.error("Ошибка при добавлении алерта:", error);
+    showNotification('Ошибка', 'Не удалось создать алерт');
+    return false;
 }
-
+      
 function loadUserAlerts(filter = 'active') {
     const longAlertsContainer = document.getElementById('longAlerts');
     const shortAlertsContainer = document.getElementById('shortAlerts');
@@ -2661,10 +2666,13 @@ function setupEventListeners() {
                     resetForm();
                     // Обновляем список алертов
                     loadUserAlerts(currentAlertFilter);
-                }
-            }
-        });
-    }
+                   // ОБНОВЛЯЕМ СТРАНИЦУ ПОСЛЕ СОЗДАНИЯ АЛЕРТА
+                   setTimeout(() => {
+                    location.reload();
+                       }, 1000);
+                     }
+                     }
+                   });
 
     const clearAlertsBtn = document.getElementById('clearAlerts');
     if (clearAlertsBtn) {
