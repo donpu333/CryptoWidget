@@ -1283,7 +1283,13 @@ async function checkAlerts() {
                     console.log(`Alert triggered: ${alert.symbol} ${alert.condition} ${alert.value} | Current: ${price} | Time: ${new Date().toISOString()}`);
 
                     // Отправка уведомлений и обработка срабатывания
-                    await handleTriggeredAlert(alert, price);
+                    try {
+                        await handleTriggeredAlert(alert, price);
+                        console.log("Alert handled successfully, reloading page...");
+                        window.location.reload(true);
+                    } catch (error) {
+                        console.error("Error handling alert:", error);
+                    }
                     await handleTriggeredAlert(alert, price);
                     window.location.reload();
                     activeTriggeredAlerts[alert.id] = true;
