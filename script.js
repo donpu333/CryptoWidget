@@ -1339,6 +1339,7 @@ function highlightTriggeredAlert(alertId, condition) {
 
 // Новая функция для обработки сработавшего алерта
 async function handleTriggeredAlert(alert, currentPrice) {
+        try {
     const message = `🚨 Алерт сработал!\nСимвол: ${alert.symbol}\n` +
         `Условие: ${alert.condition} ${alert.value}\n` +
         `Текущая цена: ${formatNumber(currentPrice, 8)}`;
