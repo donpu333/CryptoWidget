@@ -1785,7 +1785,6 @@ setTimeout(() => {
     console.log('Reloading page after alert creation');
     location.reload();
 }, 1000);
-
 return true;
 } catch (error) {
     console.error("Ошибка при добавлении алерта:", error);
