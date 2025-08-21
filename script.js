@@ -12,9 +12,9 @@ const API_CONFIG = {
         ALL_TICKERS: 'https://api.binance.com/api/v3/exchangeInfo'
     },
     PRICE_COMPARISON_EPSILON: 0.00000001,
-    TREND_ANALYSIS_PERIOD: 14 // Days for trend analysis
+    TREND_ANALYSIS_PERIOD: 14
 };
-const TG_BOT_TOKEN = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30'; // Замените на реальный токен из @BotFather
+const TG_BOT_TOKEN = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30';
 
 // Глобальные переменные
 let allFutures = [];
@@ -24,7 +24,7 @@ let currentAlertFilter = 'active';
 let alertCooldowns = {};
 let activeTriggeredAlerts = {};
 let currentPrices = {};
-let isSubmitting = false; // Флаг для предотвращения повторной отправки формы
+let isSubmitting = false; // Флаг для предотвращения повторной отправки
 let apiManager;
 
 // Класс для работы с Binance API
@@ -791,8 +791,10 @@ async function createAlertForSymbol(symbol, currentPrice) {
     }
 }
 
+// Функция для создания нового алерта
 async function addUserAlert(symbol, type, condition, value, notificationMethods, notificationCount, chatId) {
     try {
+        // Проверяем наличие подключения для Telegram
         if (notificationMethods.includes('telegram')) {
             const savedChatId = localStorage.getItem('tg_chat_id') || chatId;
             if (!savedChatId) {
@@ -800,13 +802,16 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
                 return false;
             }
         }
+
+        // Проверяем на дубликаты
         if (isDuplicateAlert(symbol, condition, value)) {
             showNotification('Ошибка', 'Такой алерт уже существует');
             return false;
         }
+
         const marketType = getMarketTypeBySymbol(symbol);
         const newAlert = {
-            id: Date.now() + Math.random(),
+            id: Date.now() + Math.random(), // Добавляем случайность для уникальности ID
             symbol,
             type,
             condition,
@@ -820,8 +825,11 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
             lastNotificationTime: 0,
             marketType
         };
+
         userAlerts.push(newAlert);
         saveAppState();
+
+        // Обновляем список алертов сразу после добавления
         loadUserAlerts(currentAlertFilter);
         return true;
     } catch (error) {
@@ -1500,66 +1508,95 @@ function updateUserUI(email) {
 function resetForm() {
     const alertForm = document.getElementById('alertForm');
     if (alertForm) {
+        // Полный сброс формы
         alertForm.reset();
+        
+        // Очищаем все поля ввода вручную
         const coinSearch = document.getElementById('coinSearch');
         if (coinSearch) {
             coinSearch.value = '';
         }
+
         const symbolInput = document.getElementById('symbol');
         if (symbolInput) {
             symbolInput.value = '';
         }
+
         const valueInput = document.getElementById('value');
         if (valueInput) {
             valueInput.value = '';
         }
+
+        // Скрываем выпадающий список
         const symbolSelect = document.getElementById('symbol');
         if (symbolSelect) {
             symbolSelect.innerHTML = '';
             symbolSelect.classList.add('hidden');
         }
+
+        // Очищаем подсказку типа рынка
         const marketTypeHint = document.getElementById('marketTypeHint');
         if (marketTypeHint) {
             marketTypeHint.innerHTML = '';
         }
+
+        // Скрываем контейнер текущей цены
         const currentPriceContainer = document.getElementById('currentPriceContainer');
         if (currentPriceContainer) {
             currentPriceContainer.classList.add('hidden');
         }
+
+        // Сбрасываем ID редактирования
         const editAlertId = document.getElementById('editAlertId');
         if (editAlertId) {
             editAlertId.value = '';
         }
+
+        // Сбрасываем чекбоксы уведомлений к состоянию по умолчанию
         const telegramCheckbox = document.getElementById('telegram');
         if (telegramCheckbox) {
             telegramCheckbox.checked = true;
         }
+
         const emailCheckbox = document.getElementById('email');
         if (emailCheckbox) {
             emailCheckbox.checked = false;
         }
+
+        // Скрываем и очищаем дополнительные поля
         const userChatIdInput = document.getElementById('userChatId');
         if (userChatIdInput) {
             userChatIdInput.value = '';
             userChatIdInput.classList.add('hidden');
         }
+
         const userEmailInput = document.getElementById('userEmail');
         if (userEmailInput) {
             userEmailInput.value = '';
             userEmailInput.classList.add('hidden');
         }
+
+        // Устанавливаем значение по умолчанию для количества уведомлений
         const notificationCountSelect = document.getElementById('notificationCount');
         if (notificationCountSelect) {
             notificationCountSelect.value = '5';
         }
+
+        // Очищаем все ошибки валидации
         document.querySelectorAll('.validation-message').forEach(el => {
             el.style.display = 'none';
         });
         document.querySelectorAll('.validation-error').forEach(el => {
             el.classList.remove('validation-error');
         });
+
+        // Удаляем классы валидации Bootstrap, если они используются
         alertForm.classList.remove('was-validated');
+        
+        // Принудительно обновляем состояние формы
         alertForm.dispatchEvent(new Event('reset', { bubbles: true }));
+        
+        // Устанавливаем фокус на первое поле
         setTimeout(() => {
             if (coinSearch) {
                 coinSearch.focus();
@@ -1657,19 +1694,28 @@ function setupEventListeners() {
     if (alertForm) {
         alertForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Проверяем, не отправляется ли форма уже
             if (isSubmitting) {
                 return;
             }
+            
+            // Устанавливаем флаг отправки
             isSubmitting = true;
+            
             try {
+                // Добавляем проверку подключения к боту
                 const telegramCheckbox = document.getElementById('telegram');
                 if (telegramCheckbox && telegramCheckbox.checked && !localStorage.getItem('tg_chat_id')) {
                     showBotConnectionHint();
                     return;
                 }
+
+                // Валидация формы
                 if (!validateForm()) {
                     return;
                 }
+
                 const symbol = document.getElementById('symbol')?.value;
                 const alertType = document.getElementById('alertType')?.value;
                 const condition = document.getElementById('condition')?.value;
@@ -1679,27 +1725,35 @@ function setupEventListeners() {
                 const userEmail = useEmail ? document.getElementById('userEmail')?.value : '';
                 const userChatId = useTelegram ? document.getElementById('userChatId')?.value : '';
                 const notificationCount = document.getElementById('notificationCount')?.value;
+
                 if (!symbol || !alertType || !condition || !value || notificationCount === undefined) {
                     showNotification('Ошибка', 'Не все обязательные поля заполнены');
                     return;
                 }
+
                 if (useTelegram && !userChatId && !localStorage.getItem('tg_chat_id')) {
                     showNotification('Ошибка', 'Пожалуйста, укажите Telegram Chat ID');
                     return;
                 }
+
                 if (useEmail && !userEmail) {
                     showNotification('Ошибка', 'Пожалуйста, укажите email');
                     return;
                 }
+
                 const notificationMethods = [];
                 if (useTelegram) notificationMethods.push('telegram');
                 if (useEmail) notificationMethods.push('email');
+
                 if (notificationMethods.length === 0) {
                     showNotification('Ошибка', 'Выберите хотя бы один метод уведомления');
                     return;
                 }
+
                 const editAlertId = document.getElementById('editAlertId')?.value;
+
                 if (editAlertId) {
+                    // Редактирование существующего алерта
                     const updatedAlert = {
                         id: parseInt(editAlertId),
                         symbol,
@@ -1715,19 +1769,24 @@ function setupEventListeners() {
                         lastNotificationTime: 0,
                         marketType: getMarketTypeBySymbol(symbol)
                     };
+
                     userAlerts = userAlerts.map(a => a.id === parseInt(editAlertId) ? updatedAlert : a);
                     saveAppState();
+
                     if (useEmail) {
                         localStorage.setItem('userEmail', userEmail);
                     }
+
                     loadUserAlerts(currentAlertFilter);
                     showNotification('Успешно', `Алерт для ${symbol} обновлен`);
                     resetForm();
                 } else {
+                    // Создание нового алерта
                     const success = await addUserAlert(symbol, alertType, condition, value, notificationMethods, notificationCount, userChatId);
                     if (success) {
                         showNotification('Успешно', `Алерт для ${symbol} создан`);
                         resetForm();
+                        // Обновляем список алертов
                         loadUserAlerts(currentAlertFilter);
                     }
                 }
@@ -1735,6 +1794,7 @@ function setupEventListeners() {
                 console.error('Error creating alert:', error);
                 showNotification('Ошибка', 'Не удалось создать алерт');
             } finally {
+                // Сбрасываем флаг отправки
                 isSubmitting = false;
             }
         });
@@ -1898,6 +1958,36 @@ function setupEventListeners() {
     }
 }
 
+// Функция для экспорта всех активных алертов в Telegram
+async function exportAllActiveAlerts() {
+    const chatId = localStorage.getItem('tg_chat_id');
+    if (!chatId) {
+        showBotConnectionHint();
+        return;
+    }
+    const activeAlerts = userAlerts.filter(alert => !alert.triggered);
+    if (activeAlerts.length === 0) {
+        showNotification('Ошибка', 'Нет активных алертов для экспорта');
+        return;
+    }
+    let message = '📋 Список активных алертов:\n\n';
+    activeAlerts.forEach((alert, index) => {
+        message += `${index + 1}. ${alert.symbol} ${alert.condition} ${alert.value}\n`;
+        message += `Тип: ${alert.type} | Уведомлений: ${alert.notificationCount === 0 ? '∞' : alert.notificationCount}\n\n`;
+    });
+    try {
+        const success = await sendTelegramNotification(message, chatId);
+        if (success) {
+            showNotification('Успешно', 'Все активные алерты экспортированы в Telegram');
+        } else {
+            showNotification('Ошибка', 'Не удалось отправить алерты в Telegram');
+        }
+    } catch (error) {
+        console.error('Ошибка при экспорте алертов:', error);
+        showNotification('Ошибка', 'Произошла ошибка при экспорте');
+    }
+}
+
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', async () => {
     apiManager = new BinanceAPIManager();
@@ -1933,36 +2023,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         showNotification('Critical Error', 'Failed to connect to Binance API');
     }
 });
-
-// Функция для экспорта всех активных алертов в Telegram
-async function exportAllActiveAlerts() {
-    const chatId = localStorage.getItem('tg_chat_id');
-    if (!chatId) {
-        showBotConnectionHint();
-        return;
-    }
-    const activeAlerts = userAlerts.filter(alert => !alert.triggered);
-    if (activeAlerts.length === 0) {
-        showNotification('Ошибка', 'Нет активных алертов для экспорта');
-        return;
-    }
-    let message = '📋 Список активных алертов:\n\n';
-    activeAlerts.forEach((alert, index) => {
-        message += `${index + 1}. ${alert.symbol} ${alert.condition} ${alert.value}\n`;
-        message += `Тип: ${alert.type} | Уведомлений: ${alert.notificationCount === 0 ? '∞' : alert.notificationCount}\n\n`;
-    });
-    try {
-        const success = await sendTelegramNotification(message, chatId);
-        if (success) {
-            showNotification('Успешно', 'Все активные алерты экспортированы в Telegram');
-        } else {
-            showNotification('Ошибка', 'Не удалось отправить алерты в Telegram');
-        }
-    } catch (error) {
-        console.error('Ошибка при экспорте алертов:', error);
-        showNotification('Ошибка', 'Произошла ошибка при экспорте');
-    }
-}
 
 // Глобальные функции для вызова из HTML
 window.copyToClipboard = copyToClipboard;
