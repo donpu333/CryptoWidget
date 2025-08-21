@@ -1283,15 +1283,8 @@ async function checkAlerts() {
                     console.log(`Alert triggered: ${alert.symbol} ${alert.condition} ${alert.value} | Current: ${price} | Time: ${new Date().toISOString()}`);
 
                     // Отправка уведомлений и обработка срабатывания
-                    try {
-                        await handleTriggeredAlert(alert, price);
-                        console.log("Alert handled successfully, reloading page...");
-                        window.location.reload(true);
-                    } catch (error) {
-                        console.error("Error handling alert:", error);
-                    }
                     await handleTriggeredAlert(alert, price);
-                    window.location.reload();
+                    alertCooldowns[cooldownKey] = now;
                     activeTriggeredAlerts[alert.id] = true;
 
                     // Обновляем интерфейс с подсветкой сработавшего алерта
@@ -1339,7 +1332,6 @@ function highlightTriggeredAlert(alertId, condition) {
 
 // Новая функция для обработки сработавшего алерта
 async function handleTriggeredAlert(alert, currentPrice) {
-        try {
     const message = `🚨 Алерт сработал!\nСимвол: ${alert.symbol}\n` +
         `Условие: ${alert.condition} ${alert.value}\n` +
         `Текущая цена: ${formatNumber(currentPrice, 8)}`;
