@@ -1757,9 +1757,6 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
         return false;
     }
 }
-
-
-}
       
 function loadUserAlerts(filter = 'active') {
     const longAlertsContainer = document.getElementById('longAlerts');
