@@ -11,7 +11,7 @@ const API_CONFIG = {
         ALL_TICKERS: 'https://api.binance.com/api/v3/exchangeInfo'
     },
     PRICE_COMPARISON_EPSILON: 0.00000001,
-    TREND_ANALYSIS_PERIOD: 14 // Days for trend analysis
+    TREND_ANALYSIS_PERIOD: 14 
 };
 const TG_BOT_TOKEN = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30'; // Замените на реальный токен из @BotFather
 // Объект для хранения данных о тикерах
