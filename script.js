@@ -2666,9 +2666,9 @@ function setupEventListeners() {
                     // Обновляем список алертов
                     loadUserAlerts(currentAlertFilter);
                     // ОБНОВЛЯЕМ СТРАНИЦУ ПОСЛЕ СОЗДАНИЯ АЛЕРТА
-        setTimeout(() => {
-            location.reload();
-        }, 1000);
+      setTimeout(() => {
+    location.reload(); 
+}, 1000);
          
             }
         });
