@@ -1624,19 +1624,94 @@ async function loadMarketData() {
     }
 }
 
+// Улучшенная функция showNotification для неблокирующих уведомлений
 function showNotification(title, message) {
-    const modal = document.getElementById('notificationModal');
-    const notificationTitle = document.getElementById('notificationTitle');
-    const notificationMessage = document.getElementById('notificationMessage');
+    // Создаем контейнер для уведомлений, если его нет
+    let notificationContainer = document.getElementById('notificationContainer');
+    if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.id = 'notificationContainer';
+        notificationContainer.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 350px;
+        `;
+        document.body.appendChild(notificationContainer);
+    }
 
-    if (!modal || !notificationTitle || !notificationMessage) return;
+    // Создаем уведомление
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.style.cssText = `
+        background: rgba(30, 30, 40, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 10px;
+        color: white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        animation: slideIn 0.3s ease-out;
+    `;
 
-    notificationTitle.textContent = title;
-    notificationMessage.textContent = message;
-    modal.classList.remove('hidden');
+    // Добавляем заголовок и сообщение
+    notification.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 8px; color: #4F46E5;">${title}</div>
+        <div style="font-size: 14px; line-height: 1.4; white-space: pre-wrap;">${message}</div>
+        <button onclick="this.parentElement.remove()" style="
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-size: 16px;
+        ">×</button>
+    `;
 
+    // Добавляем стили анимации
+    if (!document.getElementById('notificationStyles')) {
+        const style = document.createElement('style');
+        style.id = 'notificationStyles';
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Добавляем уведомление в контейнер
+    notificationContainer.appendChild(notification);
+
+    // Автоматически удаляем через 5 секунд
     setTimeout(() => {
-        modal.classList.add('hidden');
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 300);
     }, 5000);
 }
 
@@ -2393,10 +2468,13 @@ function closeRegisterModal() {
     }
 }
 
+// Улучшенная функция resetForm для корректного сброса после создания алерта
 function resetForm() {
     const alertForm = document.getElementById('alertForm');
     if (alertForm) {
+        // Сбрасываем форму
         alertForm.reset();
+        
         // Дополнительные сбросы
         const coinSearch = document.getElementById('coinSearch');
         if (coinSearch) {
@@ -2428,11 +2506,6 @@ function resetForm() {
         const editAlertId = document.getElementById('editAlertId');
         if (editAlertId) {
             editAlertId.value = '';
-        }
-
-        const submitBtnText = document.getElementById('submitBtnText');
-        if (submitBtnText) {
-            submitBtnText.textContent = 'Создать алерт';
         }
 
         // Сбрасываем чекбоксы уведомлений к состоянию по умолчанию
@@ -2472,6 +2545,9 @@ function resetForm() {
         document.querySelectorAll('.validation-error').forEach(el => {
             el.classList.remove('validation-error');
         });
+
+        // Принудительно обновляем состояние формы
+        alertForm.dispatchEvent(new Event('reset', { bubbles: true }));
     }
 }
 
@@ -2655,12 +2731,17 @@ function setupEventListeners() {
                 resetForm();
             } else {
                 // Создание нового алерта
-                const success = await addUserAlert(symbol, alertType, condition, value, notificationMethods, notificationCount, userChatId);
-                if (success) {
-                    showNotification('Успешно', `Алерт для ${symbol} создан`);
-                    resetForm();
-                    // Обновляем список алертов
-                    loadUserAlerts(currentAlertFilter);
+                try {
+                    const success = await addUserAlert(symbol, alertType, condition, value, notificationMethods, notificationCount, userChatId);
+                    if (success) {
+                        showNotification('Успешно', `Алерт для ${symbol} создан`);
+                        resetForm();
+                        // Обновляем список алертов
+                        loadUserAlerts(currentAlertFilter);
+                    }
+                } catch (error) {
+                    console.error('Error creating alert:', error);
+                    showNotification('Ошибка', 'Не удалось создать алерт');
                 }
             }
         });
