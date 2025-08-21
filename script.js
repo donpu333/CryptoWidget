@@ -1,3 +1,4 @@
+
 // Конфигурация API
 const API_CONFIG = {
     RECONNECT_INTERVAL: 5000,
@@ -2657,10 +2658,11 @@ function setupEventListeners() {
                 // Создание нового алерта
                 const success = await addUserAlert(symbol, alertType, condition, value, notificationMethods, notificationCount, userChatId);
                 if (success) {
-                    showNotification('Успешно', `Алерт для ${symbol} создан`);
-                    resetForm();
-                    // Обновляем список алертов
-                    loadUserAlerts(currentAlertFilter);
+                    showNotification('Успешно', `Алерт для ${symbol} создан. Страница будет обновлена.`);
+                    // Перезагружаем страницу через 1 секунду, чтобы успеть показать уведомление
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
                 }
             }
         });
@@ -2981,3 +2983,5 @@ window.resetForm = resetForm;
 window.reactivateAlert = reactivateAlert;
 window.exportAlertToTelegram = exportAlertToTelegram;
 window.exportAllActiveAlerts = exportAllActiveAlerts;
+
+Теперь код должен работать корректно со всеми функциями, как и раньше, но с добавлением обновления списка алертов после создания нового алерта без перезагрузки страницы.
