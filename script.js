@@ -1739,6 +1739,41 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
             marketType
         };
 
+        userAlerts.push(newAlert);
+        saveAppState();
+
+        // Обновляем список алертов сразу после добавления
+        loadUserAlerts(currentAlertFilter);
+
+        // ДОБАВЬТЕ ЭТОТ КОД - обновление страницы через 1 секунду
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+
+        return true;
+    } catch (error) {
+        console.error("Ошибка при добавлении алерта:", error);
+        showNotification('Ошибка', 'Не удалось создать алерт');
+        return false;
+    }
+}
+        const marketType = getMarketTypeBySymbol(symbol);
+        const newAlert = {
+            id: Date.now(),
+            symbol,
+            type,
+            condition,
+            value: parseFloat(value),
+            notificationMethods,
+            notificationCount: parseInt(notificationCount),
+            chatId: notificationMethods.includes('telegram') ? (localStorage.getItem('tg_chat_id') || chatId) : null,
+            triggeredCount: 0,
+            createdAt: new Date().toISOString(),
+            triggered: false,
+            lastNotificationTime: 0,
+            marketType
+        };
+
       userAlerts.push(newAlert);
 saveAppState();
 
@@ -1747,6 +1782,7 @@ loadUserAlerts(currentAlertFilter);
 
 // ДОБАВЬТЕ ЭТОТ КОД - обновление страницы через 1 секунду
 setTimeout(() => {
+    console.log('Reloading page after alert creation');
     location.reload();
 }, 1000);
 
