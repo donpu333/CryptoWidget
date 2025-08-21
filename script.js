@@ -1777,16 +1777,7 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
       userAlerts.push(newAlert);
 saveAppState();
 
-// Обновляем список алертов сразу после добавления
-loadUserAlerts(currentAlertFilter);
 
-// ДОБАВЬТЕ ЭТОТ КОД - обновление страницы через 1 секунду
-setTimeout(() => {
-    console.log('Reloading page after alert creation');
-    location.reload();
-}, 1000);
-return true;
-} catch (error) {
     console.error("Ошибка при добавлении алерта:", error);
     showNotification('Ошибка', 'Не удалось создать алерт');
     return false;
