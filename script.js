@@ -1,4 +1,3 @@
-
 // Конфигурация API
 const API_CONFIG = {
     RECONNECT_INTERVAL: 5000,
@@ -15,7 +14,6 @@ const API_CONFIG = {
     TREND_ANALYSIS_PERIOD: 14 // Days for trend analysis
 };
 const TG_BOT_TOKEN = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30'; // Замените на реальный токен из @BotFather
-
 // Объект для хранения данных о тикерах
 const tickersData = {
     'long': {},
@@ -77,7 +75,7 @@ let userAlerts = [];
 let currentAlertFilter = 'active';
 let alertCooldowns = {};
 let activeTriggeredAlerts = {};
-let currentPrices = {}; // Кэш текущих цен
+let currentPrices = {}; // Добавлено: кэш текущих цен
 
 class BinanceAPIManager {
     constructor() {
@@ -2395,71 +2393,85 @@ function closeRegisterModal() {
     }
 }
 
-// ИСПРАВЛЕННАЯ ФУНКЦИЯ СБРОСА ФОРМЫ
 function resetForm() {
     const alertForm = document.getElementById('alertForm');
     if (alertForm) {
         alertForm.reset();
-        
-        // Полный сброс всех полей и состояний
-        const fieldsToReset = [
-            'coinSearch', 'symbol', 'value', 'condition', 'alertType',
-            'userChatId', 'userEmail', 'notificationCount', 'editAlertId'
-        ];
-        
-        fieldsToReset.forEach(fieldId => {
-            const field = document.getElementById(fieldId);
-            if (field) {
-                field.value = '';
-                field.classList.remove('validation-error');
-            }
-        });
-        
-        // Сброс чекбоксов
+        // Дополнительные сбросы
+        const coinSearch = document.getElementById('coinSearch');
+        if (coinSearch) {
+            coinSearch.value = '';
+            coinSearch.focus();
+        }
+
+        const symbolSelect = document.getElementById('symbol');
+        if (symbolSelect) {
+            symbolSelect.innerHTML = '';
+            symbolSelect.classList.add('hidden');
+        }
+
+        const symbolInput = document.getElementById('symbol');
+        if (symbolInput) {
+            symbolInput.value = '';
+        }
+
+        const marketTypeHint = document.getElementById('marketTypeHint');
+        if (marketTypeHint) {
+            marketTypeHint.innerHTML = '';
+        }
+
+        const currentPriceContainer = document.getElementById('currentPriceContainer');
+        if (currentPriceContainer) {
+            currentPriceContainer.classList.add('hidden');
+        }
+
+        const editAlertId = document.getElementById('editAlertId');
+        if (editAlertId) {
+            editAlertId.value = '';
+        }
+
+        const submitBtnText = document.getElementById('submitBtnText');
+        if (submitBtnText) {
+            submitBtnText.textContent = 'Создать алерт';
+        }
+
+        // Сбрасываем чекбоксы уведомлений к состоянию по умолчанию
         const telegramCheckbox = document.getElementById('telegram');
-        const emailCheckbox = document.getElementById('email');
-        
         if (telegramCheckbox) {
             telegramCheckbox.checked = true;
         }
+
+        const emailCheckbox = document.getElementById('email');
         if (emailCheckbox) {
             emailCheckbox.checked = false;
         }
-        
-        // Скрытие дополнительных полей
-        const hiddenFields = ['userChatId', 'userEmail', 'symbol', 'currentPriceContainer'];
-        hiddenFields.forEach(fieldId => {
-            const field = document.getElementById(fieldId);
-            if (field) {
-                field.classList.add('hidden');
-            }
-        });
-        
-        // Сброс подсказок и ошибок
-        const elementsToReset = ['marketTypeHint', 'submitBtnText'];
-        elementsToReset.forEach(elementId => {
-            const element = document.getElementById(elementId);
-            if (element) {
-                element.innerHTML = '';
-                if (elementId === 'submitBtnText') {
-                    element.textContent = 'Создать алерт';
-                }
-            }
-        });
-        
-        // Скрытие всех ошибок валидации
+
+        // Скрываем дополнительные поля и очищаем их
+        const userChatIdInput = document.getElementById('userChatId');
+        if (userChatIdInput) {
+            userChatIdInput.value = '';
+            userChatIdInput.classList.add('hidden');
+        }
+
+        const userEmailInput = document.getElementById('userEmail');
+        if (userEmailInput) {
+            userEmailInput.value = '';
+            userEmailInput.classList.add('hidden');
+        }
+
+        // Устанавливаем значение по умолчанию для количества уведомлений
+        const notificationCountSelect = document.getElementById('notificationCount');
+        if (notificationCountSelect) {
+            notificationCountSelect.value = '5';
+        }
+
+        // Очищаем все ошибки валидации
         document.querySelectorAll('.validation-message').forEach(el => {
             el.style.display = 'none';
         });
-        
-        // Очистка выпадающего списка
-        updateCoinSelect();
-        
-        // Фокус на поле ввода
-        const coinSearch = document.getElementById('coinSearch');
-        if (coinSearch) {
-            coinSearch.focus();
-        }
+        document.querySelectorAll('.validation-error').forEach(el => {
+            el.classList.remove('validation-error');
+        });
     }
 }
 
