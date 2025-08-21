@@ -236,7 +236,7 @@ class BinanceAPIManager {
     }
 
     loadDefaultTickers() {
-        // Стандартный список популярных тикеров
+       
         allBinanceTickers = {
             'BTCUSDT': { name: 'Bitcoin', type: 'spot' },
             'ETHUSDT': { name: 'Ethereum', type: 'spot' },
