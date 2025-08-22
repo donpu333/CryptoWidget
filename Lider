@@ -1,0 +1,1445 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #121826;
+            color: #e0e0e0;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 15px 0;
+            border-bottom: 1px solid #2a3245;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #5a7dff;
+        }
+        
+        .logo span {
+            color: #00d9b8;
+        }
+        
+        .last-updated {
+            font-size: 14px;
+            color: #8a9bb8;
+            margin-left: 10px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            margin-bottom: 25px;
+            color: #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .filters {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: #1e2432;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+        }
+        
+        .filter-label {
+            margin-right: 10px;
+            color: #8a9bb8;
+            font-size: 14px;
+        }
+        
+        .time-filter button,
+        .exchange-filter button {
+            background: #2a3245;
+            border: 1px solid #3a455d;
+            padding: 8px 15px;
+            margin-right: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            color: #e0e0e0;
+        }
+        
+        .time-filter button:hover,
+        .exchange-filter button:hover {
+            background: #3a455d;
+        }
+        
+        .time-filter button.active,
+        .exchange-filter button.active {
+            background: #5a7dff;
+            color: white;
+            border-color: #5a7dff;
+        }
+        
+        .exchange-filter button.binance-active {
+            background: #f0b90b;
+            color: black;
+            border-color: #f0b90b;
+        }
+        
+        .exchange-filter button.bybit-active {
+            background: #ff6600;
+            color: white;
+            border-color: #ff6600;
+        }
+        
+        .search-container {
+            position: relative;
+        }
+        
+        .search-container input {
+            padding: 8px 15px 8px 40px;
+            border: 1px solid #3a455d;
+            border-radius: 6px;
+            width: 250px;
+            font-size: 14px;
+            background: #2a3245;
+            color: #e0e0e0;
+        }
+        
+        .search-container input::placeholder {
+            color: #8a9bb8;
+        }
+        
+        .search-container i {
+            position: absolute;
+            left: 15px;
+            top: 10px;
+            color: #8a9bb8;
+        }
+        
+        .cards-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: #1e2432;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #2a3245;
+        }
+        
+        .card-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a3245;
+            background: #252d3f;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f0f0f0;
+        }
+        
+        .table-container {
+            overflow-y: auto;
+            max-height: 800px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            position: sticky;
+            top: 0;
+            text-align: left;
+            padding: 12px 20px;
+            font-weight: 600;
+            color: #8a9bb8;
+            font-size: 14px;
+            background: #252d3f;
+            z-index: 1;
+            border-bottom: 1px solid #2a3245;
+        }
+        
+        .table td {
+            padding: 12px 20px;
+            border-bottom: 1px solid #2a3245;
+            font-size: 14px;
+        }
+        
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .table tr:hover {
+            background: #2a3245;
+        }
+        
+        .crypto-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .crypto-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background: #3a455d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .crypto-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .crypto-name {
+            font-weight: 500;
+            color: #f0f0f0;
+        }
+        
+        .crypto-symbol {
+            color: #8a9bb8;
+            margin-left: 5px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        
+        .crypto-symbol:hover {
+            color: #5a7dff;
+            text-decoration: underline;
+        }
+        
+        .positive {
+            color: #00d9b8;
+            font-weight: 500;
+        }
+        
+        .negative {
+            color: #ff5a7d;
+            font-weight: 500;
+        }
+        
+        .volume {
+            color: #b8c2d8;
+        }
+        
+        .market-cap {
+            color: #b8c2d8;
+        }
+        
+        .exchanges {
+            color: #5a7dff;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        .exchanges:hover {
+            color: #3a6bff;
+        }
+        
+        .loading {
+            padding: 20px;
+            text-align: center;
+            color: #8a9bb8;
+        }
+        
+        .error {
+            padding: 20px;
+            text-align: center;
+            color: #ff5a7d;
+        }
+        
+        .refresh-btn {
+            background: #5a7dff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin-left: 10px;
+        }
+        
+        .refresh-btn:hover {
+            background: #3a6bff;
+        }
+        
+        .refresh-btn i {
+            margin-right: 5px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #1e2432;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid #2a3245;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2a3245;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #f0f0f0;
+        }
+        
+        .close-modal {
+            font-size: 24px;
+            cursor: pointer;
+            color: #8a9bb8;
+        }
+        
+        .close-modal:hover {
+            color: #f0f0f0;
+        }
+        
+        .exchange-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .exchange-item {
+            padding: 10px;
+            background: #2a3245;
+            border-radius: 6px;
+            color: #e0e0e0;
+            border: 1px solid #3a455d;
+        }
+        
+        .binance {
+            color: #f0b90b;
+            font-weight: 500;
+        }
+        
+        .bybit {
+            color: #ff6600;
+            font-weight: 500;
+        }
+        
+        .chart-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .chart-modal-content {
+            background-color: #1e2432;
+            border-radius: 10px;
+            width: 90%;
+            height: 80vh;
+            border: 1px solid #2a3245;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chart-modal-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a3245;
+            background: #252d3f;
+        }
+        
+        .chart-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f0f0f0;
+        }
+        
+        .chart-modal-body {
+            flex: 1;
+            padding: 10px;
+        }
+        
+        .close-chart-modal {
+            font-size: 24px;
+            cursor: pointer;
+            color: #8a9bb8;
+        }
+        
+        .close-chart-modal:hover {
+            color: #f0f0f0;
+        }
+        
+        .tradingview-widget-container {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .tradingview-widget-container__widget {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .tradingview-widget-copyright {
+            font-size: 12px;
+            text-align: center;
+            padding: 5px;
+            color: #8a9bb8;
+        }
+        
+        .tradingview-widget-copyright a {
+            color: #5a7dff;
+            text-decoration: none;
+        }
+        
+        footer {
+            margin-top: 50px;
+            padding: 30px 0;
+            text-align: center;
+            color: #8a9bb8;
+            font-size: 14px;
+            border-top: 1px solid #2a3245;
+        }
+        
+        .theme-switcher {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #2a3245;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            border: 1px solid #3a455d;
+        }
+        
+        .theme-switcher i {
+            font-size: 20px;
+            color: #e0e0e0;
+        }
+        
+        .bybit-badge {
+            background-color: #ff6600;
+            color: white;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+        
+        .binance-badge {
+            background-color: #f0b90b;
+            color: black;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+        
+        .both-badge {
+            background: linear-gradient(90deg, #f0b90b 50%, #ff6600 50%);
+            color: black;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+        
+        .bybit-row {
+            background-color: rgba(255, 102, 0, 0.05);
+        }
+        
+        .binance-row {
+            background-color: rgba(240, 185, 11, 0.05);
+        }
+        
+        @media (max-width: 992px) {
+            .table td, .table th {
+                padding: 8px 12px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .filter-group {
+                flex-wrap: wrap;
+            }
+            
+            .search-container input {
+                width: 100%;
+            }
+            
+            .table-container {
+                max-height: 400px;
+            }
+            
+            .page-title {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .refresh-btn {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+            
+            .exchange-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-modal-content {
+                width: 95%;
+                height: 70vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Crypto<span>Tracker</span></div>
+            <div class="last-updated" id="last-updated"></div>
+        </header>
+        
+        <div class="page-title">
+            Лидеры роста и падения (Binance & Bybit)
+            <button class="refresh-btn" id="refresh-btn">
+                <i class="fas fa-sync-alt"></i> Обновить
+            </button>
+        </div>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <div class="filter-label">Период:</div>
+                <div class="time-filter">
+                    <button class="active" data-days="1">24ч</button>
+                    <button data-days="7">7д</button>
+                    <button data-days="30">30д</button>
+                </div>
+            </div>
+            
+            <div class="filter-group">
+                <div class="filter-label">Биржа:</div>
+                <div class="exchange-filter">
+                    <button class="active" data-exchange="all">Все</button>
+                    <button data-exchange="binance">Binance</button>
+                    <button data-exchange="bybit">Bybit</button>
+                </div>
+            </div>
+            
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Поиск монет..." id="search-input">
+            </div>
+        </div>
+        
+        <div class="cards-container">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Топ роста (24ч)</div>
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Монета</th>
+                                <th>Цена</th>
+                                <th>Изменение</th>
+                                <th>Капитализация</th>
+                                <th>Биржи</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gainers-table">
+                            <tr>
+                                <td colspan="6" class="loading">Загрузка данных...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Топ падения (24ч)</div>
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Монета</th>
+                                <th>Цена</th>
+                                <th>Изменение</th>
+                                <th>Капитализация</th>
+                                <th>Биржи</th>
+                            </tr>
+                        </thead>
+                        <tbody id="losers-table">
+                            <tr>
+                                <td colspan="6" class="loading">Загрузка данных...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Модальное окно для отображения бирж -->
+        <div class="modal" id="exchanges-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title" id="modal-title"></div>
+                    <span class="close-modal" id="close-modal">&times;</span>
+                </div>
+                <div id="exchanges-list" class="exchange-list"></div>
+            </div>
+        </div>
+        
+        <!-- Модальное окно для графика TradingView -->
+        <div class="chart-modal" id="chart-modal">
+            <div class="chart-modal-content">
+                <div class="chart-modal-header">
+                    <div class="chart-modal-title" id="chart-modal-title">График</div>
+                    <span class="close-chart-modal" id="close-chart-modal">&times;</span>
+                </div>
+                <div class="chart-modal-body" id="tradingview-widget-container">
+                    <!-- TradingView Widget будет вставлен сюда -->
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 CryptoTracker. Все права защищены. Данные предоставлены CoinGecko API. Обновляется каждый час.</p>
+        </footer>
+    </div>
+
+    <div class="theme-switcher" id="theme-switcher">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <script>
+        // Основные переменные
+        let currentDaysFilter = 1;
+        let currentExchangeFilter = 'all';
+        let allCoinsData = [];
+        let exchangesData = {};
+        const COINS_TO_SHOW = 25;
+        const REFRESH_INTERVAL = 60 * 60 * 1000; // 1 час
+        let refreshTimer;
+        let isDarkTheme = true;
+        
+        // DOM элементы
+        const timeFilterButtons = document.querySelectorAll('.time-filter button');
+        const exchangeFilterButtons = document.querySelectorAll('.exchange-filter button');
+        const searchInput = document.getElementById('search-input');
+        const gainersTable = document.getElementById('gainers-table');
+        const losersTable = document.getElementById('losers-table');
+        const lastUpdatedElement = document.getElementById('last-updated');
+        const refreshButton = document.getElementById('refresh-btn');
+        const exchangesModal = document.getElementById('exchanges-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const exchangesList = document.getElementById('exchanges-list');
+        const closeModal = document.getElementById('close-modal');
+        const chartModal = document.getElementById('chart-modal');
+        const chartModalTitle = document.getElementById('chart-modal-title');
+        const closeChartModal = document.getElementById('close-chart-modal');
+        const tradingViewContainer = document.getElementById('tradingview-widget-container');
+        const themeSwitcher = document.getElementById('theme-switcher');
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchAllCoinsData();
+            setupEventListeners();
+            startAutoRefresh();
+            applyTheme();
+        });
+        
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            // Фильтр по времени
+            timeFilterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    timeFilterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentDaysFilter = parseInt(button.dataset.days);
+                    updateTables();
+                });
+            });
+            
+            // Фильтр по биржам
+            exchangeFilterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    exchangeFilterButtons.forEach(btn => {
+                        btn.classList.remove('active', 'binance-active', 'bybit-active');
+                    });
+                    
+                    currentExchangeFilter = button.dataset.exchange;
+                    
+                    if (currentExchangeFilter === 'binance') {
+                        button.classList.add('binance-active');
+                    } else if (currentExchangeFilter === 'bybit') {
+                        button.classList.add('bybit-active');
+                    } else {
+                        button.classList.add('active');
+                    }
+                    
+                    updateTables();
+                });
+            });
+            
+            // Поиск
+            searchInput.addEventListener('input', () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm.length > 2) {
+                    filterCoins(searchTerm);
+                } else if (searchTerm.length === 0) {
+                    updateTables();
+                }
+            });
+            
+            // Кнопка обновления
+            refreshButton.addEventListener('click', () => {
+                refreshData();
+            });
+            
+            // Модальное окно бирж
+            closeModal.addEventListener('click', () => {
+                exchangesModal.style.display = 'none';
+            });
+            
+            // Модальное окно графика
+            closeChartModal.addEventListener('click', () => {
+                chartModal.style.display = 'none';
+            });
+            
+            // Закрытие модальных окон при клике вне их
+            window.addEventListener('click', (event) => {
+                if (event.target === exchangesModal) {
+                    exchangesModal.style.display = 'none';
+                }
+                if (event.target === chartModal) {
+                    chartModal.style.display = 'none';
+                }
+            });
+            
+            // Переключатель темы
+            themeSwitcher.addEventListener('click', toggleTheme);
+        }
+        
+        // Переключение темы
+        function toggleTheme() {
+            isDarkTheme = !isDarkTheme;
+            applyTheme();
+        }
+        
+        // Применение темы
+        function applyTheme() {
+            if (isDarkTheme) {
+                document.body.style.backgroundColor = '#121826';
+                document.body.style.color = '#e0e0e0';
+                themeSwitcher.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                document.body.style.backgroundColor = '#f0f0f0';
+                document.body.style.color = '#333';
+                themeSwitcher.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        }
+        
+        // Запуск автоматического обновления
+        function startAutoRefresh() {
+            refreshTimer = setInterval(() => {
+                refreshData();
+            }, REFRESH_INTERVAL);
+        }
+        
+        // Обновление данных
+        function refreshData() {
+            refreshButton.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Обновление...';
+            fetchAllCoinsData()
+                .finally(() => {
+                    refreshButton.innerHTML = '<i class="fas fa-sync-alt"></i> Обновить';
+                });
+        }
+        
+        // Функция для повторных попыток запроса
+        async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                if (retries <= 0) {
+                    throw error;
+                }
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return fetchWithRetry(url, options, retries - 1, delay * 2);
+            }
+        }
+        
+        // Получение данных всех монет
+        async function fetchAllCoinsData() {
+            try {
+                // Показываем загрузку
+                gainersTable.innerHTML = '<tr><td colspan="6" class="loading">Загрузка данных...</td></tr>';
+                losersTable.innerHTML = '<tr><td colspan="6" class="loading">Загрузка данных...</td></tr>';
+                
+                // Получаем основные данные о монетах с повторными попытками
+                const coinsResponse = await fetchWithRetry(
+                    'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&sparkline=false&price_change_percentage=24h,7d,30d',
+                    {},
+                    3,
+                    1000
+                );
+                
+                allCoinsData = coinsResponse;
+                
+                // Фильтруем монеты, оставляя только те, что есть на Binance или Bybit
+                await filterCoinsByExchanges();
+                
+                updateLastUpdated();
+                updateTables();
+            } catch (error) {
+                console.error('Ошибка:', error);
+                gainersTable.innerHTML = '<tr><td colspan="6" class="error">Ошибка загрузки данных. Попробуйте позже.</td></tr>';
+                losersTable.innerHTML = '<tr><td colspan="6" class="error">Ошибка загрузки данных. Попробуйте позже.</td></tr>';
+                updateLastUpdated(true);
+            }
+        }
+        
+        // Фильтрация монет по наличию на Binance или Bybit
+        async function filterCoinsByExchanges() {
+            try {
+                // Получаем данные с повторными попытками
+                const [binanceResult, bybitResult] = await Promise.allSettled([
+                    fetchWithRetry('https://api.coingecko.com/api/v3/exchanges/binance/tickers', {}, 3, 1000),
+                    fetchWithRetry('https://api.coingecko.com/api/v3/exchanges/bybit/tickers', {}, 3, 1000)
+                ]);
+
+                // Обрабатываем результаты
+                let binanceData = { tickers: [] };
+                let bybitData = { tickers: [] };
+
+                if (binanceResult.status === 'fulfilled') {
+                    binanceData = binanceResult.value;
+                } else {
+                    console.error('Ошибка при загрузке данных Binance:', binanceResult.reason);
+                }
+
+                if (bybitResult.status === 'fulfilled') {
+                    bybitData = bybitResult.value;
+                } else {
+                    console.error('Ошибка при загрузке данных Bybit:', bybitResult.reason);
+                }
+
+                // Собираем USDT пары для обеих бирж
+                const binanceUsdtPairs = new Set();
+                const bybitUsdtPairs = new Set();
+                
+                // Обработка данных Binance
+                if (binanceData.tickers && Array.isArray(binanceData.tickers)) {
+                    binanceData.tickers.forEach(ticker => {
+                        if (ticker.target === 'USDT' && ticker.coin_id) {
+                            binanceUsdtPairs.add(ticker.coin_id);
+                        }
+                    });
+                }
+                
+                // Обработка данных Bybit
+                if (bybitData.tickers && Array.isArray(bybitData.tickers)) {
+                    bybitData.tickers.forEach(ticker => {
+                        if (ticker.target === 'USDT' && ticker.coin_id) {
+                            bybitUsdtPairs.add(ticker.coin_id);
+                        }
+                    });
+                }
+
+                // Если Bybit не загрузился, используем прямой запрос к API Bybit
+                if (bybitUsdtPairs.size === 0) {
+                    console.log('Попытка прямого запроса к API Bybit...');
+                    try {
+                        const bybitResponse = await fetchWithRetry(
+                            'https://api.bybit.com/v5/market/tickers?category=spot',
+                            {},
+                            2,
+                            1500
+                        );
+                        
+                        if (bybitResponse.result && bybitResponse.result.list) {
+                            // Создаем маппинг символов Bybit к ID CoinGecko
+                            const symbolToIdMap = {
+                                'BTCUSDT': 'bitcoin',
+                                'ETHUSDT': 'ethereum',
+                                'SOLUSDT': 'solana',
+                                'XRPUSDT': 'ripple',
+                                'DOGEUSDT': 'dogecoin',
+                                'ADAUSDT': 'cardano',
+                                'AVAXUSDT': 'avalanche-2',
+                                'DOTUSDT': 'polkadot',
+                                'MATICUSDT': 'polygon',
+                                'LINKUSDT': 'chainlink',
+                                'UNIUSDT': 'uniswap',
+                                'LTCUSDT': 'litecoin',
+                                'BCHUSDT': 'bitcoin-cash',
+                                'ATOMUSDT': 'cosmos',
+                                'ETCUSDT': 'ethereum-classic',
+                                'ALGOUSDT': 'algorand',
+                                'VETUSDT': 'vechain',
+                                'FILUSDT': 'filecoin',
+                                'TRXUSDT': 'tron',
+                                'XLMUSDT': 'stellar',
+                                'NEARUSDT': 'near',
+                                'SANDUSDT': 'the-sandbox',
+                                'MANAUSDT': 'decentraland',
+                                'HBARUSDT': 'hedera-hashgraph',
+                                'ICPUSDT': 'internet-computer',
+                                'FTMUSDT': 'fantom',
+                                'APEUSDT': 'apecoin',
+                                'AXSUSDT': 'axie-infinity',
+                                'GALAUSDT': 'gala',
+                                'THETAUSDT': 'theta',
+                                'ENJUSDT': 'enjincoin',
+                                'CHZUSDT': 'chiliz',
+                                'EOSUSDT': 'eos',
+                                'KLAYUSDT': 'klay-token',
+                                'FLOWUSDT': 'flow',
+                                'BSVUSDT': 'bitcoin-sv',
+                                'XMRUSDT': 'monero',
+                                'EGLDUSDT': 'elrond-erd-2',
+                                'MKRUSDT': 'maker',
+                                'AAVEUSDT': 'aave',
+                                'COMPUSDT': 'compound-governance-token',
+                                'YFIUSDT': 'yearn-finance',
+                                'CRVUSDT': 'curve-dao-token',
+                                'SNXUSDT': 'synthetix-network-token',
+                                '1INCHUSDT': '1inch',
+                                'ZECUSDT': 'zcash',
+                                'DASHUSDT': 'dash',
+                                'KSMUSDT': 'kusama',
+                                'WAVESUSDT': 'waves',
+                                'ZILUSDT': 'zilliqa',
+                                'BATUSDT': 'basic-attention-token',
+                                'RENUSDT': 'republic-protocol',
+                                'KNCUSDT': 'kyber-network',
+                                'ANTUSDT': 'aragon',
+                                'BNTUSDT': 'bancor',
+                                'CVCUSDT': 'civic',
+                                'DENTUSDT': 'dent',
+                                'IOTAUSDT': 'iota',
+                                'MIOTAUSDT': 'iota',
+                                'MCOUSDT': 'mco',
+                                'OXTUSDT': 'orchid-protocol',
+                                'REPUSDT': 'augur',
+                                'RLCUSDT': 'iexec-rlc',
+                                'SNGLSUSDT': 'sngls',
+                                'STORJUSDT': 'storj',
+                                'TNTUSDT': 'tierion',
+                                'USDSUSDT': 'stableusd',
+                                'WINGSUSDT': 'wings',
+                                'XEMUSDT': 'nem',
+                                'XZCUSDT': '0x'
+                            };
+                            
+                            bybitResponse.result.list.forEach(ticker => {
+                                const symbol = ticker.symbol;
+                                const coinId = symbolToIdMap[symbol];
+                                if (coinId) {
+                                    bybitUsdtPairs.add(coinId);
+                                }
+                            });
+                            
+                            console.log(`Добавлено ${bybitUsdtPairs.size} монет из прямого запроса к API Bybit`);
+                        }
+                    } catch (directError) {
+                        console.error('Ошибка при прямом запросе к API Bybit:', directError);
+                        
+                        // Если прямой запрос не сработал, используем хардкод список популярных монет Bybit
+                        console.log('Использование предопределенного списка монет Bybit...');
+                        const popularBybitCoins = [
+                            'bitcoin', 'ethereum', 'ripple', 'cardano', 'solana', 'polkadot', 'dogecoin',
+                            'avalanche-2', 'polygon', 'chainlink', 'litecoin', 'uniswap', 'stellar',
+                            'cosmos', 'monero', 'ethereum-classic', 'vechain', 'filecoin', 'tron',
+                            'theta', 'aave', 'algorand', 'klay-token', 'crypto-com-chain', 'tezos',
+                            'eos', 'internet-computer', 'fantom', 'near', 'helium', 'flow',
+                            'the-sandbox', 'decentraland', 'axie-infinity', 'theta-fuel', 'huobi-token',
+                            'bitcoin-cash', 'wrapped-bitcoin', 'ethereum-pow-iou', 'zcash', 'maker',
+                            'compound-governance-token', 'leo-token', 'okb', 'ftx-token', 'cronos',
+                            'kucoin-token', 'bitcoin-sv', 'elrond-erd-2', 'hedera-hashgraph', 'iota',
+                            'neo', 'dash', 'the-graph', 'chain', 'havven', 'compound-usd-coin',
+                            'usd-coin', 'tether', 'binance-usd', 'dai', 'true-usd', 'terrausd',
+                            'magic-internet-money', 'frax', 'fei-usd', 'paxos-standard', 'gemini-dollar',
+                            'husd', 'tether-gold', 'binance-peg-bitcoin', 'binance-peg-ethereum',
+                            'binance-peg-bnb', 'binance-peg-cardano', 'binance-peg-solana', 'binance-peg-xrp'
+                        ];
+                        
+                        popularBybitCoins.forEach(coinId => {
+                            bybitUsdtPairs.add(coinId);
+                        });
+                        
+                        console.log(`Добавлено ${popularBybitCoins.length} популярных монет Bybit из предопределенного списка`);
+                    }
+                }
+
+                // Фильтруем основные данные
+                allCoinsData = allCoinsData.filter(coin => 
+                    binanceUsdtPairs.has(coin.id) || bybitUsdtPairs.has(coin.id)
+                );
+
+                // Заполняем данные о биржах
+                allCoinsData.forEach(coin => {
+                    const onBinance = binanceUsdtPairs.has(coin.id);
+                    const onBybit = bybitUsdtPairs.has(coin.id);
+
+                    exchangesData[coin.id] = {
+                        onBinance,
+                        onBybit,
+                        hasUsdtPair: true
+                    };
+
+                    // Добавляем флаги для быстрого доступа
+                    coin.onBinance = onBinance;
+                    coin.onBybit = onBybit;
+                });
+
+                console.log(`Загружено ${allCoinsData.length} монет с бирж`);
+
+            } catch (error) {
+                console.error('Ошибка фильтрации по биржам:', error);
+                // В случае ошибки, оставляем все монеты, но без информации о биржах
+                allCoinsData.forEach(coin => {
+                    exchangesData[coin.id] = {
+                        onBinance: false,
+                        onBybit: false,
+                        hasUsdtPair: false
+                    };
+                    coin.onBinance = false;
+                    coin.onBybit = false;
+                });
+            }
+        }
+        
+        // Показать биржи для монеты
+        function showExchanges(coinId, coinName) {
+            if (!exchangesData[coinId]) {
+                alert('Данные о биржах для этой монеты еще загружаются');
+                return;
+            }
+            
+            modalTitle.textContent = `Биржи для ${coinName}`;
+            
+            const exchanges = [];
+            if (exchangesData[coinId].onBinance) exchanges.push('Binance');
+            if (exchangesData[coinId].onBybit) exchanges.push('Bybit');
+            
+            exchangesList.innerHTML = exchanges.map(exchange => {
+                let className = '';
+                if (exchange.toLowerCase().includes('binance')) className = 'binance';
+                if (exchange.toLowerCase().includes('bybit')) className = 'bybit';
+                return `<div class="exchange-item ${className}">${exchange}</div>`;
+            }).join('');
+            
+            if (exchanges.length === 0) {
+                exchangesList.innerHTML = '<div class="exchange-item">Нет данных о биржах</div>';
+            }
+            
+            exchangesModal.style.display = 'flex';
+        }
+        
+        // Показать график TradingView для монеты
+        function showChart(coinId, coinSymbol, coinName) {
+            if (!exchangesData[coinId]) {
+                alert('Данные о биржах для этой монеты еще загружаются');
+                return;
+            }
+            
+            // Проверяем, на каких биржах есть монета
+            const onBinance = exchangesData[coinId].onBinance;
+            const onBybit = exchangesData[coinId].onBybit;
+            
+            let tradingPair = '';
+            let exchangeName = '';
+            
+            // Даем пользователю выбор биржи, если монета есть на обеих
+            if (onBinance && onBybit) {
+                const userChoice = confirm(`${coinName} доступна на Binance и Bybit. Нажмите OK для Binance, Отмена для Bybit`);
+                if (userChoice) {
+                    tradingPair = `BINANCE:${coinSymbol.toUpperCase()}USDT`;
+                    exchangeName = 'Binance';
+                } else {
+                    tradingPair = `BYBIT:${coinSymbol.toUpperCase()}USDT`;
+                    exchangeName = 'Bybit';
+                }
+            } 
+            // Если только на Binance
+            else if (onBinance) {
+                tradingPair = `BINANCE:${coinSymbol.toUpperCase()}USDT`;
+                exchangeName = 'Binance';
+            } 
+            // Если только на Bybit
+            else if (onBybit) {
+                tradingPair = `BYBIT:${coinSymbol.toUpperCase()}USDT`;
+                exchangeName = 'Bybit';
+            }
+            
+            if (!tradingPair) {
+                alert('Эта монета не найдена на Binance или Bybit');
+                return;
+            }
+            
+            chartModalTitle.textContent = `${coinName} (${coinSymbol.toUpperCase()}) - ${exchangeName}`;
+            chartModal.style.display = 'flex';
+            
+            tradingViewContainer.innerHTML = '';
+            
+            // Создаем новый виджет TradingView
+            tradingViewContainer.innerHTML = `
+                <div class="tradingview-widget-container" style="height:100%;width:100%">
+                    <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%"></div>
+                    <div class="tradingview-widget-copyright">
+                        <a href="https://ru.tradingview.com/" rel="noopener nofollow" target="_blank">
+                            <span class="blue-text">Все рынки на TradingView</span>
+                        </a>
+                    </div>
+                </div>
+            `;
+            
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+            script.async = true;
+            script.innerHTML = JSON.stringify({
+                "allow_symbol_change": true,
+                "calendar": false,
+                "details": false,
+                "hide_side_toolbar": false,
+                "hide_top_toolbar": false,
+                "hide_legend": false,
+                "hide_volume": false,
+                "hotlist": false,
+                "interval": "D",
+                "locale": "ru",
+                "save_image": true,
+                "style": "0",
+                "symbol": tradingPair,
+                "theme": isDarkTheme ? "dark" : "light",
+                "timezone": "Etc/UTC",
+                "backgroundColor": isDarkTheme ? "rgba(0, 0, 0, 1)" : "rgba(255, 255, 255, 1)",
+                "gridColor": isDarkTheme ? "rgba(0, 0, 0, 0)" : "rgba(255, 255, 255, 0)",
+                "watchlist": [],
+                "withdateranges": false,
+                "compareSymbols": [],
+                "studies": [],
+                "autosize": true
+            });
+            
+            tradingViewContainer.querySelector('.tradingview-widget-container').appendChild(script);
+        }
+        
+        // Обновление времени последнего обновления
+        function updateLastUpdated(isError = false) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('ru-RU');
+            
+            lastUpdatedElement.textContent = isError 
+                ? `Ошибка обновления: ${dateString} ${timeString}`
+                : `Обновлено: ${dateString} ${timeString}`;
+            
+            lastUpdatedElement.style.color = isError ? '#ff5a7d' : '#8a9bb8';
+        }
+        
+        // Обновление таблиц с учетом текущего фильтра
+        function updateTables() {
+            if (allCoinsData.length === 0) return;
+            
+            // Определяем поле для сортировки
+            let sortField;
+            switch (currentDaysFilter) {
+                case 1: sortField = 'price_change_percentage_24h'; break;
+                case 7: sortField = 'price_change_percentage_7d_in_currency'; break;
+                case 30: sortField = 'price_change_percentage_30d_in_currency'; break;
+                default: sortField = 'price_change_percentage_24h';
+            }
+            
+            // Обновляем заголовки таблиц
+            document.querySelectorAll('.card-title').forEach((title, index) => {
+                let periodText = '';
+                switch (currentDaysFilter) {
+                    case 1: periodText = '24ч'; break;
+                    case 7: periodText = '7д'; break;
+                    case 30: periodText = '30д'; break;
+                }
+                
+                let exchangeText = '';
+                if (currentExchangeFilter === 'binance') {
+                    exchangeText = ' - Binance';
+                } else if (currentExchangeFilter === 'bybit') {
+                    exchangeText = ' - Bybit';
+                }
+                
+                title.textContent = index === 0 
+                    ? `Топ роста (${periodText}${exchangeText})` 
+                    : `Топ падения (${periodText}${exchangeText})`;
+            });
+            
+            // Фильтруем данные по выбранной бирже
+            let filteredData = [...allCoinsData];
+            if (currentExchangeFilter === 'binance') {
+                filteredData = filteredData.filter(coin => coin.onBinance);
+            } else if (currentExchangeFilter === 'bybit') {
+                filteredData = filteredData.filter(coin => coin.onBybit);
+            }
+            
+            // Сортируем данные для таблицы роста с приоритетом Bybit
+            const gainers = [...filteredData]
+                .filter(coin => coin[sortField] > 0)
+                .sort((a, b) => {
+                    if (currentExchangeFilter === 'all') {
+                        if (a.onBybit && !b.onBybit) return -1;
+                        if (!a.onBybit && b.onBybit) return 1;
+                    }
+                    return b[sortField] - a[sortField];
+                })
+                .slice(0, COINS_TO_SHOW);
+            
+            // Сортируем данные для таблицы падения с приоритетом Bybit
+            const losers = [...filteredData]
+                .filter(coin => coin[sortField] < 0)
+                .sort((a, b) => {
+                    if (currentExchangeFilter === 'all') {
+                        if (a.onBybit && !b.onBybit) return -1;
+                        if (!a.onBybit && b.onBybit) return 1;
+                    }
+                    return a[sortField] - b[sortField];
+                })
+                .slice(0, COINS_TO_SHOW);
+            
+            // Заполняем таблицы
+            populateTable(gainersTable, gainers, sortField);
+            populateTable(losersTable, losers, sortField);
+        }
+        
+        // Заполнение таблицы данными
+        function populateTable(tableElement, data, changeField) {
+            if (data.length === 0) {
+                tableElement.innerHTML = '<tr><td colspan="6" class="loading">Нет данных для отображения</td></tr>';
+                return;
+            }
+            
+            tableElement.innerHTML = data.map((coin, index) => {
+                const hasExchanges = exchangesData[coin.id] && 
+                                  (exchangesData[coin.id].onBinance || exchangesData[coin.id].onBybit);
+                
+                // Определяем бейджи для бирж
+                let badges = '';
+                if (coin.onBinance && coin.onBybit) {
+                    badges = '<span class="both-badge">BOTH</span>';
+                } else if (coin.onBinance) {
+                    badges = '<span class="binance-badge">BINANCE</span>';
+                } else if (coin.onBybit) {
+                    badges = '<span class="bybit-badge">BYBIT</span>';
+                }
+                
+                const exchangesCount = hasExchanges ? 
+                    (exchangesData[coin.id].onBinance && exchangesData[coin.id].onBybit ? '2 (Binance, Bybit)' : 
+                     exchangesData[coin.id].onBinance ? '1 (Binance)' : '1 (Bybit)') : '...';
+                
+                // Добавляем класс для строки в зависимости от биржи
+                let rowClass = '';
+                if (coin.onBybit) {
+                    rowClass = 'bybit-row';
+                } else if (coin.onBinance) {
+                    rowClass = 'binance-row';
+                }
+                
+                return `
+                <tr class="${rowClass}">
+                    <td>${index + 1}</td>
+                    <td>
+                        <div class="crypto-info">
+                            <div class="crypto-icon">
+                                <img src="${coin.image}" alt="${coin.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/32';">
+                            </div>
+                            <div>
+                                <span class="crypto-name">${coin.name}</span>
+                                <span class="crypto-symbol" onclick="showChart('${coin.id}', '${coin.symbol}', '${coin.name}')">${coin.symbol}</span>
+                                ${badges}
+                            </div>
+                        </div>
+                    </td>
+                    <td>$${coin.current_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
+                    <td class="${coin[changeField] > 0 ? 'positive' : 'negative'}">
+                        ${coin[changeField] > 0 ? '+' : ''}${coin[changeField].toFixed(2)}%
+                    </td>
+                    <td class="market-cap">$${coin.market_cap.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                    <td class="exchanges" onclick="showExchanges('${coin.id}', '${coin.name}')">
+                        ${exchangesCount} ${hasExchanges ? '▼' : ''}
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+        
+        // Фильтрация монет по поисковому запросу
+        function filterCoins(searchTerm) {
+            let filteredCoins = allCoinsData.filter(coin => 
+                coin.name.toLowerCase().includes(searchTerm) || 
+                coin.symbol.toLowerCase().includes(searchTerm)
+            );
+            
+            // Применяем фильтр по бирже
+            if (currentExchangeFilter === 'binance') {
+                filteredCoins = filteredCoins.filter(coin => coin.onBinance);
+            } else if (currentExchangeFilter === 'bybit') {
+                filteredCoins = filteredCoins.filter(coin => coin.onBybit);
+            }
+            
+            filteredCoins.sort((a, b) => {
+                // Приоритет для монет на Bybit при поиске
+                if (currentExchangeFilter === 'all') {
+                    if (a.onBybit && !b.onBybit) return -1;
+                    if (!a.onBybit && b.onBybit) return 1;
+                }
+                return 0;
+            });
+            
+            updateTablesWithFilteredData(filteredCoins);
+        }
+        
+        // Обновление таблиц с отфильтрованными данными
+        function updateTablesWithFilteredData(filteredData) {
+            if (filteredData.length === 0) {
+                gainersTable.innerHTML = '<tr><td colspan="6" class="loading">Ничего не найдено</td></tr>';
+                losersTable.innerHTML = '<tr><td colspan="6" class="loading">Ничего не найдено</td></tr>';
+                return;
+            }
+            
+            let sortField;
+            switch (currentDaysFilter) {
+                case 1: sortField = 'price_change_percentage_24h'; break;
+                case 7: sortField = 'price_change_percentage_7d_in_currency'; break;
+                case 30: sortField = 'price_change_percentage_30d_in_currency'; break;
+                default: sortField = 'price_change_percentage_24h';
+            }
+            
+            const gainers = [...filteredData]
+                .filter(coin => coin[sortField] > 0)
+                .sort((a, b) => {
+                    if (currentExchangeFilter === 'all') {
+                        if (a.onBybit && !b.onBybit) return -1;
+                        if (!a.onBybit && b.onBybit) return 1;
+                    }
+                    return b[sortField] - a[sortField];
+                })
+                .slice(0, COINS_TO_SHOW);
+            
+            const losers = [...filteredData]
+                .filter(coin => coin[sortField] < 0)
+                .sort((a, b) => {
+                    if (currentExchangeFilter === 'all') {
+                        if (a.onBybit && !b.onBybit) return -1;
+                        if (!a.onBybit && b.onBybit) return 1;
+                    }
+                    return a[sortField] - b[sortField];
+                })
+                .slice(0, COINS_TO_SHOW);
+            
+            populateTable(gainersTable, gainers, sortField);
+            populateTable(losersTable, losers, sortField);
+        }
+        
+        // Глобальные функции для использования в HTML
+        window.showExchanges = showExchanges;
+        window.showChart = showChart;
+    </script>
+</body>
+</html>
