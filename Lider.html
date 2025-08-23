@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Tools - Алерт</title>
-     <link rel="shortcut icon" href="favicon.ico">
+    <link rel="shortcut icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -1075,7 +1075,7 @@
         // Получение данных всех монет
         async function fetchAllCoinsData() {
             try {
-                // Показываем загрузку
+                // Показываем загрузка
                 gainersTable.innerHTML = '<tr><td colspan="6" class="loading">Загрузка данных...</td></tr>';
                 losersTable.innerHTML = '<tr><td colspan="6" class="loading">Загрузка данных...</td></tr>';
                 
@@ -1354,23 +1354,20 @@
             let tradingPair = '';
             let exchangeName = '';
             
-            // Даем пользователю выбор биржи, если монета есть на обеих
-            if (onBinance && onBybit) {
-                const userChoice = confirm(`${coinName} доступна на Binance и Bybit. Нажмите OK для Binance, Отмена для Bybit`);
-                if (userChoice) {
-                    tradingPair = `BINANCE:${coinSymbol.toUpperCase()}USDT`;
-                    exchangeName = 'Binance';
-                } else {
-                    tradingPair = `BYBIT:${coinSymbol.toUpperCase()}USDT`;
-                    exchangeName = 'Bybit';
-                }
-            } 
-            // Если только на Binance
-            else if (onBinance) {
+            // Используем выбранную биржу в фильтре, а не спрашиваем пользователя
+            if (currentExchangeFilter === 'binance' && onBinance) {
                 tradingPair = `BINANCE:${coinSymbol.toUpperCase()}USDT`;
                 exchangeName = 'Binance';
             } 
-            // Если только на Bybit
+            else if (currentExchangeFilter === 'bybit' && onBybit) {
+                tradingPair = `BYBIT:${coinSymbol.toUpperCase()}USDT`;
+                exchangeName = 'Bybit';
+            }
+            // Если на выбранной бирже нет монеты, пробуем другую
+            else if (onBinance) {
+                tradingPair = `BINANCE:${coinSymbol.toUpperCase()}USDT`;
+                exchangeName = 'Binance';
+            }
             else if (onBybit) {
                 tradingPair = `BYBIT:${coinSymbol.toUpperCase()}USDT`;
                 exchangeName = 'Bybit';
