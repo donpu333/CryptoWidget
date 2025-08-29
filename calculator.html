@@ -515,6 +515,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            position: relative;
         }
 
         .export-modal-title {
@@ -529,6 +530,9 @@
             color: #9CA3AF;
             font-size: 1.5rem;
             cursor: pointer;
+            position: absolute;
+            top: -10px;
+            right: -10px;
         }
 
         .export-modal-body {
@@ -855,6 +859,17 @@
             font-size: 0.8rem;
             margin-left: 5px;
         }
+        
+        /* Стили для автоматического определения знаков после запятой */
+        .decimals-info {
+            font-size: 0.8rem;
+            color: var(--primary);
+            margin-top: 5px;
+            padding: 4px;
+            background-color: rgba(33, 150, 243, 0.1);
+            border-radius: 4px;
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -954,6 +969,7 @@
                     <div class="input-group">
                         <label for="entryPrice">Цена входа (USDT)</label>
                         <input type="number" id="entryPrice" min="0" step="0.00000001" placeholder="Введите цену входа">
+                        <div class="decimals-info" id="decimalsInfo">Автоматически определено: 4 знака после запятой</div>
                     </div>
 
                     <div class="input-group">
@@ -986,11 +1002,11 @@
                         <div class="input-group">
                             <label for="riskPercent">Риск стоп-лосс (% от ATR)</label>
                             <div class="slider-container">
-                                <input type="range" id="riskPercent" min="1" max="100" value="10">
-                                <span class="slider-value" id="riskPercentValue">10</span>%
+                                <input type="range" id="riskPercent" min="1" max="100" value="5">
+                                <span class="slider-value" id="riskPercentValue">5</span>%
                             </div>
                             <div class="preview-value">
-                                Стоп-лосс: минус <span id="previewAtrPercent">0.0000 USDT</span> (<span id="previewAtrPercentValue">10%</span> от ATR)
+                                Стоп-лосс: минус <span id="previewAtrPercent">0.0000 USDT</span> (<span id="previewAtrPercentValue">5%</span> от ATR)
                             </div>
                         </div>
                     </div>
@@ -1342,6 +1358,19 @@
             }
         });
 
+        // Функция для определения количества знаков после запятой
+        function countDecimals(value) {
+            if (!value || Math.floor(value) === value) return 0;
+            const parts = value.toString().split('.');
+            return parts.length < 2 ? 0 : parts[1].length;
+        }
+
+        // Функция для автоматического определения точности цены
+        function autoDetectPrecision(price) {
+            const decimals = countDecimals(price);
+            return Math.min(Math.max(decimals, 1), 8);
+        }
+
         // Улучшенная функция для форматирования чисел с учетом типа актива
         function formatNumber(num, decimals = 8, assetType = null) {
             if (isNaN(num)) return '0';
@@ -1549,6 +1578,7 @@ ATR: ${formatNumber(atr, 8)} USDT
             const assetTypeSelect = document.getElementById('assetType');
             const customDecimalsGroup = document.getElementById('customDecimalsGroup');
             const customDecimalsInput = document.getElementById('customDecimals');
+            const decimalsInfo = document.getElementById('decimalsInfo');
 
             // Элементы результатов
             const positionSizeSpan = document.getElementById('positionSize');
@@ -1575,11 +1605,11 @@ ATR: ${formatNumber(atr, 8)} USDT
                 leverageInput.value = 10;
                 leverageValue.textContent = '10x';
 
-                // Установка риска по умолчанию на 10%
-                riskPercentInput.value = 10;
-                riskPercentValue.textContent = '10';
+                // Установка риска по умолчанию на 5% (изменено с 10%)
+                riskPercentInput.value = 5;
+                riskPercentValue.textContent = '5';
                 previewAtrPercent.textContent = '0.0000 USDT';
-                previewAtrPercentValue.textContent = '10%';
+                previewAtrPercentValue.textContent = '5%';
 
                 // Установка комиссии по умолчанию на 0.0500%
                 exchangeFeeInput.value = 0.0500;
@@ -1639,7 +1669,37 @@ ATR: ${formatNumber(atr, 8)} USDT
                     });
                 });
 
-                entryPriceInput.addEventListener('input', calculateRisk);
+                entryPriceInput.addEventListener('input', function() {
+                    // Автоматическое определение точности цены
+                    const price = parseFloat(this.value);
+                    if (!isNaN(price)) {
+                        const decimals = autoDetectPrecision(price);
+                        const decimalsInfo = document.getElementById('decimalsInfo');
+                        
+                        if (decimals > 0) {
+                            decimalsInfo.textContent = `Автоматически определено: ${decimals} знака после запятой`;
+                            decimalsInfo.style.display = 'block';
+                            
+                            // Устанавливаем выбранное значение в селекторе
+                            assetTypeSelect.value = decimals.toString();
+                            
+                            // Если выбрано custom, обновляем значение
+                            if (assetTypeSelect.value === 'custom') {
+                                customDecimalsInput.value = decimals;
+                                customDecimalsGroup.style.display = 'block';
+                            } else {
+                                customDecimalsGroup.style.display = 'none';
+                            }
+                        } else {
+                            decimalsInfo.style.display = 'none';
+                        }
+                    } else {
+                        decimalsInfo.style.display = 'none';
+                    }
+                    
+                    calculateRisk();
+                });
+                
                 leverageInput.addEventListener('input', () => {
                     leverageValue.textContent = leverageInput.value + 'x';
                     if (leverageInput.value > 10) {
@@ -2028,7 +2088,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                 1) Картинка не поломалась.<br>
                 2) Уровень не пилится<br>
                 3) Нет глубокого отката.<br>
-                4) Пониженная волатильность.<br>
+                4) Понишенная волатильность.<br>
                 Больше 2-х раза не перезахожу</p>
             `,
             tvhFalseSecondaryMovement: `
