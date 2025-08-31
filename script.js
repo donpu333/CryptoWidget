@@ -2988,4 +2988,4 @@ window.toggleMenu = toggleMenu;
 window.resetForm = resetForm;
 window.reactivateAlert = reactivateAlert;
 window.exportAlertToTelegram = exportAlertToTelegram;
-window.exportAllActiveAlerts = exportAllActiveAlerts;
+window.exportAllActiveAlerts = exportAllActiveAlerts; 
