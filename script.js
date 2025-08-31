@@ -11,11 +11,9 @@ const API_CONFIG = {
         ALL_TICKERS: 'https://api.binance.com/api/v3/exchangeInfo'
     },
     PRICE_COMPARISON_EPSILON: 0.00000001,
-    TREND_ANALYSIS_PERIOD: 14, // Days for trend analysis
-    WARNING_THRESHOLD: 0.05 // 5% threshold for warning notifications
+    TREND_ANALYSIS_PERIOD: 14 // Days for trend analysis
 };
 const TG_BOT_TOKEN = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30'; // Замените на реальный токен из @BotFather
-
 // Объект для хранения данных о тикерах
 const tickersData = {
     'long': {},
@@ -76,10 +74,8 @@ const popularTickers = {
 let userAlerts = [];
 let currentAlertFilter = 'active';
 let alertCooldowns = {};
-let warningCooldowns = {};
 let activeTriggeredAlerts = {};
-let currentPrices = {};
-let warnedAlerts = {}; // Для отслеживания отправленных предупреждений
+let currentPrices = {}; // Добавлено: кэш текущих цен
 
 class BinanceAPIManager {
     constructor() {
@@ -611,7 +607,7 @@ function addTickerToList(ticker, listType) {
         `<i class="star ${i < tickerData.stars ? 'fas' : 'far'} fa-star"
             onclick="rateTicker(event, '${ticker}', '${listType}', ${i + 1})"></i>`
     ).join('');
-    // Создаем индикатор трендa
+    // Создаем индикатор тренда
     let trendIndicator = '';
     if (tickerData.trend) {
         const trendClass = tickerData.trend.direction === 'up' ? 'trend-up' :
@@ -1267,59 +1263,6 @@ function comparePrices(currentPrice, condition, targetPrice) {
     return false;
 }
 
-// Функция для проверки приближения к цене алерта
-function checkPriceProximity(currentPrice, alert) {
-    const targetPrice = alert.value;
-    const threshold = API_CONFIG.WARNING_THRESHOLD; // 5%
-    
-    if (alert.condition === '>') {
-        // Для лонг алертов (цена выше целевой)
-        const distanceToTarget = targetPrice - currentPrice;
-        const percentageToTarget = (distanceToTarget / targetPrice) * 100;
-        
-        // Если цена приблизилась к целевой на 5% или меньше
-        return percentageToTarget <= 5 && percentageToTarget > 0;
-    } else if (alert.condition === '<') {
-        // Для шорт алертов (цена ниже целевой)
-        const distanceToTarget = currentPrice - targetPrice;
-        const percentageToTarget = (distanceToTarget / targetPrice) * 100;
-        
-        // Если цена приблизилась к целевой на 5% или меньше
-        return percentageToTarget <= 5 && percentageToTarget > 0;
-    }
-    
-    return false;
-}
-
-// Функция для отправки предупреждения о приближении
-async function sendWarningNotification(alert, currentPrice) {
-    const targetPrice = alert.value;
-    const percentage = alert.condition === '>' 
-        ? ((targetPrice - currentPrice) / targetPrice * 100).toFixed(2)
-        : ((currentPrice - targetPrice) / targetPrice * 100).toFixed(2);
-    
-    const message = `⚠️ ПРЕДУПРЕЖДЕНИЕ: Цена приближается к алерту!\n` +
-                   `Символ: ${alert.symbol}\n` +
-                   `Условие: ${alert.condition} ${targetPrice}\n` +
-                   `Текущая цена: ${formatNumber(currentPrice, 8)}\n` +
-                   `Осталось: ${percentage}% до срабатывания`;
-
-    // Отправка в Telegram
-    if (alert.notificationMethods.includes('telegram') && alert.chatId) {
-        try {
-            await sendTelegramNotification(message, alert.chatId);
-        } catch (error) {
-            console.error('Failed to send Telegram warning:', error);
-        }
-    }
-
-    // Показываем уведомление в интерфейсе
-    showNotification('Предупреждение',
-        `Символ: ${alert.symbol}\n` +
-        `Цена приближается к алерту!\n` +
-        `Осталось: ${percentage}% до срабатывания`);
-}
-
 async function checkAlerts() {
     const now = Date.now();
     for (const alert of userAlerts.filter(a => !a.triggered)) {
@@ -1328,19 +1271,7 @@ async function checkAlerts() {
             const price = await apiManager.getCurrentPrice(alert.symbol, alert.marketType);
             if (price === null) continue;
 
-            // Проверяем приближение к цене алерта
-            const isProximityWarning = checkPriceProximity(price, alert);
-            const warningCooldownKey = `warning_${alert.id}`;
-            const lastWarning = warningCooldowns[warningCooldownKey] || 0;
-
-            if (isProximityWarning && now - lastWarning > 300000) { // 5 минут кд для предупреждений
-                // Отправляем предупреждение о приближении
-                await sendWarningNotification(alert, price);
-                warningCooldowns[warningCooldownKey] = now;
-                warnedAlerts[alert.id] = true;
-            }
-
-            // Безопасное сравнение цен для основного срабатывания
+            // Безопасное сравнение цен
             const conditionMet = comparePrices(price, alert.condition, alert.value);
 
             if (conditionMet) {
@@ -1381,7 +1312,7 @@ function highlightTriggeredAlert(alertId, condition) {
     if (!alertElement) return;
 
     // Добавляем класс для анимации в зависимости от типа алерта
-    if (condition === '>) {
+    if (condition === '>') {
         alertElement.classList.add('alert-triggered-long');
     } else {
         alertElement.classList.add('alert-triggered-short');
@@ -1928,7 +1859,6 @@ function loadUserAlerts(filter = 'active') {
         const isHistory = filter === 'history';
         const isActiveTriggered = activeTriggeredAlerts[alert.id] && !isHistory;
         const currentPrice = currentPrices[alert.symbol] || 'Загрузка...';
-        const hasWarning = warnedAlerts[alert.id] && !isTriggered;
 
         // Добавлено: Отображение текущей цены
         const priceDisplay = !isHistory ? `
@@ -1939,7 +1869,7 @@ function loadUserAlerts(filter = 'active') {
         ` : '';
 
         const alertHtml = `
-            <div id="alert-${alert.id}" class="alert-card rounded-md p-4 shadow-sm ${isActiveTriggered ? (isUp ? 'alert-triggered-long' : 'alert-triggered-short') : ''} ${hasWarning ? 'alert-warning' : ''}" data-symbol="${alert.symbol}">
+            <div id="alert-${alert.id}" class="alert-card rounded-md p-4 shadow-sm ${isActiveTriggered ? (isUp ? 'alert-triggered-long' : 'alert-triggered-short') : ''}" data-symbol="${alert.symbol}">
                 <div class="flex justify-between items-start">
                     <div class="flex items-center">
                         <div class="flex-1">
@@ -1951,7 +1881,6 @@ function loadUserAlerts(filter = 'active') {
                                             <i class="far fa-copy"></i>
                                             <span class="copy-tooltip">Копировать тикер</span>
                                         </button>
-                                        ${hasWarning ? '<span class="warning-badge" title="Цена приближается к алерту">⚠️</span>' : ''}
                                     </div>
                                     <div class="alert-price">
                                         <span>${alert.condition} ${alert.value}</span>
@@ -2044,7 +1973,6 @@ function deleteAlert(alertId) {
     if (confirm('Вы уверены, что хотите удалить этот алерт?')) {
         userAlerts = userAlerts.filter(alert => alert.id !== alertId);
         delete activeTriggeredAlerts[alertId];
-        delete warnedAlerts[alertId];
         saveAppState();
         loadUserAlerts(currentAlertFilter);
         showNotification('Успешно', 'Алерт удален');
@@ -2055,7 +1983,6 @@ function clearAllAlerts() {
     if (confirm('Вы уверены, что хотите удалить все алерты?')) {
         userAlerts = [];
         activeTriggeredAlerts = {};
-        warnedAlerts = {};
         saveAppState();
         loadUserAlerts(currentAlertFilter);
         showNotification('Успешно', 'Все алерты удалены');
@@ -2075,7 +2002,6 @@ function reactivateAlert(alertId) {
     alert.triggered = false;
     alert.triggeredCount = 0;
     delete activeTriggeredAlerts[alertId];
-    delete warnedAlerts[alertId];
     saveAppState();
     loadUserAlerts(currentAlertFilter);
     showNotification('Успешно', 'Алерт снова активен');
@@ -2212,7 +2138,7 @@ function openEditModal(alert) {
         </form>
     `;
 
-    // Получаем текущую цену для отображение
+    // Получаем текущую цену для отображения
     apiManager.getCurrentPrice(alert.symbol, alert.marketType).then(price => {
         if (price !== null) {
             const currentPriceValue = document.getElementById('editCurrentPriceValue');
