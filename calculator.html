@@ -321,6 +321,12 @@
 
         .menu-content.show {
             display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .menu-item {
@@ -805,11 +811,13 @@
         .tvh-text-content h3 {
             color: var(--primary);
             margin-bottom: 15px;
+            font-size: 1.2rem;
         }
 
         .tvh-text-content p {
             margin-bottom: 10px;
             line-height: 1.5;
+            font-size: 0.9rem;
         }
 
         .tvh-text-close {
@@ -869,6 +877,10 @@
             background-color: rgba(33, 150, 243, 0.1);
             border-radius: 4px;
             display: none;
+        }
+
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
@@ -968,7 +980,7 @@
 
                     <div class="input-group">
                         <label for="entryPrice">Цена входа (USDT)</label>
-                        <input type="number" id="entryPrice" min="0" step="0.00000001" placeholder="Введите цену входа">
+                        <input type="text" id="entryPrice" inputmode="decimal" placeholder="Введите цену входа">
                         <div class="decimals-info" id="decimalsInfo">Автоматически определено: 4 знака после запятой</div>
                     </div>
 
@@ -1360,9 +1372,17 @@
 
         // Функция для определения количества знаков после запятой
         function countDecimals(value) {
-            if (!value || Math.floor(value) === value) return 0;
-            const parts = value.toString().split('.');
-            return parts.length < 2 ? 0 : parts[1].length;
+            if (!value || value === '' || isNaN(parseFloat(value.replace(',', '.')))) return 0;
+            
+            // Заменяем запятую на точку для корректного парсинга
+            const normalizedValue = value.replace(',', '.');
+            
+            // Преобразуем в строку и проверяем наличие десятичной точки
+            const str = normalizedValue.toString();
+            if (str.indexOf('.') === -1) return 0;
+            
+            // Возвращаем количество знаков после запятой
+            return str.split('.')[1].length;
         }
 
         // Функция для автоматического определения точности цены
@@ -1409,6 +1429,14 @@
             return rounded.toString().replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.$/, '');
         }
 
+        // Функция для нормализации числа (замена запятой на точку)
+        function normalizeNumber(value) {
+            if (typeof value === 'string') {
+                return value.replace(',', '.');
+            }
+            return value;
+        }
+
         // Функция для расчета процентного изменения между двумя ценами
         function calculatePercentageChange(entryPrice, targetPrice) {
             return Math.abs((targetPrice - entryPrice) / entryPrice * 100).toFixed(2);
@@ -1416,14 +1444,14 @@
 
         // Функция для генерации текста расчета (без цены ликвидации)
         function generateCalculationText() {
-            const entryPrice = parseFloat(document.getElementById('entryPrice').value) || 0;
+            const entryPrice = parseFloat(normalizeNumber(document.getElementById('entryPrice').value)) || 0;
             const leverage = parseFloat(document.getElementById('leverage').value) || 1;
             const atr = parseFloat(document.getElementById('atr').value) || 0;
             const riskPercent = parseFloat(document.getElementById('riskPercent').value);
             const riskAmount = parseFloat(document.getElementById('riskAmount').value) || 0;
             const rewardRatio1 = parseFloat(document.getElementById('rewardRatio1').value) || 3;
             const rewardRatio2 = parseFloat(document.getElementById('rewardRatio2').value) || 5;
-            const stopLossPriceDirect = parseFloat(document.getElementById('stopLossPrice').value) || 0;
+            const stopLossPriceDirect = parseFloat(normalizeNumber(document.getElementById('stopLossPrice').value)) || 0;
             const exchangeFee = parseFloat(document.getElementById('exchangeFee').value) || 0.0500;
             const assetType = document.getElementById('assetType').value;
 
@@ -1671,8 +1699,8 @@ ATR: ${formatNumber(atr, 8)} USDT
 
                 entryPriceInput.addEventListener('input', function() {
                     // Автоматическое определение точности цены
-                    const price = parseFloat(this.value);
-                    if (!isNaN(price)) {
+                    const price = this.value;
+                    if (price && !isNaN(parseFloat(normalizeNumber(price)))) {
                         const decimals = autoDetectPrecision(price);
                         const decimalsInfo = document.getElementById('decimalsInfo');
                         
@@ -1694,7 +1722,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                             decimalsInfo.style.display = 'none';
                         }
                     } else {
-                        decimalsInfo.style.display = 'none';
+                        document.getElementById('decimalsInfo').style.display = 'none';
                     }
                     
                     calculateRisk();
@@ -1732,7 +1760,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                     calculateRisk();
                 });
                 
-                // Обработчик для выбора типа актива
+                // Обработчик для выбора точности
                 assetTypeSelect.addEventListener('change', () => {
                     if (assetTypeSelect.value === 'custom') {
                         customDecimalsGroup.style.display = 'block';
@@ -1769,8 +1797,8 @@ ATR: ${formatNumber(atr, 8)} USDT
 
                 // Обработчик для прямого ввода цены стоп-лосса
                 stopLossPriceInput.addEventListener('input', () => {
-                    const entryPrice = parseFloat(entryPriceInput.value) || 0;
-                    const stopLossPrice = parseFloat(stopLossPriceInput.value) || 0;
+                    const entryPrice = parseFloat(normalizeNumber(entryPriceInput.value)) || 0;
+                    const stopLossPrice = parseFloat(normalizeNumber(stopLossPriceInput.value)) || 0;
 
                     if (entryPrice > 0 && stopLossPrice > 0) {
                         const difference = Math.abs(entryPrice - stopLossPrice);
@@ -1847,14 +1875,14 @@ ATR: ${formatNumber(atr, 8)} USDT
 
             // Основная функция расчета
             function calculateRisk() {
-                const entryPrice = parseFloat(entryPriceInput.value) || 0;
+                const entryPrice = parseFloat(normalizeNumber(entryPriceInput.value)) || 0;
                 const leverage = parseFloat(leverageInput.value) || 1;
                 const atr = parseFloat(atrInput.value) || 0;
                 const riskPercent = parseFloat(riskPercentInput.value) / 100;
                 const riskAmount = parseFloat(riskAmountInput.value) || 0;
                 const rewardRatio1 = parseFloat(rewardRatio1Input.value) || 3;
                 const rewardRatio2 = parseFloat(rewardRatio2Input.value) || 5;
-                const stopLossPriceDirect = parseFloat(stopLossPriceInput.value) || 0;
+                const stopLossPriceDirect = parseFloat(normalizeNumber(stopLossPriceInput.value)) || 0;
                 const exchangeFee = parseFloat(exchangeFeeInput.value) / 100 || 0.0005; // 0.0500%
                 const assetType = assetTypeSelect.value;
                 const decimalPlaces = assetType === 'custom' ? 
@@ -2017,7 +2045,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                 1) Картинка не поломалась.<br>
                 2) Уровень не пилится<br>
                 3) Нет глубокого отката.<br>
-                4) Пониженная волатильность.<br>
+                4) Пониженная волатильности.<br>
                 Больше 2-х раза не перезахожу</p>
             `,
             tvhSecondaryMovement: `
@@ -2352,7 +2380,7 @@ ATR: ${formatNumber(atr, 8)} USDT
             fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'json',
                 },
                 body: JSON.stringify({
                     chat_id: chatId,
