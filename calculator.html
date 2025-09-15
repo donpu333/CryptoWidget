@@ -1182,11 +1182,11 @@
                 </div>
 
                 <div id="tvhBreakthroughButtons" class="tvh-sub-buttons">
-                    <button onclick="showTvhText('tvhPrimaryMovement')">ТВХ№1 Первичное движение</button>
-                    <button onclick="showTvhText('tvhTradingAbove')">ТВХ№2 После проторговки возле уровня</button>
-                    <button onclick="showTvhText('tvhTradingBelow')">ТВХ№3 Проторговка после пробоя</button>
-                    <button onclick="showTvhText('tvhSecondaryMovement')">ТВХ№4 во вторичное движение</button>
-                    <button onclick="showTvhText('tvhEntry')">ТВХ№5 Во вторичное движениея </button>
+                    <button onclick="showTvhText('tvhPrimaryMovement')">ТВХ №1 Первичное движение</button>
+                    <button onclick="showTvhText('tvhTradingAbove')">ТВХ №2 После проторговки возле уровня</button>
+                    <button onclick="showTvhText('tvhTradingBelow')">ТВХ №3 Проторговка после пробоя</button>
+                    <button onclick="showTvhText('tvhSecondaryMovement')">ТВХ №4 во вторичное движение</button>
+                    <button onclick="showTvhText('tvhEntry')">ТВХ №5  После ретеста </button>
                 </div>
 
                 <div id="tvhFalseBreakthroughButtons" class="tvh-sub-buttons">
@@ -1409,7 +1409,7 @@
         const tvhTexts = {
             tvhPrimaryMovement: {
                 text: `
-                    <h3>ТВХ№1 первичное движение </h3>
+                    <h3>ТВХ №1 Первичное движение </h3>
                     <p>На 5 минутном графики должно быть поджатие (не должен выйти повышенный объем).<br>
                     Подходить к уровню на маленьких барах затухание волатильности.<br>
                     (желательно чтоб бары были одного цвета) твх осуществляется ниже или выше уровня на 1 цент.</p>
@@ -1427,7 +1427,7 @@
             },
             tvhTradingAbove: {
                 text: `
-                   <h3>ТВХ№2 после проторговки возле уровня</h3>
+                   <h3>ТВХ №2 После проторговки возле уровня</h3>
                    <p> На 1ч и на 5 минутном графики инструмент образует проторговку в близи уровня. <br>
                        Должнобыть затухание волатильности.<br>
                        Вход в сделку стоп ордером. <br>
@@ -1444,7 +1444,7 @@
             },
             tvhTradingBelow: {
                 text: `
-                    <h3>ТВХ№3 проторговка после пробоя</h3>
+                    <h3>ТВХ №3 Проторговка после пробоя</h3>
                     <p>На 5 минутном графики инструмент подлетел и пробил уровень и закрылся под уровнем <br>
                      Жду проторговку минимум из 3 баров и захожу твх верх проторговки.<br>
                      Бары не должны пробивать уровень.(не должен выйти повышенный объем)<br>
@@ -1461,7 +1461,7 @@
             },
             tvhSecondaryMovement: {
                 text: `
-                    <h3>ТВХ№4 во вторичное движение</h3>
+                    <h3>ТВХ №4 Во вторичное движение</h3>
                     <p>На 1-4 ч плавный подход к уровню. <br>
                     На 5 минутном графики инструмент должен сделать ЛП не глубокий,<br>
                     Инструмент должен отойти от уровня,<br>
@@ -1480,7 +1480,7 @@
             },
             tvhEntry: {
                 text: `
-                    <h3>ТВХ№5 после ретеста</h3>
+                    <h3>ТВХ №5 После ретеста</h3>
                     <p>Плавный подход к уровню на 1-4 ч.<br>
                     На 5 минутном графики инструмент пробил уровень и не дал точку входа.<br>
                     Жду когда инструмент вернется к уровню сделает ретест.<br>
