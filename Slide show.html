@@ -686,7 +686,7 @@
                 <i class="fas fa-arrow-left mr-2"></i>Назад
             </button>
             <button class="control-btn" id="fsPlayPauseBtn">
-                <i class="fas fa-pause mr-2"></i>Пауza
+                <i class="fas fa-pause mr-2"></i>Пауза
             </button>
             <button class="control-btn" id="fsNextBtn">
                 <i class="fas fa-arrow-right mr-2"></i>Вперед
@@ -729,6 +729,7 @@
             let transitionTime = parseFloat(transitionInput.value) * 1000;
             let images = [];
             let imageSizes = [];
+            let isFullscreen = false;
             
             // Инициализация
             disableControls();
@@ -859,7 +860,7 @@
                     resetProgressBar();
                     
                     // Обновляем полноэкранный режим, если активен
-                    if (!fullscreenMode.classList.contains('hidden')) {
+                    if (isFullscreen) {
                         updateFullscreenSlide();
                     }
                 }
@@ -952,7 +953,23 @@
             function enterFullscreen() {
                 if (images.length === 0) return;
                 
+                const element = document.documentElement;
+                
+                if (element.requestFullscreen) {
+                    element.requestFullscreen().catch(err => {
+                        showNotification('Ошибка при переходе в полноэкранный режим: ' + err.message, 'error');
+                    });
+                } else if (element.mozRequestFullScreen) {
+                    element.mozRequestFullScreen();
+                } else if (element.webkitRequestFullscreen) {
+                    element.webkitRequestFullscreen();
+                } else if (element.msRequestFullscreen) {
+                    element.msRequestFullscreen();
+                }
+                
+                // Показываем наш кастомный полноэкранный интерфейс
                 fullscreenMode.classList.remove('hidden');
+                isFullscreen = true;
                 updateFullscreenSlide();
                 
                 if (isPlaying) {
@@ -963,7 +980,18 @@
             
             // Выход из полноэкранного режима
             function exitFullscreen() {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                
                 fullscreenMode.classList.add('hidden');
+                isFullscreen = false;
             }
             
             // Обновление слайда в полноэкранном режиме
@@ -1065,9 +1093,26 @@
             
             fullscreenClose.addEventListener('click', exitFullscreen);
             
+            // Обработчики событий полноэкранного режима браузера
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+            
+            function handleFullscreenChange() {
+                const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || 
+                                         document.mozFullScreenElement || document.msFullscreenElement;
+                
+                if (!fullscreenElement) {
+                    // Выход из полноэкранного режима
+                    fullscreenMode.classList.add('hidden');
+                    isFullscreen = false;
+                }
+            }
+            
             // Закрытие полноэкранного режима по ESC
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && !fullscreenMode.classList.contains('hidden')) {
+                if (e.key === 'Escape' && isFullscreen) {
                     exitFullscreen();
                 }
                 
@@ -1122,6 +1167,20 @@
 
         function handleLogout() {
             showNotification('Функция выхода будет реализована позже', 'error');
+        }
+        
+        // Глобальная функция для показа уведомлений
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.textContent = message;
+                notification.style.backgroundColor = type === 'success' ? '#4CAF50' : '#C62828';
+                notification.style.display = 'block';
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
         }
     </script>
 </body>
