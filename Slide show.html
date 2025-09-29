@@ -411,26 +411,7 @@
             width: auto; /* Сброс потенциальных значений */
             height: auto; /* Сброс потенциальных значений */
         }
-        /* Изменён стиль для fullscreen-controls */
-        .fullscreen-controls {
-            position: absolute;
-            top: 90px; /* Размещаем под кнопкой закрытия */
-            right: 20px; /* Прижимаем к правому краю */
-            display: flex;
-            flex-direction: column; /* Вертикальное расположение кнопок */
-            gap: 10px; /* Отступ между кнопками */
-            z-index: 101; /* Убедимся, что они поверх изображения, но ниже крестика */
-            /* Добавлен фон и скругление для лучшей видимости */
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 8px;
-        }
-        .fullscreen-controls .control-btn {
-            padding: 8px 12px; /* Уменьшенный размер кнопок */
-            font-size: 14px; /* Уменьшенный размер шрифта */
-            border-radius: 4px; /* Слегка уменьшенный радиус скругления */
-            min-width: 120px; /* Минимальная ширина для выравнивания */
-        }
+        /* УДАЛЕНЫ СТИЛИ ДЛЯ fullscreen-controls */
         .fullscreen-close {
             position: absolute;
             top: 20px;
@@ -511,17 +492,7 @@
                 height: 60px;
             }
             /* Адаптивность для мобильных устройств в полноэкранном режиме */
-            .fullscreen-controls {
-                top: 70px; /* Корректируем положение для мобильных */
-                right: 10px; /* Прижимаем ближе к краю */
-                gap: 5px; /* Уменьшаем отступ между кнопками */
-            }
-            .fullscreen-controls .control-btn {
-                padding: 6px 10px; /* Ещё меньший размер кнопок */
-                font-size: 12px; /* Ещё меньший размер шрифта */
-                min-width: 100px; /* Уменьшаем минимальную ширину */
-            }
-             .fullscreen-close {
+            .fullscreen-close {
                 top: 10px;
                 right: 10px;
                 width: 40px;
@@ -638,18 +609,7 @@
         <div class="fullscreen-slide" id="fullscreenSlide">
             <img class="fullscreen-img" id="fullscreenImg" src="" alt="">
         </div>
-        <!-- Перемещены в правый верхний угол, под крестиком -->
-        <div class="fullscreen-controls">
-            <button class="control-btn" id="fsPrevBtn">
-                <i class="fas fa-arrow-left mr-2"></i>Назад
-            </button>
-            <button class="control-btn" id="fsPlayPauseBtn">
-                <i class="fas fa-pause mr-2"></i>Пауза
-            </button>
-            <button class="control-btn" id="fsNextBtn">
-                <i class="fas fa-arrow-right mr-2"></i>Вперед
-            </button>
-        </div>
+        <!-- УДАЛЕНЫ КНОПКИ УПРАВЛЕНИЯ В ПОЛНОЭКРАННОМ РЕЖИМЕ -->
         <div class="fullscreen-close" id="fullscreenClose">×</div>
     </div>
     <script>
@@ -673,9 +633,6 @@
             const imageInfo = document.getElementById('imageInfo');
             const fullscreenMode = document.getElementById('fullscreenMode');
             const fullscreenImg = document.getElementById('fullscreenImg');
-            const fsPrevBtn = document.getElementById('fsPrevBtn');
-            const fsPlayPauseBtn = document.getElementById('fsPlayPauseBtn');
-            const fsNextBtn = document.getElementById('fsNextBtn');
             const fullscreenClose = document.getElementById('fullscreenClose');
             // Состояние слайд-шоу
             let currentSlideIndex = 0;
@@ -825,7 +782,6 @@
                 }, intervalTime);
                 isPlaying = true;
                 playPauseBtn.innerHTML = '<i class="fas fa-pause mr-2"></i>Пауза';
-                fsPlayPauseBtn.innerHTML = '<i class="fas fa-pause mr-2"></i>Пауза';
                 startProgressBar();
             }
             // Остановка слайд-шоу
@@ -836,7 +792,6 @@
                 }
                 isPlaying = false;
                 playPauseBtn.innerHTML = '<i class="fas fa-play mr-2"></i>Воспроизвести';
-                fsPlayPauseBtn.innerHTML = '<i class="fas fa-play mr-2"></i>Воспроизвести';
                 stopProgressBar();
             }
             // Сброс прогресс бара
@@ -962,27 +917,6 @@
                 });
             });
             // Обработчики для полноэкранного режима
-            fsPrevBtn.addEventListener('click', () => {
-                prevSlide();
-                if (isPlaying) {
-                    stopSlideshow();
-                    startSlideshow();
-                }
-            });
-            fsPlayPauseBtn.addEventListener('click', () => {
-                if (isPlaying) {
-                    stopSlideshow();
-                } else {
-                    startSlideshow();
-                }
-            });
-            fsNextBtn.addEventListener('click', () => {
-                nextSlide();
-                if (isPlaying) {
-                    stopSlideshow();
-                    startSlideshow();
-                }
-            });
             fullscreenClose.addEventListener('click', exitFullscreen);
             // Обработчики событий полноэкранного режима браузера
             document.addEventListener('fullscreenchange', handleFullscreenChange);
