@@ -1057,6 +1057,7 @@
                     <div class="stop-method-selector">
                         <button class="stop-method-btn active" data-method="atr">По ATR</button>
                         <button class="stop-method-btn" data-method="price">По цене</button>
+                        <button class="stop-method-btn" data-method="percent">По проценту</button>
                     </div>
 
                     <!-- Группа ввода по ATR -->
@@ -1088,6 +1089,20 @@
                             <input type="number" id="stopLossPrice" min="0" step="0.00000001" placeholder="Введите цену стоп-лосса">
                             <div class="preview-value">
                                 Разница: <span id="priceDifference">0.0000 USDT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Группа ввода по проценту -->
+                    <div class="stop-input-group" id="percent-group">
+                        <div class="input-group">
+                            <label for="stopLossPercent">Процент стоп-лосса (%)</label>
+                            <div class="slider-container">
+                                <input type="range" id="stopLossPercent" min="0.1" max="20" step="0.1" value="2">
+                                <span class="slider-value" id="stopLossPercentValue">2</span>%
+                            </div>
+                            <div class="preview-value">
+                                Стоп-лосс: <span id="previewPercentValue">0.0000 USDT</span> (<span id="previewPercent">2%</span> от цены входа)
                             </div>
                         </div>
                     </div>
@@ -1696,6 +1711,7 @@
             const rewardRatio1 = parseFloat(document.getElementById('rewardRatio1').value) || 3;
             const rewardRatio2 = parseFloat(document.getElementById('rewardRatio2').value) || 5;
             const stopLossPriceDirect = parseFloat(normalizeNumber(document.getElementById('stopLossPrice').value)) || 0;
+            const stopLossPercent = parseFloat(document.getElementById('stopLossPercent').value) || 0;
             const exchangeFee = parseFloat(document.getElementById('exchangeFee').value) || 0.0500;
             const assetType = document.getElementById('assetType').value;
 
@@ -1709,16 +1725,24 @@
             }
 
             // Получаем метод расчета стоп-лосса
-            const stopMethodName = stopMethod === 'atr' ? 'По ATR' : 'По цене';
+            let stopMethodName = '';
+            switch(stopMethod) {
+                case 'atr': stopMethodName = 'По ATR'; break;
+                case 'price': stopMethodName = 'По цене'; break;
+                case 'percent': stopMethodName = 'По проценту'; break;
+            }
 
             // Рассчитываем стоп-лосс
             let stopLossPrice, priceDifference;
             if (stopMethod === 'atr') {
                 priceDifference = atr * (riskPercent / 100);
                 stopLossPrice = isLong ? entryPrice - priceDifference : entryPrice + priceDifference;
-            } else {
+            } else if (stopMethod === 'price') {
                 priceDifference = Math.abs(entryPrice - stopLossPriceDirect);
                 stopLossPrice = stopLossPriceDirect;
+            } else if (stopMethod === 'percent') {
+                priceDifference = entryPrice * (stopLossPercent / 100);
+                stopLossPrice = isLong ? entryPrice - priceDifference : entryPrice + priceDifference;
             }
 
             // Рассчитываем размер позиции с учетом комиссии
@@ -1737,7 +1761,7 @@
                 entryPrice - (riskAmount * rewardRatio2 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize;
 
             // Рассчитываем проценты
-            const stopLossPercent = calculatePercentageChange(entryPrice, stopLossPrice);
+            const stopLossPercentValue = calculatePercentageChange(entryPrice, stopLossPrice);
             const takeProfit1Percent = calculatePercentageChange(entryPrice, takeProfit1);
             const takeProfit2Percent = calculatePercentageChange(entryPrice, takeProfit2);
 
@@ -1752,8 +1776,8 @@
 Метод расчета стоп-лосса: ${stopMethodName}
 Параметры сделки:
 ===============================
-ATR: ${formatNumber(atr, 8)} USDT
-Риск стоп-лосс: ${riskPercent}% от ATR
+${stopMethod === 'atr' ? `ATR: ${formatNumber(atr, 8)} USDT\nРиск стоп-лосс: ${riskPercent}% от ATR` : ''}
+${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPercent}%` : ''}
 Риск на сделку: ${formatNumber(riskAmount, 1)} USDT
 Соотношение тейк-профита: 1:${rewardRatio1} и 1:${rewardRatio2}
 Комиссия биржи: ${exchangeFee}%
@@ -1761,7 +1785,7 @@ ATR: ${formatNumber(atr, 8)} USDT
 ===============================
 Цена входа: ${formatNumber(entryPrice, assetType)} USDT
 Размер позиции: ${formatNumber(positionSize, 1)}
-Стоп-лосс: ${formatNumber(stopLossPrice, assetType)} USDT (${stopLossPercent}%)
+Стоп-лосс: ${formatNumber(stopLossPrice, assetType)} USDT (${stopLossPercentValue}%)
 Тейк-профит 1к${rewardRatio1}: ${formatNumber(takeProfit1, assetType)} USDT (${takeProfit1Percent}%)
 Тейк-профит 1к${rewardRatio2}: ${formatNumber(takeProfit2, assetType)} USDT (${takeProfit2Percent}%)
 Комиссии: ${formatNumber(totalFee, 8)} USDT (вход: ${formatNumber(entryFee, 8)}, выход: ${formatNumber(exitFee, 8)})`;
@@ -1845,6 +1869,10 @@ ATR: ${formatNumber(atr, 8)} USDT
             const previewAtrPercentValue = document.getElementById('previewAtrPercentValue');
             const stopLossPriceInput = document.getElementById('stopLossPrice');
             const priceDifferenceSpan = document.getElementById('priceDifference');
+            const stopLossPercentInput = document.getElementById('stopLossPercent');
+            const stopLossPercentValue = document.getElementById('stopLossPercentValue');
+            const previewPercentValue = document.getElementById('previewPercentValue');
+            const previewPercent = document.getElementById('previewPercent');
             const exchangeFeeInput = document.getElementById('exchangeFee');
             const exchangeFeeResult = document.getElementById('exchangeFeeResult');
             const assetTypeSelect = document.getElementById('assetType');
@@ -1866,6 +1894,7 @@ ATR: ${formatNumber(atr, 8)} USDT
             const stopMethodButtons = document.querySelectorAll('.stop-method-btn');
             const atrGroup = document.getElementById('atr-group');
             const priceGroup = document.getElementById('price-group');
+            const percentGroup = document.getElementById('percent-group');
 
             // Кнопки типа сделки
             const tradeTypeButtons = document.querySelectorAll('.trade-type-btn');
@@ -1883,12 +1912,19 @@ ATR: ${formatNumber(atr, 8)} USDT
                 previewAtrPercent.textContent = '0.0000 USDT';
                 previewAtrPercentValue.textContent = '10%';
 
+                // Установка процента стоп-лосса по умолчанию на 2%
+                stopLossPercentInput.value = 2;
+                stopLossPercentValue.textContent = '2';
+                previewPercentValue.textContent = '0.0000 USDT';
+                previewPercent.textContent = '2%';
+
                 // Установка комиссии по умолчанию на 0.0500%
                 exchangeFeeInput.value = 0.0500;
                 exchangeFeeResult.textContent = '0.0500%';
 
                 updateSliderValues();
                 updateAtrPreview();
+                updatePercentPreview();
                 calculateRisk();
 
                 // Назначение обработчиков событий
@@ -2028,11 +2064,14 @@ ATR: ${formatNumber(atr, 8)} USDT
 
                         atrGroup.classList.remove('active');
                         priceGroup.classList.remove('active');
+                        percentGroup.classList.remove('active');
 
                         if (stopMethod === 'atr') {
                             atrGroup.classList.add('active');
-                        } else {
+                        } else if (stopMethod === 'price') {
                             priceGroup.classList.add('active');
+                        } else if (stopMethod === 'percent') {
+                            percentGroup.classList.add('active');
                         }
 
                         calculateRisk();
@@ -2051,6 +2090,13 @@ ATR: ${formatNumber(atr, 8)} USDT
                         priceDifferenceSpan.textContent = '0.0000 USDT';
                     }
 
+                    calculateRisk();
+                });
+
+                // Обработчик для ввода процента стоп-лосса
+                stopLossPercentInput.addEventListener('input', () => {
+                    updateSliderValues();
+                    updatePercentPreview();
                     calculateRisk();
                 });
 
@@ -2103,6 +2149,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                 riskPercentValue.textContent = riskPercentInput.value;
                 rewardRatio1Value.textContent = rewardRatio1Input.value;
                 rewardRatio2Value.textContent = rewardRatio2Input.value;
+                stopLossPercentValue.textContent = stopLossPercentInput.value;
             }
 
             // Предварительный просмотр ATR
@@ -2117,6 +2164,21 @@ ATR: ${formatNumber(atr, 8)} USDT
                 atrResultSpan.textContent = formatNumber(atr, 8) + ' USDT';
             }
 
+            // Предварительный просмотр процента
+            function updatePercentPreview() {
+                const entryPrice = parseFloat(normalizeNumber(entryPriceInput.value)) || 0;
+                const stopLossPercent = parseFloat(stopLossPercentInput.value) / 100;
+
+                if (entryPrice > 0) {
+                    const priceDifference = entryPrice * stopLossPercent;
+                    previewPercentValue.textContent = formatNumber(priceDifference, 8) + ' USDT';
+                    previewPercent.textContent = stopLossPercentInput.value + '%';
+                } else {
+                    previewPercentValue.textContent = '0.0000 USDT';
+                    previewPercent.textContent = stopLossPercentInput.value + '%';
+                }
+            }
+
             // Основная функция расчета
             function calculateRisk() {
                 const entryPrice = parseFloat(normalizeNumber(entryPriceInput.value)) || 0;
@@ -2127,6 +2189,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                 const rewardRatio1 = parseFloat(rewardRatio1Input.value) || 3;
                 const rewardRatio2 = parseFloat(rewardRatio2Input.value) || 5;
                 const stopLossPriceDirect = parseFloat(normalizeNumber(stopLossPriceInput.value)) || 0;
+                const stopLossPercent = parseFloat(stopLossPercentInput.value) / 100 || 0.02;
                 const exchangeFee = parseFloat(exchangeFeeInput.value) / 100 || 0.0005; // 0.0500%
                 const assetType = assetTypeSelect.value;
                 const decimalPlaces = assetType === 'custom' ? 
@@ -2137,8 +2200,10 @@ ATR: ${formatNumber(atr, 8)} USDT
                 let priceDifference;
                 if (stopMethod === 'atr') {
                     priceDifference = atr * riskPercent;
-                } else {
+                } else if (stopMethod === 'price') {
                     priceDifference = Math.abs(entryPrice - stopLossPriceDirect);
+                } else if (stopMethod === 'percent') {
+                    priceDifference = entryPrice * stopLossPercent;
                 }
 
                 // 2. Расчет стоп-лосса
@@ -2147,8 +2212,12 @@ ATR: ${formatNumber(atr, 8)} USDT
                     stopLossPrice = isLong ? 
                         entryPrice - priceDifference : 
                         entryPrice + priceDifference;
-                } else {
+                } else if (stopMethod === 'price') {
                     stopLossPrice = stopLossPriceDirect;
+                } else if (stopMethod === 'percent') {
+                    stopLossPrice = isLong ? 
+                        entryPrice - priceDifference : 
+                        entryPrice + priceDifference;
                 }
 
                 // 3. Расчет размера позиции с учетом комиссии
@@ -2172,7 +2241,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                     entryPrice * (1 + 1/leverage);
 
                 // 6. Расчет процентных изменений
-                const stopLossPercent = calculatePercentageChange(entryPrice, stopLossPrice);
+                const stopLossPercentValue = calculatePercentageChange(entryPrice, stopLossPrice);
                 const takeProfit1Percent = calculatePercentageChange(entryPrice, takeProfit1);
                 const takeProfit2Percent = calculatePercentageChange(entryPrice, takeProfit2);
                 const liquidationPricePercent = calculatePercentageChange(entryPrice, liquidationPrice);
@@ -2187,7 +2256,7 @@ ATR: ${formatNumber(atr, 8)} USDT
                 // Обновление интерфейса с учетом типа актива
                 entryPriceResult.textContent = `${formatNumber(entryPrice, decimalPlaces, assetType)} USDT`;
                 positionSizeSpan.textContent = formatNumber(positionSize, 1);
-                stopLossSpan.innerHTML = `${formatNumber(stopLossPrice, decimalPlaces, assetType)} USDT <span class="percentage-value">(${stopLossPercent}%)</span><span class="loss-usdt">-${formatNumber(stopLossUsdt, 2)} USDT</span>`;
+                stopLossSpan.innerHTML = `${formatNumber(stopLossPrice, decimalPlaces, assetType)} USDT <span class="percentage-value">(${stopLossPercentValue}%)</span><span class="loss-usdt">-${formatNumber(stopLossUsdt, 2)} USDT</span>`;
                 liquidationPriceSpan.innerHTML = `${formatNumber(liquidationPrice, decimalPlaces, assetType)} USDT <span class="percentage-value">(${liquidationPricePercent}%)</span>`;
                 exchangeFeeResult.textContent = `${formatNumber(exchangeFee * 100, 4)}%`;
                 atrResultSpan.textContent = `${formatNumber(atr, 8)} USDT`;
