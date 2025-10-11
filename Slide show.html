@@ -391,27 +391,39 @@
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            padding: 0; /* Убраны внутренние отступы */
-            margin: 0; /* Убраны внешние отступы */
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
         }
         .fullscreen-slide {
             width: 100%;
-            /* height: 90%; */ /* Удалено ограничение высоты */
-            height: 100%; /* Полная высота экрана */
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-grow: 1; /* Занимает всё доступное пространство */
+            flex-grow: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        .fullscreen-img-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            max-height: 100%;
+            transition: transform 0.3s ease;
+            cursor: grab;
         }
         .fullscreen-img {
-            max-width: 100vw;  /* Максимальная ширина - ширина экрана */
-            max-height: 100vh; /* Максимальная высота - высота экрана */
-            /* object-fit: contain; */ /* Заменено для лучшего заполнения */
-            object-fit: scale-down; /* Или используйте 'cover' для заполнения */
-            width: auto; /* Сброс потенциальных значений */
-            height: auto; /* Сброс потенциальных значений */
+            max-width: 100vw;
+            max-height: 100vh;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+            user-select: none;
+            -webkit-user-drag: none;
         }
-        /* УДАЛЕНЫ СТИЛИ ДЛЯ fullscreen-controls */
+        .fullscreen-img:active {
+            cursor: grabbing;
+        }
         .fullscreen-close {
             position: absolute;
             top: 20px;
@@ -428,11 +440,37 @@
             cursor: pointer;
             transition: all 0.3s;
             backdrop-filter: blur(5px);
-            z-index: 102; /* Увеличен z-index, чтобы быть поверх кнопок управления */
+            z-index: 102;
         }
         .fullscreen-close:hover {
             background: rgba(255, 0, 0, 0.6);
             transform: rotate(90deg) scale(1.1);
+        }
+        .zoom-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 101;
+            backdrop-filter: blur(5px);
+        }
+        .playback-status {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 101;
+            backdrop-filter: blur(5px);
+            display: none;
         }
         .hidden {
             display: none;
@@ -491,7 +529,6 @@
                 width: 80px;
                 height: 60px;
             }
-            /* Адаптивность для мобильных устройств в полноэкранном режиме */
             .fullscreen-close {
                 top: 10px;
                 right: 10px;
@@ -606,10 +643,13 @@
         </div>
     </div>
     <div class="fullscreen-mode hidden" id="fullscreenMode">
+        <div class="zoom-info" id="zoomInfo">Масштаб: 100%</div>
+        <div class="playback-status" id="playbackStatus"></div>
         <div class="fullscreen-slide" id="fullscreenSlide">
-            <img class="fullscreen-img" id="fullscreenImg" src="" alt="">
+            <div class="fullscreen-img-container" id="fullscreenImgContainer">
+                <img class="fullscreen-img" id="fullscreenImg" src="" alt="">
+            </div>
         </div>
-        <!-- УДАЛЕНЫ КНОПКИ УПРАВЛЕНИЯ В ПОЛНОЭКРАННОМ РЕЖИМЕ -->
         <div class="fullscreen-close" id="fullscreenClose">×</div>
     </div>
     <script>
@@ -633,7 +673,11 @@
             const imageInfo = document.getElementById('imageInfo');
             const fullscreenMode = document.getElementById('fullscreenMode');
             const fullscreenImg = document.getElementById('fullscreenImg');
+            const fullscreenImgContainer = document.getElementById('fullscreenImgContainer');
             const fullscreenClose = document.getElementById('fullscreenClose');
+            const zoomInfo = document.getElementById('zoomInfo');
+            const playbackStatus = document.getElementById('playbackStatus');
+            
             // Состояние слайд-шоу
             let currentSlideIndex = 0;
             let isPlaying = true;
@@ -643,8 +687,17 @@
             let images = [];
             let imageSizes = [];
             let isFullscreen = false;
+            
+            // Состояние масштабирования и перемещения
+            let scale = 1;
+            let isDragging = false;
+            let startX, startY;
+            let translateX = 0, translateY = 0;
+            let lastTranslateX = 0, lastTranslateY = 0;
+            
             // Инициализация
             disableControls();
+            
             // Функция для показа уведомления
             function showNotification(message, type = 'success') {
                 const notification = document.getElementById('notification');
@@ -655,20 +708,33 @@
                     notification.style.display = 'none';
                 }, 3000);
             }
+            
+            // Функция для показа статуса воспроизведения в полноэкранном режиме
+            function showPlaybackStatus(message) {
+                playbackStatus.textContent = message;
+                playbackStatus.style.display = 'block';
+                setTimeout(() => {
+                    playbackStatus.style.display = 'none';
+                }, 1500);
+            }
+            
             // Обработчики событий для загрузки папки
             folderBtn.addEventListener('click', () => {
                 folderInput.click();
             });
+            
             folderInput.addEventListener('change', function(event) {
                 const files = event.target.files;
                 images = [];
                 imageSizes = [];
+                
                 // Фильтруем только изображения
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
                     if (file.type.match('image.*')) {
                         const url = URL.createObjectURL(file);
                         images.push(url);
+                        
                         // Получаем размеры изображения
                         const img = new Image();
                         img.onload = function() {
@@ -680,6 +746,7 @@
                         img.src = url;
                     }
                 }
+                
                 if (images.length > 0) {
                     statusMessage.textContent = `Загружено ${images.length} изображений`;
                     initializeSlides();
@@ -691,6 +758,7 @@
                     showNotification('В выбранной папке нет изображений', 'error');
                 }
             });
+            
             // Обновление информации о размере изображения
             function updateImageInfo() {
                 if (imageSizes[currentSlideIndex]) {
@@ -698,10 +766,12 @@
                     imageInfo.textContent = `Размер: ${size.width}×${size.height}`;
                 }
             }
+            
             // Инициализация слайдов
             function initializeSlides() {
                 slideshow.innerHTML = '<div class="slide-number" id="slideNumber">0 / 0</div><div class="image-info" id="imageInfo">Размер: 0×0</div>';
                 thumbnails.innerHTML = '';
+                
                 images.forEach((image, index) => {
                     // Создание слайда
                     const slide = document.createElement('div');
@@ -712,6 +782,7 @@
                     img.alt = `Слайд ${index + 1}`;
                     slide.appendChild(img);
                     slideshow.appendChild(slide);
+                    
                     // Создание миниатюры
                     const thumbnail = document.createElement('div');
                     thumbnail.className = 'thumbnail';
@@ -722,13 +793,16 @@
                     });
                     thumbnails.appendChild(thumbnail);
                 });
+                
                 // Активируем первый слайд
                 goToSlide(0);
+                
                 // Устанавливаем transition time для всех слайдов
                 document.querySelectorAll('.slide').forEach(slide => {
                     slide.style.transition = `opacity ${transitionTime/1000}s ease`;
                 });
             }
+            
             // Переход к определенному слайду
             function goToSlide(index) {
                 // Скрываем текущий слайд
@@ -736,23 +810,31 @@
                 if (slides.length > 0) {
                     slides[currentSlideIndex].classList.remove('active');
                     document.querySelectorAll('.thumbnail')[currentSlideIndex].classList.remove('active');
+                    
                     // Устанавливаем новый индекс
                     currentSlideIndex = index;
+                    
                     // Показываем новый слайд
                     slides[currentSlideIndex].classList.add('active');
                     document.querySelectorAll('.thumbnail')[currentSlideIndex].classList.add('active');
+                    
                     // Обновляем номер слайда
                     slideNumber.textContent = `${currentSlideIndex + 1} / ${images.length}`;
+                    
                     // Обновляем информацию о размере
                     updateImageInfo();
+                    
                     // Сбрасываем прогресс бар
                     resetProgressBar();
+                    
                     // Обновляем полноэкранный режим, если активен
                     if (isFullscreen) {
                         updateFullscreenSlide();
+                        resetZoom(); // Сброс масштаба при смене слайда
                     }
                 }
             }
+            
             // Следующий слайд
             function nextSlide() {
                 if (images.length === 0) return;
@@ -762,6 +844,7 @@
                 }
                 goToSlide(nextIndex);
             }
+            
             // Предыдущий слайд
             function prevSlide() {
                 if (images.length === 0) return;
@@ -771,19 +854,28 @@
                 }
                 goToSlide(prevIndex);
             }
+            
             // Запуск слайд-шоу
             function startSlideshow() {
                 if (intervalId) {
                     clearInterval(intervalId);
                 }
                 if (images.length === 0) return;
+                
                 intervalId = setInterval(() => {
                     nextSlide();
                 }, intervalTime);
+                
                 isPlaying = true;
                 playPauseBtn.innerHTML = '<i class="fas fa-pause mr-2"></i>Пауза';
                 startProgressBar();
+                
+                // Показываем статус в полноэкранном режиме
+                if (isFullscreen) {
+                    showPlaybackStatus('▶ Воспроизведение');
+                }
             }
+            
             // Остановка слайд-шоу
             function stopSlideshow() {
                 if (intervalId) {
@@ -793,33 +885,144 @@
                 isPlaying = false;
                 playPauseBtn.innerHTML = '<i class="fas fa-play mr-2"></i>Воспроизвести';
                 stopProgressBar();
+                
+                // Показываем статус в полноэкранном режиме
+                if (isFullscreen) {
+                    showPlaybackStatus('⏸ Пауза');
+                }
             }
+            
+            // Переключение воспроизведения/паузы
+            function togglePlayPause() {
+                if (isPlaying) {
+                    stopSlideshow();
+                } else {
+                    startSlideshow();
+                }
+            }
+            
             // Сброс прогресс бара
             function resetProgressBar() {
                 progress.style.width = '0%';
             }
+            
             // Запуск прогресс бара
             function startProgressBar() {
                 resetProgressBar();
                 const startTime = Date.now();
+                
                 const updateProgress = () => {
                     if (!isPlaying) return;
                     const elapsed = Date.now() - startTime;
                     const percentage = Math.min(100, (elapsed / intervalTime) * 100);
                     progress.style.width = `${percentage}%`;
+                    
                     if (percentage < 100) {
                         requestAnimationFrame(updateProgress);
                     }
                 };
+                
                 requestAnimationFrame(updateProgress);
             }
+            
             // Остановка прогресс бара
             function stopProgressBar() {
                 // Прогресс бар останавливается автоматически при остановке анимации
             }
+            
+            // Функции масштабирования
+            function zoomIn() {
+                scale = Math.min(scale * 1.2, 5);
+                updateZoom();
+            }
+            
+            function zoomOut() {
+                // Установлено ограничение - нельзя уменьшить меньше 100% (обычного состояния)
+                scale = Math.max(scale / 1.2, 1);
+                updateZoom();
+            }
+            
+            function resetZoom() {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                lastTranslateX = 0;
+                lastTranslateY = 0;
+                updateZoom();
+            }
+            
+            function updateZoom() {
+                fullscreenImg.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+                zoomInfo.textContent = `Масштаб: ${Math.round(scale * 100)}%`;
+                
+                // Сохраняем текущее положение для следующего перетаскивания
+                lastTranslateX = translateX;
+                lastTranslateY = translateY;
+            }
+            
+            // Масштабирование колесиком мыши
+            function handleWheel(e) {
+                e.preventDefault();
+                
+                const rect = fullscreenImg.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                const zoomIntensity = 0.1;
+                const wheel = e.deltaY < 0 ? 1 : -1;
+                
+                // Сохраняем старый масштаб и положение
+                const oldScale = scale;
+                
+                // Изменяем масштаб
+                scale += wheel * zoomIntensity * scale;
+                // Установлено ограничение - нельзя уменьшить меньше 100% (обычного состояния)
+                scale = Math.max(1, Math.min(5, scale));
+                
+                if (scale !== oldScale) {
+                    // Вычисляем смещение для сохранения позиции курсора
+                    const scaleChange = scale - oldScale;
+                    translateX -= (mouseX - rect.width / 2 - translateX) * (scaleChange / oldScale);
+                    translateY -= (mouseY - rect.height / 2 - translateY) * (scaleChange / oldScale);
+                    
+                    updateZoom();
+                }
+            }
+            
+            // Функции для перетаскивания изображения
+            function startDrag(e) {
+                if (scale <= 1) return;
+                
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                fullscreenImgContainer.style.cursor = 'grabbing';
+            }
+            
+            function drag(e) {
+                if (!isDragging) return;
+                
+                e.preventDefault();
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                
+                // Ограничиваем перемещение, чтобы изображение не уходило слишком далеко
+                const maxTranslate = 200 * scale;
+                translateX = Math.max(-maxTranslate, Math.min(maxTranslate, translateX));
+                translateY = Math.max(-maxTranslate, Math.min(maxTranslate, translateY));
+                
+                updateZoom();
+            }
+            
+            function stopDrag() {
+                isDragging = false;
+                fullscreenImgContainer.style.cursor = 'grab';
+            }
+            
             // Включение полноэкранного режима
             function enterFullscreen() {
                 if (images.length === 0) return;
+                
                 const element = document.documentElement;
                 if (element.requestFullscreen) {
                     element.requestFullscreen().catch(err => {
@@ -832,15 +1035,19 @@
                 } else if (element.msRequestFullscreen) {
                     element.msRequestFullscreen();
                 }
+                
                 // Показываем наш кастомный полноэкранный интерфейс
                 fullscreenMode.classList.remove('hidden');
                 isFullscreen = true;
                 updateFullscreenSlide();
+                resetZoom();
+                
                 if (isPlaying) {
                     stopSlideshow();
                     startSlideshow();
                 }
             }
+            
             // Выход из полноэкранного режима
             function exitFullscreen() {
                 if (document.exitFullscreen) {
@@ -852,13 +1059,17 @@
                 } else if (document.msExitFullscreen) {
                     document.msExitFullscreen();
                 }
+                
                 fullscreenMode.classList.add('hidden');
                 isFullscreen = false;
+                resetZoom();
             }
+            
             // Обновление слайда в полноэкранном режиме
             function updateFullscreenSlide() {
                 fullscreenImg.src = images[currentSlideIndex];
             }
+            
             // Включение элементов управления
             function enableControls() {
                 prevBtn.disabled = false;
@@ -868,6 +1079,7 @@
                 intervalInput.disabled = false;
                 transitionInput.disabled = false;
             }
+            
             // Отключение элементов управления
             function disableControls() {
                 prevBtn.disabled = true;
@@ -877,6 +1089,7 @@
                 intervalInput.disabled = true;
                 transitionInput.disabled = true;
             }
+            
             // Обработчики событий
             prevBtn.addEventListener('click', () => {
                 prevSlide();
@@ -885,13 +1098,9 @@
                     startSlideshow();
                 }
             });
-            playPauseBtn.addEventListener('click', () => {
-                if (isPlaying) {
-                    stopSlideshow();
-                } else {
-                    startSlideshow();
-                }
-            });
+            
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            
             nextBtn.addEventListener('click', () => {
                 nextSlide();
                 if (isPlaying) {
@@ -899,7 +1108,9 @@
                     startSlideshow();
                 }
             });
+            
             fullscreenBtn.addEventListener('click', enterFullscreen);
+            
             intervalInput.addEventListener('input', () => {
                 intervalTime = parseInt(intervalInput.value) * 1000;
                 intervalValue.textContent = intervalInput.value;
@@ -908,6 +1119,7 @@
                     startSlideshow();
                 }
             });
+            
             transitionInput.addEventListener('input', () => {
                 transitionTime = parseFloat(transitionInput.value) * 1000;
                 transitionValue.textContent = transitionInput.value;
@@ -916,13 +1128,47 @@
                     slide.style.transition = `opacity ${transitionTime/1000}s ease`;
                 });
             });
+            
             // Обработчики для полноэкранного режима
             fullscreenClose.addEventListener('click', exitFullscreen);
+            
+            // Обработчик левой кнопки мыши для управления воспроизведением
+            fullscreenMode.addEventListener('click', function(e) {
+                // Проверяем, что это левая кнопка мыши (button === 0)
+                if (e.button === 0) {
+                    togglePlayPause();
+                }
+            });
+            
+            // Обработчики для перетаскивания изображения
+            fullscreenImgContainer.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+            
+            // Обработчик колесика мыши для масштабирования
+            fullscreenImgContainer.addEventListener('wheel', handleWheel, { passive: false });
+            
+            // Обработчики для сенсорных устройств
+            fullscreenImgContainer.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    startDrag(e.touches[0]);
+                }
+            });
+            
+            fullscreenImgContainer.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1) {
+                    drag(e.touches[0]);
+                }
+            });
+            
+            fullscreenImgContainer.addEventListener('touchend', stopDrag);
+            
             // Обработчики событий полноэкранного режима браузера
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.addEventListener('mozfullscreenchange', handleFullscreenChange);
             document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+            
             function handleFullscreenChange() {
                 const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement ||
                                          document.mozFullScreenElement || document.msFullscreenElement;
@@ -930,13 +1176,16 @@
                     // Выход из полноэкранного режима
                     fullscreenMode.classList.add('hidden');
                     isFullscreen = false;
+                    resetZoom();
                 }
             }
+            
             // Закрытие полноэкранного режима по ESC
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && isFullscreen) {
                     exitFullscreen();
                 }
+                
                 // Навигация с помощью клавиш
                 if (images.length > 0) {
                     if (e.key === 'ArrowLeft') {
@@ -952,20 +1201,18 @@
                             startSlideshow();
                         }
                     } else if (e.key === ' ') {
-                        if (isPlaying) {
-                            stopSlideshow();
-                        } else {
-                            startSlideshow();
-                        }
+                        togglePlayPause();
                     }
                 }
             });
         });
+        
         // Функции для меню
         function toggleMenu() {
             const menuContent = document.getElementById('menuContent');
             menuContent.classList.toggle('show');
         }
+        
         // Закрытие меню при клике вне его
         window.onclick = function(event) {
             if (!event.target.matches('.menu-button')) {
@@ -975,15 +1222,19 @@
                 }
             }
         }
+        
         function showLoginForm() {
             showNotification('Форма входа будет реализована позже', 'error');
         }
+        
         function showRegisterForm() {
             showNotification('Форма регистрации будет реализована позже', 'error');
         }
+        
         function handleLogout() {
             showNotification('Функция выхода будет реализована позже', 'error');
         }
+        
         // Глобальная функция для показа уведомлений
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
