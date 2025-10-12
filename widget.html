@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -582,6 +581,15 @@
         .upload-box-four {
             min-height: 250px;
         }
+        /* Стили для контейнера с 2 изображениями */
+        .two-images-layout {
+            display: flex;
+            gap: 1.5rem;
+            width: 100%;
+        }
+        .upload-box-two {
+            min-height: 300px;
+        }
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
@@ -607,8 +615,9 @@
                 flex: 1;
                 width: 100%;
             }
-            .four-images-layout {
+            .four-images-layout, .two-images-layout {
                 grid-template-columns: 1fr;
+                flex-direction: column;
             }
             .upload-top {
                 flex-direction: column;
@@ -647,6 +656,7 @@
 	                        </a>
 							<a href="Slide show.html" class="menu-item">
                                 <i class="fas fa-images mr-2"></i>Слайд-шоу
+                            </a>
                             <div class="menu-divider"></div>
                             <a href="#" class="menu-item" onclick="showLoginForm()">
                                 <i class="fas fa-sign-in-alt mr-2"></i>Вход
@@ -668,13 +678,14 @@
         <!-- Первый ряд: Фото коллаж -->
         <div class="collage-container">
             <header class="collage-header">
-                <h1 class="collage-title">Фото Коллаж 6000×4500</h1> <!-- Изменено -->
+                <h1 class="collage-title">Фото Коллаж 6000×4500</h1>
                 <p class="collage-subtitle">Создайте профессиональный коллаж для ваших проектов</p>
             </header>
             <!-- Переключатель режима коллажа -->
             <div class="collage-mode-selector">
                 <button id="threeModeBtn" class="mode-btn active">3 изображения</button>
                 <button id="fourModeBtn" class="mode-btn">4 изображения</button>
+                <button id="twoModeBtn" class="mode-btn">2 изображения</button>
             </div>
             <div class="instructions">
                 <div class="instruction-item">
@@ -707,36 +718,36 @@
                 <!-- Верхние блоки -->
                 <div class="upload-top">
                     <div class="upload-box">
-                        <h3>Верхнее левое фото (1D)</h3> <!-- Изменено -->
+                        <h3>Верхнее левое фото (1D)</h3>
                         <label class="file-input-label">Выберите изображение:</label>
-                        <input type="file" id="topLeftImage" class="collage-file-input" accept="image/*"> <!-- Изменено -->
-                        <input type="text" id="topLeftTextInput" class="text-edit-input" value="1D" placeholder="Введите текст"> <!-- Изменено -->
-                        <div class="preview-container" id="topLeftPreviewContainer"> <!-- Изменено -->
-                            <img id="topLeftPreview" class="preview-img"> <!-- Изменено -->
-                            <div id="topLeftText" class="draggable-text">1D</div> <!-- Изменено -->
+                        <input type="file" id="topLeftImage" class="collage-file-input" accept="image/*">
+                        <input type="text" id="topLeftTextInput" class="text-edit-input" value="1D" placeholder="Введите текст">
+                        <div class="preview-container" id="topLeftPreviewContainer">
+                            <img id="topLeftPreview" class="preview-img">
+                            <div id="topLeftText" class="draggable-text">1D</div>
                         </div>
                     </div>
                     <div class="upload-box">
-                        <h3>Верхнее правое фото (1H)</h3> <!-- Изменено -->
+                        <h3>Верхнее правое фото (1H)</h3>
                         <label class="file-input-label">Выберите изображение:</label>
-                        <input type="file" id="topRightImage" class="collage-file-input" accept="image/*"> <!-- Изменено -->
-                        <input type="text" id="topRightTextInput" class="text-edit-input" value="1H" placeholder="Введите текст"> <!-- Изменено -->
-                        <div class="preview-container" id="topRightPreviewContainer"> <!-- Изменено -->
-                            <img id="topRightPreview" class="preview-img"> <!-- Изменено -->
-                            <div id="topRightText" class="draggable-text">1H</div> <!-- Изменено -->
+                        <input type="file" id="topRightImage" class="collage-file-input" accept="image/*">
+                        <input type="text" id="topRightTextInput" class="text-edit-input" value="1H" placeholder="Введите текст">
+                        <div class="preview-container" id="topRightPreviewContainer">
+                            <img id="topRightPreview" class="preview-img">
+                            <div id="topRightText" class="draggable-text">1H</div>
                         </div>
                     </div>
                 </div>
                 <!-- Нижний блок -->
                 <div class="upload-bottom">
                     <div class="upload-box">
-                        <h3>Нижнее фото (5M)</h3> <!-- Изменено -->
+                        <h3>Нижнее фото (5M)</h3>
                         <label class="file-input-label">Выберите изображение:</label>
-                        <input type="file" id="bottomImage" class="collage-file-input" accept="image/*"> <!-- Изменено -->
-                        <input type="text" id="bottomTextInput" class="text-edit-input" value="5M" placeholder="Введите текст"> <!-- Изменено -->
-                        <div class="preview-container" id="bottomPreviewContainer"> <!-- Изменено -->
-                            <img id="bottomPreview" class="preview-img"> <!-- Изменено -->
-                            <div id="bottomText" class="draggable-text">5M</div> <!-- Изменено -->
+                        <input type="file" id="bottomImage" class="collage-file-input" accept="image/*">
+                        <input type="text" id="bottomTextInput" class="text-edit-input" value="5M" placeholder="Введите текст">
+                        <div class="preview-container" id="bottomPreviewContainer">
+                            <img id="bottomPreview" class="preview-img">
+                            <div id="bottomText" class="draggable-text">5M</div>
                         </div>
                     </div>
                 </div>
@@ -790,6 +801,33 @@
                     </div>
                 </div>
             </div>
+            <!-- Контейнер для 2 изображений (скрыт по умолчанию) -->
+            <div id="twoImagesLayout" class="collage-layout" style="display: none;">
+                <div class="two-images-layout">
+                    <!-- Левое изображение -->
+                    <div class="upload-box upload-box-two">
+                        <h3>Левое фото</h3>
+                        <label class="file-input-label">Выберите изображение:</label>
+                        <input type="file" id="leftImage2" class="collage-file-input" accept="image/*">
+                        <input type="text" id="leftTextInput2" class="text-edit-input" value="1D" placeholder="Введите текст">
+                        <div class="preview-container" id="leftPreviewContainer2">
+                            <img id="leftPreview2" class="preview-img">
+                            <div id="leftText2" class="draggable-text">1D</div>
+                        </div>
+                    </div>
+                    <!-- Правое изображение -->
+                    <div class="upload-box upload-box-two">
+                        <h3>Правое фото</h3>
+                        <label class="file-input-label">Выберите изображение:</label>
+                        <input type="file" id="rightImage2" class="collage-file-input" accept="image/*">
+                        <input type="text" id="rightTextInput2" class="text-edit-input" value="1H" placeholder="Введите текст">
+                        <div class="preview-container" id="rightPreviewContainer2">
+                            <img id="rightPreview2" class="preview-img">
+                            <div id="rightText2" class="draggable-text">1H</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="collage-controls">
                 <button id="generateBtn" class="collage-btn" disabled>
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -805,7 +843,7 @@
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                     </svg>
-                    Скачать PNG (6000×4500) <!-- Изменено -->
+                    Скачать PNG (6000×4500)
                 </button>
             </div>
             <div class="collage-result">
@@ -1020,13 +1058,15 @@
         // Collage functions
         function initCollage() {
             // Добавляем переменную для отслеживания режима
-            let collageMode = 'three'; // 'three' или 'four'
+            let collageMode = 'three'; // 'three', 'four' или 'two'
             let topLeftFileName = ''; // Имя файла для 1D (верхнее левое изображение)
             // Элементы для переключения режимов
             const threeModeBtn = document.getElementById('threeModeBtn');
             const fourModeBtn = document.getElementById('fourModeBtn');
+            const twoModeBtn = document.getElementById('twoModeBtn');
             const threeImagesLayout = document.getElementById('threeImagesLayout');
             const fourImagesLayout = document.getElementById('fourImagesLayout');
+            const twoImagesLayout = document.getElementById('twoImagesLayout');
             // Обработчики переключения режимов
             threeModeBtn.addEventListener('click', () => {
                 setCollageMode('three');
@@ -1034,47 +1074,61 @@
             fourModeBtn.addEventListener('click', () => {
                 setCollageMode('four');
             });
+            twoModeBtn.addEventListener('click', () => {
+                setCollageMode('two');
+            });
             function setCollageMode(mode) {
                 collageMode = mode;
                 if (mode === 'three') {
                     threeModeBtn.classList.add('active');
                     fourModeBtn.classList.remove('active');
+                    twoModeBtn.classList.remove('active');
                     threeImagesLayout.style.display = 'block';
                     fourImagesLayout.style.display = 'none';
-                } else {
+                    twoImagesLayout.style.display = 'none';
+                } else if (mode === 'four') {
                     threeModeBtn.classList.remove('active');
                     fourModeBtn.classList.add('active');
+                    twoModeBtn.classList.remove('active');
                     threeImagesLayout.style.display = 'none';
                     fourImagesLayout.style.display = 'block';
+                    twoImagesLayout.style.display = 'none';
+                } else {
+                    threeModeBtn.classList.remove('active');
+                    fourModeBtn.classList.remove('active');
+                    twoModeBtn.classList.add('active');
+                    threeImagesLayout.style.display = 'none';
+                    fourImagesLayout.style.display = 'none';
+                    twoImagesLayout.style.display = 'block';
                 }
                 // Сбрасываем состояние кнопок
                 generateBtn.disabled = true;
                 downloadBtn.disabled = true;
             }
             // Элементы DOM для 3 изображений
-            const topLeftImageInput = document.getElementById('topLeftImage'); // Изменено
-            const topRightImageInput = document.getElementById('topRightImage'); // Изменено
-            const bottomImageInput = document.getElementById('bottomImage'); // Изменено
-            const topLeftPreview = document.getElementById('topLeftPreview'); // Изменено
-            const topRightPreview = document.getElementById('topRightPreview'); // Изменено
-            const bottomPreview = document.getElementById('bottomPreview'); // Изменено
+            const topLeftImageInput = document.getElementById('topLeftImage');
+            const topRightImageInput = document.getElementById('topRightImage');
+            const bottomImageInput = document.getElementById('bottomImage');
+            const topLeftPreview = document.getElementById('topLeftPreview');
+            const topRightPreview = document.getElementById('topRightPreview');
+            const bottomPreview = document.getElementById('bottomPreview');
             const generateBtn = document.getElementById('generateBtn');
             const downloadBtn = document.getElementById('downloadBtn');
             const resultCanvas = document.getElementById('collageCanvas');
             const collageText = document.getElementById('collageText');
             const clearTextBtn = document.getElementById('clearTextBtn');
             // Текстовые инпуты для 3 изображений
-            const topLeftTextInput = document.getElementById('topLeftTextInput'); // Изменено
-            const topRightTextInput = document.getElementById('topRightTextInput'); // Изменено
-            const bottomTextInput = document.getElementById('bottomTextInput'); // Изменено
+            const topLeftTextInput = document.getElementById('topLeftTextInput');
+            const topRightTextInput = document.getElementById('topRightTextInput');
+            const bottomTextInput = document.getElementById('bottomTextInput');
             // Контейнеры превью для 3 изображений
-            const topLeftPreviewContainer = document.getElementById('topLeftPreviewContainer'); // Изменено
-            const topRightPreviewContainer = document.getElementById('topRightPreviewContainer'); // Изменено
-            const bottomPreviewContainer = document.getElementById('bottomPreviewContainer'); // Изменено
+            const topLeftPreviewContainer = document.getElementById('topLeftPreviewContainer');
+            const topRightPreviewContainer = document.getElementById('topRightPreviewContainer');
+            const bottomPreviewContainer = document.getElementById('bottomPreviewContainer');
             // Текстовые элементы для 3 изображений
-            const topLeftText = document.getElementById('topLeftText'); // Изменено
-            const topRightText = document.getElementById('topRightText'); // Изменено
-            const bottomText = document.getElementById('bottomText'); // Изменено
+            const topLeftText = document.getElementById('topLeftText');
+            const topRightText = document.getElementById('topRightText');
+            const bottomText = document.getElementById('bottomText');
             // Элементы для 4-изображений
             const topLeftImageInput4 = document.getElementById('topLeftImage4');
             const topRightImageInput4 = document.getElementById('topRightImage4');
@@ -1099,45 +1153,59 @@
             const topRightText4 = document.getElementById('topRightText4');
             const bottomLeftText4 = document.getElementById('bottomLeftText4');
             const bottomRightText4 = document.getElementById('bottomRightText4');
-            // Размеры коллажа (6000x4500) - Увеличены
+            // Элементы для 2-изображений
+            const leftImageInput2 = document.getElementById('leftImage2');
+            const rightImageInput2 = document.getElementById('rightImage2');
+            const leftPreview2 = document.getElementById('leftPreview2');
+            const rightPreview2 = document.getElementById('rightPreview2');
+            // Текстовые инпуты для 2-изображений
+            const leftTextInput2 = document.getElementById('leftTextInput2');
+            const rightTextInput2 = document.getElementById('rightTextInput2');
+            // Контейнеры превью для 2-изображений
+            const leftPreviewContainer2 = document.getElementById('leftPreviewContainer2');
+            const rightPreviewContainer2 = document.getElementById('rightPreviewContainer2');
+            // Текстовые элементы для 2-изображений
+            const leftText2 = document.getElementById('leftText2');
+            const rightText2 = document.getElementById('rightText2');
+            // Размеры коллажа (6000x4500)
             const COLLAGE_WIDTH = 6000;
             const COLLAGE_HEIGHT = 4500;
             const TOP_PART_HEIGHT = 2250; // Половина высоты
             const BOTTOM_PART_HEIGHT = 2250; // Половина высоты
-            const TEXT_COLUMN_WIDTH = 1200; // Увеличена ширина текстовой колонки
+            const TEXT_COLUMN_WIDTH = 1200; // Ширина текстовой колонки
             // Объект для хранения данных о каждом блоке (3 изображения)
             const collageData = {
-                topLeft: { // Изменено
-                    element: topLeftText, // Изменено
-                    container: topLeftPreviewContainer, // Изменено
-                    previewImg: topLeftPreview, // Изменено
+                topLeft: {
+                    element: topLeftText,
+                    container: topLeftPreviewContainer,
+                    previewImg: topLeftPreview,
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
                     imageSize: { width: 0, height: 0 },
-                    textInput: topLeftTextInput, // Изменено
+                    textInput: topLeftTextInput,
                     defaultText: '1D'
                 },
-                topRight: { // Изменено
-                    element: topRightText, // Изменено
-                    container: topRightPreviewContainer, // Изменено
-                    previewImg: topRightPreview, // Изменено
+                topRight: {
+                    element: topRightText,
+                    container: topRightPreviewContainer,
+                    previewImg: topRightPreview,
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
                     imageSize: { width: 0, height: 0 },
-                    textInput: topRightTextInput, // Изменено
+                    textInput: topRightTextInput,
                     defaultText: '1H'
                 },
-                bottom: { // Изменено
-                    element: bottomText, // Изменено
-                    container: bottomPreviewContainer, // Изменено
-                    previewImg: bottomPreview, // Изменено
+                bottom: {
+                    element: bottomText,
+                    container: bottomPreviewContainer,
+                    previewImg: bottomPreview,
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
                     imageSize: { width: 0, height: 0 },
-                    textInput: bottomTextInput, // Изменено
+                    textInput: bottomTextInput,
                     defaultText: '5M'
                 }
             };
@@ -1186,6 +1254,31 @@
                     imageSize: { width: 0, height: 0 },
                     textInput: bottomRightTextInput4,
                     defaultText: '5M'
+                }
+            };
+            // Объект для хранения данных о каждом блоке (2 изображения)
+            const collageData2 = {
+                left: {
+                    element: leftText2,
+                    container: leftPreviewContainer2,
+                    previewImg: leftPreview2,
+                    image: null,
+                    position: { x: 20, y: 20 },
+                    containerSize: { width: 0, height: 0 },
+                    imageSize: { width: 0, height: 0 },
+                    textInput: leftTextInput2,
+                    defaultText: '1D'
+                },
+                right: {
+                    element: rightText2,
+                    container: rightPreviewContainer2,
+                    previewImg: rightPreview2,
+                    image: null,
+                    position: { x: 20, y: 20 },
+                    containerSize: { width: 0, height: 0 },
+                    imageSize: { width: 0, height: 0 },
+                    textInput: rightTextInput2,
+                    defaultText: '1H'
                 }
             };
             // Инициализация перетаскивания текста
@@ -1244,9 +1337,23 @@
                             };
                         }
                     });
-                } else {
+                } else if (collageMode === 'four') {
                     Object.keys(collageData4).forEach(section => {
                         const data = collageData4[section];
+                        if (data.previewImg.style.display === 'block') {
+                            data.containerSize = {
+                                width: data.container.offsetWidth,
+                                height: data.container.offsetHeight
+                            };
+                            data.imageSize = {
+                                width: data.previewImg.naturalWidth,
+                                height: data.previewImg.naturalHeight
+                            };
+                        }
+                    });
+                } else {
+                    Object.keys(collageData2).forEach(section => {
+                        const data = collageData2[section];
                         if (data.previewImg.style.display === 'block') {
                             data.containerSize = {
                                 width: data.container.offsetWidth,
@@ -1263,27 +1370,36 @@
             // Инициализация перетаскивания для всех секций
             Object.keys(collageData).forEach(section => initDrag(section, collageData));
             Object.keys(collageData4).forEach(section => initDrag(section, collageData4));
+            Object.keys(collageData2).forEach(section => initDrag(section, collageData2));
             // Инициализация текстовых инпутов
             initTextInputs(collageData);
             initTextInputs(collageData4);
+            initTextInputs(collageData2);
             // Обработчики загрузки изображений для 3 изображений
-            topLeftImageInput.addEventListener('change', (e) => handleImageUpload(e, 'topLeft')); // Изменено
-            topRightImageInput.addEventListener('change', (e) => handleImageUpload(e, 'topRight')); // Изменено
-            bottomImageInput.addEventListener('change', (e) => handleImageUpload(e, 'bottom')); // Изменено
+            topLeftImageInput.addEventListener('change', (e) => handleImageUpload(e, 'topLeft'));
+            topRightImageInput.addEventListener('change', (e) => handleImageUpload(e, 'topRight'));
+            bottomImageInput.addEventListener('change', (e) => handleImageUpload(e, 'bottom'));
             // Обработчики загрузки изображений для 4-изображений
             topLeftImageInput4.addEventListener('change', (e) => handleImageUpload(e, 'topLeft4'));
             topRightImageInput4.addEventListener('change', (e) => handleImageUpload(e, 'topRight4'));
             bottomLeftImageInput4.addEventListener('change', (e) => handleImageUpload(e, 'bottomLeft4'));
             bottomRightImageInput4.addEventListener('change', (e) => handleImageUpload(e, 'bottomRight4'));
+            // Обработчики загрузки изображений для 2-изображений
+            leftImageInput2.addEventListener('change', (e) => handleImageUpload(e, 'left2'));
+            rightImageInput2.addEventListener('change', (e) => handleImageUpload(e, 'right2'));
             function handleImageUpload(event, section) {
                 const file = event.target.files[0];
                 if (!file) return;
                 // Сохраняем имя файла для верхнего левого изображения (1D) в режиме 3 изображений
-                if (section === 'topLeft') { // Изменено
+                if (section === 'topLeft') {
                     topLeftFileName = file.name.replace(/\.[^/.]+$/, ""); // Удаляем расширение
                 }
                 // Сохраняем имя файла для верхнего левого изображения (1D) в режиме 4 изображений
-                if (section === 'topLeft4') { // Изменено
+                if (section === 'topLeft4') {
+                    topLeftFileName = file.name.replace(/\.[^/.]+$/, ""); // Удаляем расширение
+                }
+                // Сохраняем имя файла для левого изображения в режиме 2 изображений
+                if (section === 'left2') {
                     topLeftFileName = file.name.replace(/\.[^/.]+$/, ""); // Удаляем расширение
                 }
                 const reader = new FileReader();
@@ -1293,13 +1409,13 @@
                         if (collageMode === 'three') {
                             // Для режима 3 изображений нужно преобразовать section
                             let actualSection = section;
-                            if (section === 'topLeft') actualSection = 'topLeft'; // Изменено
-                            if (section === 'topRight') actualSection = 'topRight'; // Изменено
-                            if (section === 'bottom') actualSection = 'bottom'; // Изменено
+                            if (section === 'topLeft') actualSection = 'topLeft';
+                            if (section === 'topRight') actualSection = 'topRight';
+                            if (section === 'bottom') actualSection = 'bottom';
                             collageData[actualSection].image = img;
                             collageData[actualSection].previewImg.src = e.target.result;
                             collageData[actualSection].previewImg.style.display = 'block';
-                        } else {
+                        } else if (collageMode === 'four') {
                             // Для режима 4 изображений нужно преобразовать section
                             let actualSection = section;
                             if (section === 'topLeft4') actualSection = 'topLeft';
@@ -1309,6 +1425,14 @@
                             collageData4[actualSection].image = img;
                             collageData4[actualSection].previewImg.src = e.target.result;
                             collageData4[actualSection].previewImg.style.display = 'block';
+                        } else {
+                            // Для режима 2 изображений нужно преобразовать section
+                            let actualSection = section;
+                            if (section === 'left2') actualSection = 'left';
+                            if (section === 'right2') actualSection = 'right';
+                            collageData2[actualSection].image = img;
+                            collageData2[actualSection].previewImg.src = e.target.result;
+                            collageData2[actualSection].previewImg.style.display = 'block';
                         }
                         // Обновляем размеры после загрузки изображения
                         setTimeout(() => {
@@ -1323,16 +1447,21 @@
             function checkImagesLoaded() {
                 if (collageMode === 'three') {
                     generateBtn.disabled = !(
-                        collageData.topLeft.image && // Изменено
-                        collageData.topRight.image && // Изменено
-                        collageData.bottom.image // Изменено
+                        collageData.topLeft.image &&
+                        collageData.topRight.image &&
+                        collageData.bottom.image
                     );
-                } else {
+                } else if (collageMode === 'four') {
                     generateBtn.disabled = !(
                         collageData4.topLeft.image &&
                         collageData4.topRight.image &&
                         collageData4.bottomLeft.image &&
                         collageData4.bottomRight.image
+                    );
+                } else {
+                    generateBtn.disabled = !(
+                        collageData2.left.image &&
+                        collageData2.right.image
                     );
                 }
             }
@@ -1349,20 +1478,20 @@
                     const topImgWidth = COLLAGE_WIDTH / 2;
                     const topImgHeight = TOP_PART_HEIGHT;
                     // Левое верхнее (1D)
-                    ctx.drawImage(collageData.topLeft.image, 0, 0, topImgWidth, topImgHeight); // Изменено
+                    ctx.drawImage(collageData.topLeft.image, 0, 0, topImgWidth, topImgHeight);
                     // Текст на левом верхнем изображении
-                    drawText(ctx, 'topLeft', collageData.topLeft.element.textContent, 0, 0, topImgWidth, topImgHeight, collageData); // Изменено
+                    drawText(ctx, 'topLeft', collageData.topLeft.element.textContent, 0, 0, topImgWidth, topImgHeight, collageData);
                     // Правое верхнее (1H)
-                    ctx.drawImage(collageData.topRight.image, topImgWidth, 0, topImgWidth, topImgHeight); // Изменено
+                    ctx.drawImage(collageData.topRight.image, topImgWidth, 0, topImgWidth, topImgHeight);
                     // Текст на правом верхнем изображении
-                    drawText(ctx, 'topRight', collageData.topRight.element.textContent, topImgWidth, 0, topImgWidth, topImgHeight, collageData); // Изменено
+                    drawText(ctx, 'topRight', collageData.topRight.element.textContent, topImgWidth, 0, topImgWidth, topImgHeight, collageData);
                     // Нижнее изображение (5M)
                     const bottomImgWidth = COLLAGE_WIDTH;
                     const bottomImgHeight = BOTTOM_PART_HEIGHT;
-                    ctx.drawImage(collageData.bottom.image, 0, TOP_PART_HEIGHT, bottomImgWidth, bottomImgHeight); // Изменено
+                    ctx.drawImage(collageData.bottom.image, 0, TOP_PART_HEIGHT, bottomImgWidth, bottomImgHeight);
                     // Текст на нижнем изображении
-                    drawText(ctx, 'bottom', collageData.bottom.element.textContent, 0, TOP_PART_HEIGHT, bottomImgWidth, bottomImgHeight, collageData); // Изменено
-                } else {
+                    drawText(ctx, 'bottom', collageData.bottom.element.textContent, 0, TOP_PART_HEIGHT, bottomImgWidth, bottomImgHeight, collageData);
+                } else if (collageMode === 'four') {
                     // Режим 4 изображений
                     const halfWidth = COLLAGE_WIDTH / 2;
                     const halfHeight = COLLAGE_HEIGHT / 2;
@@ -1378,6 +1507,18 @@
                     // Нижнее правое изображение (5M)
                     ctx.drawImage(collageData4.bottomRight.image, halfWidth, halfHeight, halfWidth, halfHeight);
                     drawText(ctx, 'bottomRight', collageData4.bottomRight.element.textContent, halfWidth, halfHeight, halfWidth, halfHeight, collageData4);
+                } else {
+                    // Режим 2 изображений - размер как у нижнего изображения в режиме 3 фото
+                    const imgWidth = COLLAGE_WIDTH;
+                    const imgHeight = COLLAGE_HEIGHT / 2;
+                    // Левое изображение (верхняя половина)
+                    ctx.drawImage(collageData2.left.image, 0, 0, imgWidth, imgHeight);
+                    // Текст на левом изображении
+                    drawText(ctx, 'left', collageData2.left.element.textContent, 0, 0, imgWidth, imgHeight, collageData2);
+                    // Правое изображение (нижняя половина)
+                    ctx.drawImage(collageData2.right.image, 0, imgHeight, imgWidth, imgHeight);
+                    // Текст на правом изображении
+                    drawText(ctx, 'right', collageData2.right.element.textContent, 0, imgHeight, imgWidth, imgHeight, collageData2);
                 }
                 // Показываем результат
                 resultCanvas.style.display = 'block';
@@ -1396,12 +1537,12 @@
                     const textX = offsetX + (data.position.x / data.containerSize.width) * data.imageSize.width * scaleX;
                     const textY = offsetY + (data.position.y / data.containerSize.height) * data.imageSize.height * scaleY;
                     // Настройки текста (увеличен размер шрифта)
-                    ctx.font = 'bold 120px Montserrat'; // Изменено
+                    ctx.font = 'bold 120px Montserrat';
                     ctx.fillStyle = 'white';
                     ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
                     ctx.shadowBlur = 6;
                     // Рисуем текст (+120 для компенсации размера шрифта)
-                    ctx.fillText(text, textX, textY + 120); // Изменено
+                    ctx.fillText(text, textX, textY + 120);
                     // Сбрасываем тень
                     ctx.shadowColor = 'transparent';
                     ctx.shadowBlur = 0;
@@ -1429,10 +1570,10 @@
                     finalCtx.fillRect(COLLAGE_WIDTH, 0, TEXT_COLUMN_WIDTH, COLLAGE_HEIGHT);
                     // Рисуем текст (увеличен размер шрифта)
                     finalCtx.fillStyle = 'white';
-                    finalCtx.font = '36px Roboto'; // Изменено
+                    finalCtx.font = '36px Roboto';
                     const lines = text.split('\n');
-                    const lineHeight = 48; // Изменено
-                    const margin = 60; // Изменено
+                    const lineHeight = 48;
+                    const margin = 60;
                     let y = margin;
                     lines.forEach(line => {
                         // Разбиваем длинные строки на несколько строк
@@ -1487,6 +1628,12 @@
             });
             Object.keys(collageData4).forEach(section => {
                 const data = collageData4[section];
+                data.element.style.left = data.position.x + 'px';
+                data.element.style.top = data.position.y + 'px';
+                data.element.textContent = data.textInput.value || data.defaultText;
+            });
+            Object.keys(collageData2).forEach(section => {
+                const data = collageData2[section];
                 data.element.style.left = data.position.x + 'px';
                 data.element.style.top = data.position.y + 'px';
                 data.element.textContent = data.textInput.value || data.defaultText;
@@ -1549,7 +1696,7 @@
             // Объединение коллажей
             combineBtn.addEventListener('click', () => {
                 if (!firstCollageImage || !secondCollageImage) return;
-                // Размеры для объединенного коллажа (6000x9000) - Увеличены
+                // Размеры для объединенного коллажа (6000x9000)
                 const COMBINED_WIDTH = 6000;
                 const COMBINED_HEIGHT = 9000;
                 combinedCanvas.width = COMBINED_WIDTH;
