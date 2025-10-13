@@ -941,6 +941,11 @@
             transition: transform 0.3s ease;
             transform-origin: center center;
             object-fit: contain;
+            cursor: grab;
+        }
+
+        .photo-image.zoomed {
+            cursor: grab;
         }
 
         .photo-close {
@@ -1100,6 +1105,15 @@
         .photo-modal.fullscreen .photo-image {
             max-width: 100%;
             max-height: 100%;
+        }
+
+        /* Стили для перетаскивания изображения */
+        .photo-container.dragging {
+            cursor: grabbing;
+        }
+
+        .photo-image.dragging {
+            cursor: grabbing;
         }
     </style>
 </head>
@@ -1609,7 +1623,7 @@
         let currentPhotos = [];
         let currentScale = 1;
         let isDragging = false;
-        let startX, startY, scrollLeft, scrollTop;
+        let startX, startY, translateX = 0, translateY = 0;
         let isFullscreen = false;
 
         // ТВХ тексты с кнопкой фото
@@ -2092,19 +2106,18 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             }
         }
 
-        // Функции для работы с фото
+        // Функции для работы с фото (ИСПРАВЛЕННЫЕ)
         function openPhotoModal(type) {
             const modal = document.getElementById('photoModal');
             const photoImage = document.getElementById('photoImage');
-            const prevBtn = document.getElementById('prevPhotoBtn');
-            const nextBtn = document.getElementById('nextPhotoBtn');
-            const photoCounter = document.getElementById('photoCounter');
-            const photoThumbnails = document.getElementById('photoThumbnails');
+            const photoContainer = document.getElementById('photoContainer');
             
             // Получаем массив фото для текущего типа
             currentPhotos = tvhTexts[type].photos;
             currentPhotoIndex = 0;
             currentScale = 1;
+            translateX = 0;
+            translateY = 0;
             
             if (currentPhotos.length > 0) {
                 photoImage.src = currentPhotos[0];
@@ -2112,10 +2125,13 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 updateNavigationButtons();
                 updateThumbnails();
                 
-                // Сбрасываем масштаб
-                photoImage.style.transform = `scale(${currentScale})`;
+                // Сбрасываем масштаб и позицию
+                updateImageTransform();
                 
                 modal.classList.add('active');
+                
+                // Добавляем обработчики событий
+                addPhotoEventListeners();
             }
         }
 
@@ -2123,9 +2139,132 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             const modal = document.getElementById('photoModal');
             modal.classList.remove('active');
             currentScale = 1;
+            translateX = 0;
+            translateY = 0;
             isFullscreen = false;
             modal.classList.remove('fullscreen');
             document.getElementById('fullscreenIcon').className = 'fas fa-expand';
+            
+            // Удаляем обработчики событий
+            removePhotoEventListeners();
+        }
+
+        function addPhotoEventListeners() {
+            const photoImage = document.getElementById('photoImage');
+            const photoContainer = document.getElementById('photoContainer');
+            
+            // Обработчик колесика мыши для масштабирования
+            photoContainer.addEventListener('wheel', handleWheel, { passive: false });
+            
+            // Обработчики для перетаскивания
+            photoContainer.addEventListener('mousedown', startDrag);
+            photoContainer.addEventListener('touchstart', startDragTouch);
+            
+            // Предотвращаем контекстное меню
+            photoImage.addEventListener('contextmenu', (e) => e.preventDefault());
+        }
+
+        function removePhotoEventListeners() {
+            const photoImage = document.getElementById('photoImage');
+            const photoContainer = document.getElementById('photoContainer');
+            
+            photoContainer.removeEventListener('wheel', handleWheel);
+            photoContainer.removeEventListener('mousedown', startDrag);
+            photoContainer.removeEventListener('touchstart', startDragTouch);
+            photoImage.removeEventListener('contextmenu', (e) => e.preventDefault());
+        }
+
+        function handleWheel(e) {
+            e.preventDefault();
+            
+            const delta = e.deltaY;
+            const zoomIntensity = 0.1;
+            
+            if (delta < 0) {
+                // Увеличение
+                currentScale = Math.min(currentScale + zoomIntensity, 5);
+            } else {
+                // Уменьшение
+                currentScale = Math.max(currentScale - zoomIntensity, 0.1);
+            }
+            
+            updateImageTransform();
+        }
+
+        function startDrag(e) {
+            e.preventDefault();
+            isDragging = true;
+            
+            const photoContainer = document.getElementById('photoContainer');
+            const photoImage = document.getElementById('photoImage');
+            
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            
+            photoContainer.classList.add('dragging');
+            photoImage.classList.add('dragging');
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function startDragTouch(e) {
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                isDragging = true;
+                
+                const photoContainer = document.getElementById('photoContainer');
+                const photoImage = document.getElementById('photoImage');
+                
+                startX = e.touches[0].clientX - translateX;
+                startY = e.touches[0].clientY - translateY;
+                
+                photoContainer.classList.add('dragging');
+                photoImage.classList.add('dragging');
+                
+                document.addEventListener('touchmove', dragTouch);
+                document.addEventListener('touchend', stopDrag);
+            }
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            
+            updateImageTransform();
+        }
+
+        function dragTouch(e) {
+            if (!isDragging || e.touches.length !== 1) return;
+            e.preventDefault();
+            
+            translateX = e.touches[0].clientX - startX;
+            translateY = e.touches[0].clientY - startY;
+            
+            updateImageTransform();
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            
+            const photoContainer = document.getElementById('photoContainer');
+            const photoImage = document.getElementById('photoImage');
+            
+            photoContainer.classList.remove('dragging');
+            photoImage.classList.remove('dragging');
+            
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('touchmove', dragTouch);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchend', stopDrag);
+        }
+
+        function updateImageTransform() {
+            const photoImage = document.getElementById('photoImage');
+            photoImage.style.transform = `scale(${currentScale}) translate(${translateX}px, ${translateY}px)`;
         }
 
         function toggleFullscreen() {
@@ -2155,9 +2294,11 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             const photoImage = document.getElementById('photoImage');
             photoImage.src = currentPhotos[currentPhotoIndex];
             
-            // Сбрасываем масштаб при смене фото
+            // Сбрасываем масштаб и позицию при смене фото
             currentScale = 1;
-            photoImage.style.transform = `scale(${currentScale})`;
+            translateX = 0;
+            translateY = 0;
+            updateImageTransform();
             
             updatePhotoCounter();
             updateNavigationButtons();
@@ -2170,9 +2311,11 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             const photoImage = document.getElementById('photoImage');
             photoImage.src = currentPhotos[currentPhotoIndex];
             
-            // Сбрасываем масштаб при смене фото
+            // Сбрасываем масштаб и позицию при смене фото
             currentScale = 1;
-            photoImage.style.transform = `scale(${currentScale})`;
+            translateX = 0;
+            translateY = 0;
+            updateImageTransform();
             
             updatePhotoCounter();
             updateNavigationButtons();
@@ -2211,55 +2354,21 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         }
 
         function zoomIn() {
-            currentScale += 0.2;
-            const photoImage = document.getElementById('photoImage');
-            photoImage.style.transform = `scale(${currentScale})`;
+            currentScale = Math.min(currentScale + 0.2, 5);
+            updateImageTransform();
         }
 
         function zoomOut() {
             currentScale = Math.max(0.1, currentScale - 0.2);
-            const photoImage = document.getElementById('photoImage');
-            photoImage.style.transform = `scale(${currentScale})`;
+            updateImageTransform();
         }
 
         function resetZoom() {
             currentScale = 1;
-            const photoImage = document.getElementById('photoImage');
-            photoImage.style.transform = `scale(${currentScale})`;
+            translateX = 0;
+            translateY = 0;
+            updateImageTransform();
         }
-
-        // Обработчики для перетаскивания изображения
-        document.getElementById('photoContainer').addEventListener('mousedown', function(e) {
-            if (currentScale > 1) {
-                isDragging = true;
-                startX = e.pageX - this.offsetLeft;
-                startY = e.pageY - this.offsetTop;
-                scrollLeft = this.scrollLeft;
-                scrollTop = this.scrollTop;
-                this.style.cursor = 'grabbing';
-            }
-        });
-
-        document.getElementById('photoContainer').addEventListener('mouseleave', function() {
-            isDragging = false;
-            this.style.cursor = 'grab';
-        });
-
-        document.getElementById('photoContainer').addEventListener('mouseup', function() {
-            isDragging = false;
-            this.style.cursor = 'grab';
-        });
-
-        document.getElementById('photoContainer').addEventListener('mousemove', function(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-            const x = e.pageX - this.offsetLeft;
-            const y = e.pageY - this.offsetTop;
-            const walkX = (x - startX) * 2;
-            const walkY = (y - startY) * 2;
-            this.scrollLeft = scrollLeft - walkX;
-            this.scrollTop = scrollTop - walkY;
-        });
 
         // Закрытие модального окна фото при клике вне его
         document.addEventListener('click', (event) => {
