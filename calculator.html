@@ -1625,6 +1625,7 @@
         let isDragging = false;
         let startX, startY, translateX = 0, translateY = 0;
         let isFullscreen = false;
+        let minScale = 1; // Минимальный масштаб - изначальный размер изображения
 
         // ТВХ тексты с кнопкой фото
         const tvhTexts = {
@@ -1650,9 +1651,9 @@
                     </button>
                 `,
                 photos: [
-                    'https://github.com/donpu333/CryptoWidget/blob/main/images/1000000BOBUSDT%20%200.04944%201h%20proboy%20short%20(1).png?raw=true',
-                    'https://github.com/donpu333/CryptoWidget/blob/main/images/ETH%201H%20%20long%20proboy%202610.72.png?raw=true',
-                    'https://github.com/donpu333/CryptoWidget/blob/main/images/QNT%201H%20102.44%20proboy%20long.png?raw=true'
+                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/1000000BOBUSDT%20%200.04944%201h%20proboy%20short%20(1).png?raw=true',
+                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/QNT%201H%20102.44%20proboy%20long.png?raw=true',
+                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/ETH%201H%20%20long%20proboy%202610.72.png?raw=true'
                 ]
             },
             tvhTradingAbove: {
@@ -1672,8 +1673,15 @@
                     </button>
                 `,
                 photos: [
-                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D1%80%D0%BE%D0%B4%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BD%D0%B0%D0%B4%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D0%B5%D0%BC%20%20.png?raw=true',
-                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true'
+                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/ZKUSDT%200.03101%201h%20%20proboy%20LONG.png?raw=true',
+                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/TRB%201H%2038.733%20%20proboy%20long.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/SPXUSDT%201h%201.2229%20proboy%20long.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/LAUSDT%201h%20%200.988%20proboy%20short.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/HYPEUSDT%20%2044.088%201h%20proboy%20LONG.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/DYDXUSDT%200.681%201h%20proboy%20LONG.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/CKBUSDT%200.003402%201h%20proboy%20short.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/CFXUSDT%200.16540%201h%20proboy%20short.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/BIOUSDT%200.12500%201h%20proboy%20short.png?raw=true'
                 ]
             },
             tvhTradingBelow: {
@@ -1695,7 +1703,14 @@
                     </button>
                 `,
                 photos: [
-                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D1%80%D0%BE%D0%B4%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F%20.png?raw=true'
+                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/RAYSOLUSDT%20%203.1138%201h%20%20proboy%20short.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/ONDOUSDT%200.8581%201h%20proboy%20short.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/MUSDT%200.4729%201h%20proboy%20LONG.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/EIGEN%201h%201.6205%20proboy%20long.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/DEEPUSDT%200.15500%201h%20proboy%20LONG.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/BRETTUSDT%201h%20%200.05593%20proboy%20long.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/ATOM%201H%20%20long%20proboy%205.098.png?raw=true'
+					
                 ]
             },
             tvhSecondaryMovement: {
@@ -1720,7 +1735,15 @@
                     </button>
                 `,
                 photos: [
-                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20.png?raw=true'
+                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/TRXUSDT%200,33485%201h%20proboy%20LONG.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/SKYAIUSDT%200.06005%201h%20proboy%20LONG.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/SAFE%201H%200.5977%20proboy%20long.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/QNTUSDT%201h%20119.84%20%20proboy%20long.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/PARTI%201H%20LONG%20PROBOY%200.3165000.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/LDO%201h%200.8576%20proboy%20short.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/GPSUSDT%201h%20%200.02745%20proboy%20long.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/FARTCOIN%201H%20%20proboy%20long%201.4778000.png?raw=true'
+					
                 ]
             },
             tvhEntry: {
@@ -1741,7 +1764,14 @@
                     </button>
                 `,
                 photos: [
-                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D0%B9%20%D1%85%D0%BE%D0%B4%D0%BE%D0%BC%20%D0%B8%20%D0%B2%D0%BE%D0%B7%D1%80%D0%B0%D1%82%D1%82.png?raw=true'
+                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/XPINUSDT%200.0013180%201h%20proboy%20short.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/WIF%201h%200.9194%20proboy%20short.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/UMAUSDT%201h%201.412%20%20proboy%20long.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/PUMPUSDT%20%200.004704%201h%20proboy%20short.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/GALAUSDT%20%200.01828%201h%20proboy%20LONG.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/FILUSDT%202.722%201h%20proboy%20LONG.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/CYBER%201h%20long%20proboy%201.410000.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/APE%201H%20%200.7163%20proboy%20long.png?raw=true'
                 ]
             },
             tvhFalsePrimaryMovement: {
@@ -1762,7 +1792,14 @@
                     </button>
                 `,
                 photos: [
-                    'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+1+ТВХ+ложного+первичного+движения'
+                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+1+ТВХ+ложного+первичного+движения'
                 ]
             },
             tvhFalseTradingAbove: {
@@ -1784,7 +1821,15 @@
                     </button>
                 `,
                 photos: [
-                    'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+1+ТВХ+ложной+проторговки+над+уровнем'
+                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+1+ТВХ+ложной+проторговки+над+уровнем'
                 ]
             },
             tvhFalseTradingBelow: {
@@ -1806,7 +1851,13 @@
                     </button>
                 `,
                 photos: [
-                    'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+1+ТВХ+ложной+проторговки+под+уровнем'
+                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+1+ТВХ+ложной+проторговки+под+уровнем'
                 ]
             },
             tvhFalseSecondaryMovement: {
@@ -1830,7 +1881,13 @@
                     </button>
                 `,
                 photos: [
-                    'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+1+ТВХ+ложного+вторичного+движения'
+                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+1+ТВХ+ложного+вторичного+движения'
                 ]
             },
             tvhFalseEntry: {
@@ -1852,7 +1909,18 @@
                     </button>
                 `,
                 photos: [
-                    'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+1+ТВХ+ложного+входа'
+                    'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%BF%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5%20.png?raw=true',
+					'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+1+ТВХ+ложного+входа'
                 ]
             }
         };
@@ -2184,8 +2252,8 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 // Увеличение
                 currentScale = Math.min(currentScale + zoomIntensity, 5);
             } else {
-                // Уменьшение
-                currentScale = Math.max(currentScale - zoomIntensity, 0.1);
+                // Уменьшение - не позволяем уменьшать меньше изначального размера
+                currentScale = Math.max(currentScale - zoomIntensity, minScale);
             }
             
             updateImageTransform();
@@ -2359,7 +2427,8 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         }
 
         function zoomOut() {
-            currentScale = Math.max(0.1, currentScale - 0.2);
+            // Не позволяем уменьшать меньше изначального размера
+            currentScale = Math.max(minScale, currentScale - 0.2);
             updateImageTransform();
         }
 
