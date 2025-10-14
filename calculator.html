@@ -1650,7 +1650,7 @@
         let currentScale = 1;
         let isDragging = false;
         let startX, startY, translateX = 0, translateY = 0;
-        let isFullscreen = false;
+        let isFullscreen = true; // Изменено: по умолчанию полноэкранный режим
         let minScale = 1;
 
         // ТВХ тексты с кнопкой фото
@@ -2221,6 +2221,11 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 
                 // Сбрасываем масштаб и позицию
                 resetZoom();
+                
+                // Автоматически включаем полноэкранный режим
+                isFullscreen = true;
+                modal.classList.add('fullscreen');
+                document.getElementById('fullscreenIcon').className = 'fas fa-compress';
                 
                 modal.classList.add('active');
                 
