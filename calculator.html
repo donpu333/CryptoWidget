@@ -902,7 +902,7 @@
             background-color: var(--secondary);
         }
 
-        /* ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ ФОТО */
+        /* Стили для модального окна с фото */
         .photo-modal {
             position: fixed;
             top: 0;
@@ -928,6 +928,10 @@
             position: relative;
             max-width: 95vw;
             max-height: 95vh;
+            width: auto;
+            height: auto;
+            overflow: auto;
+            cursor: grab;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -939,6 +943,13 @@
             width: auto;
             height: auto;
             object-fit: contain;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+            cursor: grab;
+        }
+
+        .photo-image.zoomed {
+            cursor: grab;
         }
 
         .photo-close {
@@ -1069,6 +1080,7 @@
             opacity: 0.8;
         }
 
+        /* Стили для полноэкранного режима */
         .fullscreen-btn {
             position: absolute;
             top: 20px;
@@ -1085,6 +1097,47 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .photo-modal.fullscreen .photo-container {
+            max-width: 100vw;
+            max-height: 100vh;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .photo-modal.fullscreen .photo-image {
+            max-width: 100vw;
+            max-height: 100vh;
+        }
+
+        /* Стили для перетаскивания изображения */
+        .photo-container.dragging {
+            cursor: grabbing;
+        }
+
+        .photo-image.dragging {
+            cursor: grabbing;
+        }
+
+        /* ИСПРАВЛЕНИЕ: Стили для корректного отображения фото */
+        .photo-image-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .photo-image-fit {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
         }
     </style>
 </head>
@@ -1485,7 +1538,9 @@
             <button class="zoom-btn" onclick="zoomIn()">+</button>
         </div>
         <div class="photo-container" id="photoContainer">
-            <img class="photo-image" id="photoImage" src="" alt="ТВХ изображение">
+            <div class="photo-image-container">
+                <img class="photo-image-fit" id="photoImage" src="" alt="ТВХ изображение">
+            </div>
         </div>
         <div class="photo-thumbnails" id="photoThumbnails"></div>
         <div class="photo-navigation">
@@ -1593,7 +1648,10 @@
         let currentPhotoIndex = 0;
         let currentPhotos = [];
         let currentScale = 1;
+        let isDragging = false;
+        let startX, startY, translateX = 0, translateY = 0;
         let isFullscreen = false;
+        let minScale = 1;
 
         // ТВХ тексты с кнопкой фото
         const tvhTexts = {
@@ -2142,73 +2200,178 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             }
         }
 
-        // ИСПРАВЛЕННЫЕ ФУНКЦИИ ДЛЯ РАБОТЫ С ФОТО
+        // ИСПРАВЛЕННЫЕ Функции для работы с фото
         function openPhotoModal(type) {
             const modal = document.getElementById('photoModal');
             const photoImage = document.getElementById('photoImage');
+            const photoContainer = document.getElementById('photoContainer');
             
             // Получаем массив фото для текущего типа
             currentPhotos = tvhTexts[type].photos;
             currentPhotoIndex = 0;
             currentScale = 1;
+            translateX = 0;
+            translateY = 0;
             
             if (currentPhotos.length > 0) {
-                // Загружаем первое фото
-                loadPhoto(currentPhotos[0]);
-                
+                photoImage.src = currentPhotos[0];
                 updatePhotoCounter();
                 updateNavigationButtons();
                 updateThumbnails();
                 
-                modal.classList.add('active');
-            }
-        }
-
-        function loadPhoto(photoUrl) {
-            const photoImage = document.getElementById('photoImage');
-            
-            // Показываем индикатор загрузки
-            photoImage.style.opacity = '0.5';
-            
-            // Создаем новое изображение для предварительной загрузки
-            const img = new Image();
-            img.onload = function() {
-                // Когда изображение загружено, устанавливаем его в основной элемент
-                photoImage.src = photoUrl;
-                photoImage.style.opacity = '1';
+                // Сбрасываем масштаб и позицию
+                resetZoom();
                 
-                // Сбрасываем масштаб для нового изображения
-                currentScale = 1;
-                photoImage.style.transform = `scale(${currentScale})`;
-            };
-            img.onerror = function() {
-                // Если ошибка загрузки, показываем placeholder
-                photoImage.src = 'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Ошибка+загрузки+изображения';
-                photoImage.style.opacity = '1';
-            };
-            img.src = photoUrl;
+                modal.classList.add('active');
+                
+                // Добавляем обработчики событий
+                addPhotoEventListeners();
+            }
         }
 
         function closePhotoModal() {
             const modal = document.getElementById('photoModal');
             modal.classList.remove('active');
             currentScale = 1;
+            translateX = 0;
+            translateY = 0;
+            isFullscreen = false;
+            modal.classList.remove('fullscreen');
+            document.getElementById('fullscreenIcon').className = 'fas fa-expand';
+            
+            // Удаляем обработчики событий
+            removePhotoEventListeners();
+        }
+
+        function addPhotoEventListeners() {
+            const photoImage = document.getElementById('photoImage');
+            const photoContainer = document.getElementById('photoContainer');
+            
+            // Обработчик колесика мыши для масштабирования
+            photoContainer.addEventListener('wheel', handleWheel, { passive: false });
+            
+            // Обработчики для перетаскивания
+            photoContainer.addEventListener('mousedown', startDrag);
+            photoContainer.addEventListener('touchstart', startDragTouch);
+            
+            // Предотвращаем контекстное меню
+            photoImage.addEventListener('contextmenu', (e) => e.preventDefault());
+        }
+
+        function removePhotoEventListeners() {
+            const photoImage = document.getElementById('photoImage');
+            const photoContainer = document.getElementById('photoContainer');
+            
+            photoContainer.removeEventListener('wheel', handleWheel);
+            photoContainer.removeEventListener('mousedown', startDrag);
+            photoContainer.removeEventListener('touchstart', startDragTouch);
+            photoImage.removeEventListener('contextmenu', (e) => e.preventDefault());
+        }
+
+        function handleWheel(e) {
+            e.preventDefault();
+            
+            const delta = e.deltaY;
+            const zoomIntensity = 0.1;
+            
+            if (delta < 0) {
+                // Увеличение
+                currentScale = Math.min(currentScale + zoomIntensity, 5);
+            } else {
+                // Уменьшение - не позволяем уменьшать меньше изначального размера
+                currentScale = Math.max(currentScale - zoomIntensity, minScale);
+            }
+            
+            updateImageTransform();
+        }
+
+        function startDrag(e) {
+            e.preventDefault();
+            isDragging = true;
+            
+            const photoContainer = document.getElementById('photoContainer');
+            const photoImage = document.getElementById('photoImage');
+            
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            
+            photoContainer.classList.add('dragging');
+            photoImage.classList.add('dragging');
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function startDragTouch(e) {
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                isDragging = true;
+                
+                const photoContainer = document.getElementById('photoContainer');
+                const photoImage = document.getElementById('photoImage');
+                
+                startX = e.touches[0].clientX - translateX;
+                startY = e.touches[0].clientY - translateY;
+                
+                photoContainer.classList.add('dragging');
+                photoImage.classList.add('dragging');
+                
+                document.addEventListener('touchmove', dragTouch);
+                document.addEventListener('touchend', stopDrag);
+            }
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            
+            updateImageTransform();
+        }
+
+        function dragTouch(e) {
+            if (!isDragging || e.touches.length !== 1) return;
+            e.preventDefault();
+            
+            translateX = e.touches[0].clientX - startX;
+            translateY = e.touches[0].clientY - startY;
+            
+            updateImageTransform();
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            
+            const photoContainer = document.getElementById('photoContainer');
+            const photoImage = document.getElementById('photoImage');
+            
+            photoContainer.classList.remove('dragging');
+            photoImage.classList.remove('dragging');
+            
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('touchmove', dragTouch);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchend', stopDrag);
+        }
+
+        function updateImageTransform() {
+            const photoImage = document.getElementById('photoImage');
+            photoImage.style.transform = `scale(${currentScale}) translate(${translateX}px, ${translateY}px)`;
         }
 
         function toggleFullscreen() {
             const modal = document.getElementById('photoModal');
-            const photoContainer = document.getElementById('photoContainer');
             const fullscreenIcon = document.getElementById('fullscreenIcon');
             
             isFullscreen = !isFullscreen;
             
             if (isFullscreen) {
-                photoContainer.style.maxWidth = '100vw';
-                photoContainer.style.maxHeight = '100vh';
+                modal.classList.add('fullscreen');
                 fullscreenIcon.className = 'fas fa-compress';
             } else {
-                photoContainer.style.maxWidth = '95vw';
-                photoContainer.style.maxHeight = '95vh';
+                modal.classList.remove('fullscreen');
                 fullscreenIcon.className = 'fas fa-expand';
             }
         }
@@ -2222,8 +2385,11 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 currentPhotoIndex = 0;
             }
             
-            // Загружаем новое фото
-            loadPhoto(currentPhotos[currentPhotoIndex]);
+            const photoImage = document.getElementById('photoImage');
+            photoImage.src = currentPhotos[currentPhotoIndex];
+            
+            // Сбрасываем масштаб и позицию при смене фото
+            resetZoom();
             
             updatePhotoCounter();
             updateNavigationButtons();
@@ -2233,8 +2399,11 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         function selectPhoto(index) {
             currentPhotoIndex = index;
             
-            // Загружаем выбранное фото
-            loadPhoto(currentPhotos[currentPhotoIndex]);
+            const photoImage = document.getElementById('photoImage');
+            photoImage.src = currentPhotos[currentPhotoIndex];
+            
+            // Сбрасываем масштаб и позицию при смене фото
+            resetZoom();
             
             updatePhotoCounter();
             updateNavigationButtons();
@@ -2273,21 +2442,21 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         }
 
         function zoomIn() {
-            currentScale = Math.min(currentScale + 0.2, 3);
-            const photoImage = document.getElementById('photoImage');
-            photoImage.style.transform = `scale(${currentScale})`;
+            currentScale = Math.min(currentScale + 0.2, 5);
+            updateImageTransform();
         }
 
         function zoomOut() {
-            currentScale = Math.max(0.5, currentScale - 0.2);
-            const photoImage = document.getElementById('photoImage');
-            photoImage.style.transform = `scale(${currentScale})`;
+            // Не позволяем уменьшать меньше изначального размера
+            currentScale = Math.max(minScale, currentScale - 0.2);
+            updateImageTransform();
         }
 
         function resetZoom() {
             currentScale = 1;
-            const photoImage = document.getElementById('photoImage');
-            photoImage.style.transform = `scale(${currentScale})`;
+            translateX = 0;
+            translateY = 0;
+            updateImageTransform();
         }
 
         // Закрытие модального окна фото при клике вне его
