@@ -1256,6 +1256,24 @@
         .photo-grid-modal-close:hover {
             color: white;
         }
+
+        /* Стили для алгоритма */
+        .algorithm-sub-buttons {
+            display: none;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .algorithm-sub-buttons button {
+            background-color: #9C27B0;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .algorithm-sub-buttons button:hover {
+            background-color: #7B1FA2;
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -1515,6 +1533,7 @@
                     <button style="background-color: #C62828;" onclick="toggleText('falseBreakthroughMinuses')">Ложный пробой минусы</button>
                     <button style="background-color: #757575;" onclick="toggleTvhButtons('tvhBreakthrough')">ТВХ пробой</button>
                     <button style="background-color: #757575;" onclick="toggleTvhButtons('tvhFalseBreakthrough')">ТВХ ложный пробой</button>
+                    <button style="background-color: #9C27B0;" onclick="toggleAlgorithmButtons()">Алгоритм</button>
                 </div>
 
                 <div id="tvhBreakthroughButtons" class="tvh-sub-buttons">
@@ -1531,6 +1550,12 @@
                     <button onclick="showTvhText('tvhFalseTradingBelow')">ТВХ проторговки под уровнем</button>
                     <button onclick="showTvhText('tvhFalseSecondaryMovement')">ТВХ во вторичное движение</button>
                     <button onclick="showTvhText('tvhFalseEntry')">ТВХ вход</button>
+                </div>
+
+                <div id="algorithmButtons" class="algorithm-sub-buttons">
+                    <button onclick="showTvhText('algorithmPremises')">Предпосылки</button>
+                    <button onclick="showTvhText('algorithmFalseBreakthrough')">Ложный пробой</button>
+                    <button onclick="showTvhText('algorithmBreakthrough')">Пробой</button>
                 </div>
 
                 <div id="breakthroughText" class="text-display">
@@ -1782,6 +1807,7 @@
         let startX, startY, translateX = 0, translateY = 0;
         let isFullscreen = true; // Изменено: по умолчанию полноэкранный режим
         let minScale = 1;
+        let currentAlgorithmType = null;
 
         // ТВХ тексты с двумя кнопками фото (лонг и шорт)
         const tvhTexts = {
@@ -2129,6 +2155,133 @@
                         'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+Шорт+ТВХ+ложного+входа'
                     ]
                 }
+            },
+            // НОВЫЕ ТЕКСТЫ ДЛЯ АЛГОРИТМА
+            algorithmPremises: {
+                text: `
+                    <h3>Алгоритм - Предпосылки</h3>
+                    <p>Алгоритм анализа предпосылок для успешной торговли:</p>
+                    <ol>
+                        <li>Анализ глобального тренда на старших таймфреймах</li>
+                        <li>Определение локального тренда на рабочих таймфреймах</li>
+                        <li>Идентификация ключевых уровней поддержки и сопротивления</li>
+                        <li>Оценка объема и волатильности</li>
+                        <li>Поиск паттернов накопления/дистрибуции</li>
+                        <li>Анализ поведения цены вблизи уровней</li>
+                    </ol>
+                    <p>Ключевые факторы успеха:</p>
+                    <ul>
+                        <li>Совпадение нескольких таймфреймов</li>
+                        <li>Подтверждение объемами</li>
+                        <li>Отсутствие конфликтующих сигналов</li>
+                        <li>Соответствие общей рыночной ситуации</li>
+                    </ul>
+                    
+                    <div>
+                        <button class="photo-btn" onclick="openPhotoGridModal('algorithmPremises', 'general')">
+                            <i class="fas fa-camera"></i> Примеры предпосылок
+                        </button>
+                    </div>
+                `,
+                photos: {
+                    general: [
+                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+предпосылок+1',
+                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+предпосылок+2',
+                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+предпосылок+3'
+                    ]
+                }
+            },
+            algorithmFalseBreakthrough: {
+                text: `
+                    <h3>Алгоритм - Ложный пробой</h3>
+                    <p>Алгоритм идентификации и торговли ложных пробоев:</p>
+                    
+                    <h4>Этапы идентификации:</h4>
+                    <ol>
+                        <li>Определение сильного уровня сопротивления/поддержки</li>
+                        <li>Анализ подхода к уровню (резкий/плавный)</li>
+                        <li>Оценка объема при пробое</li>
+                        <li>Наблюдение за ценой после пробоя</li>
+                        <li>Подтверждение ложности пробоя</li>
+                    </ol>
+                    
+                    <h4>Критерии входа:</h4>
+                    <ul>
+                        <li>Возврат цены за уровень</li>
+                        <li>Формирование разворотной свечной модели</li>
+                        <li>Подтверждение снижением объема</li>
+                        <li>Совпадение с ключевым уровнем на старшем ТФ</li>
+                    </ul>
+                    
+                    <h4>Управление рисками:</h4>
+                    <ul>
+                        <li>Стоп-лосс за экстремум пробоя</li>
+                        <li>Постепенное увеличение позиции</li>
+                        <li>Учет общего рыночного контекста</li>
+                    </ul>
+                    
+                    <div>
+                        <button class="photo-btn" onclick="openPhotoGridModal('algorithmFalseBreakthrough', 'general')">
+                            <i class="fas fa-camera"></i> Примеры ложных пробоев
+                        </button>
+                    </div>
+                `,
+                photos: {
+                    general: [
+                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+ложного+пробоя+1',
+                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+ложного+пробоя+2',
+                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+ложного+пробоя+3'
+                    ]
+                }
+            },
+            algorithmBreakthrough: {
+                text: `
+                    <h3>Алгоритм - Пробой</h3>
+                    <p>Алгоритм идентификации и торговли истинных пробоев:</p>
+                    
+                    <h4>Этапы идентификации:</h4>
+                    <ol>
+                        <li>Подготовительная фаза - накопление у уровня</li>
+                        <li>Фаза пробоя - уверенное преодоление уровня</li>
+                        <li>Фаза подтверждения - удержание над уровнем</li>
+                        <li>Фаза развития - движение в направлении пробоя</li>
+                    </ol>
+                    
+                    <h4>Критерии входа:</h4>
+                    <ul>
+                        <li>Закрытие за уровнем на таймфрейме пробоя</li>
+                        <li>Подтверждение увеличенным объемом</li>
+                        <li>Отсутствие немедленного возврата за уровень</li>
+                        <li>Совпадение с направлением старшего тренда</li>
+                    </ul>
+                    
+                    <h4>Точки входа:</h4>
+                    <ul>
+                        <li>В момент пробоя (агрессивный вход)</li>
+                        <li>При ретесте уровня (консервативный вход)</li>
+                        <li>При продолжении движения (добавление)</li>
+                    </ul>
+                    
+                    <h4>Цели и стопы:</h4>
+                    <ul>
+                        <li>Тейк-профит по измерению движения</li>
+                        <li>Стоп-лосс под уровнем пробоя</li>
+                        <li>Трейлинг-стоп при сильном движении</li>
+                    </ul>
+                    
+                    <div>
+                        <button class="photo-btn" onclick="openPhotoGridModal('algorithmBreakthrough', 'general')">
+                            <i class="fas fa-camera"></i> Примеры пробоев
+                        </button>
+                    </div>
+                `,
+                photos: {
+                    general: [
+                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+пробоя+1',
+                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+пробоя+2',
+                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+пробоя+3'
+                    ]
+                }
             }
         };
 
@@ -2391,7 +2544,7 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             currentPhotos = tvhTexts[type].photos[direction];
             
             // Устанавливаем заголовок
-            const directionText = direction === 'long' ? 'Лонг' : 'Шорт';
+            const directionText = direction === 'long' ? 'Лонг' : direction === 'short' ? 'Шорт' : 'Общие';
             photoGridTitle.textContent = `Фотографии ${directionText}`;
             
             // Очищаем контейнер
@@ -3226,6 +3379,7 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         function toggleText(type) {
             document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.tvh-sub-buttons').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.algorithm-sub-buttons').forEach(el => el.style.display = 'none');
 
             if (currentVisibleText === type) {
                 currentVisibleText = null;
@@ -3240,6 +3394,7 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         function toggleTvhButtons(type) {
             document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.tvh-sub-buttons').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.algorithm-sub-buttons').forEach(el => el.style.display = 'none');
             document.getElementById('actionButtons').style.display = 'none';
 
             if (currentTvhType === type) {
@@ -3247,6 +3402,20 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             } else {
                 document.getElementById(`${type}Buttons`).style.display = 'flex';
                 currentTvhType = type;
+            }
+        }
+
+        function toggleAlgorithmButtons() {
+            document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tvh-sub-buttons').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.algorithm-sub-buttons').forEach(el => el.style.display = 'none');
+            document.getElementById('actionButtons').style.display = 'none';
+
+            if (currentAlgorithmType === 'algorithm') {
+                currentAlgorithmType = null;
+            } else {
+                document.getElementById('algorithmButtons').style.display = 'flex';
+                currentAlgorithmType = 'algorithm';
             }
         }
 
@@ -3595,6 +3764,7 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         window.copyCalculationToClipboard = copyCalculationToClipboard;
         window.toggleText = toggleText;
         window.toggleTvhButtons = toggleTvhButtons;
+        window.toggleAlgorithmButtons = toggleAlgorithmButtons;
         window.showTvhText = showTvhText;
         window.closeTvhText = closeTvhText;
         window.copyTvhText = copyTvhText;
