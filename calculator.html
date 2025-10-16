@@ -1096,8 +1096,37 @@
             opacity: 0.8;
         }
 
-        /* УДАЛЕНЫ СТИЛИ ДЛЯ ПОЛНОЭКРАННОГО РЕЖИМА */
-        
+        /* Стили для полноэкранного режима */
+        .fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 80px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 2001;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-modal.fullscreen .photo-container {
+            max-width: 100vw;
+            max-height: 100vh;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .photo-modal.fullscreen .photo-image {
+            max-width: 100vw;
+            max-height: 100vh;
+        }
+
         /* Стили для перетаскивания изображения */
         .photo-container.dragging {
             cursor: grabbing;
@@ -1773,6 +1802,8 @@
         let currentScale = 1;
         let isDragging = false;
         let startX, startY, translateX = 0, translateY = 0;
+        let isFullscreen = true;
+        let minScale = 1;
         let currentAlgorithmType = null;
 
         // ТВХ тексты с двумя кнопками фото (лонг и шорт)
@@ -2592,6 +2623,10 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 // Сбрасываем масштаб и позицию
                 resetZoom();
                 
+                // Автоматически включаем полноэкранный режим
+                isFullscreen = true;
+                modal.classList.add('fullscreen');
+                
                 modal.classList.add('active');
                 
                 // Добавляем обработчики событий
@@ -2605,6 +2640,8 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             currentScale = 1;
             translateX = 0;
             translateY = 0;
+            isFullscreen = false;
+            modal.classList.remove('fullscreen');
             
             // Удаляем обработчики событий
             removePhotoEventListeners();
@@ -2646,7 +2683,7 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 currentScale = Math.min(currentScale + zoomIntensity, 5);
             } else {
                 // Уменьшение - не позволяем уменьшать меньше изначального размера
-                currentScale = Math.max(currentScale - zoomIntensity, 1);
+                currentScale = Math.max(currentScale - zoomIntensity, minScale);
             }
             
             updateImageTransform();
@@ -2800,7 +2837,7 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
 
         function zoomOut() {
             // Не позволяем уменьшать меньше изначального размера
-            currentScale = Math.max(1, currentScale - 0.2);
+            currentScale = Math.max(minScale, currentScale - 0.2);
             updateImageTransform();
         }
 
