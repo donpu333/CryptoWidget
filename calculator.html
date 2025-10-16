@@ -1671,6 +1671,9 @@
     <!-- Модальное окно для фото (слайд-шоу) -->
     <div class="photo-modal" id="photoModal">
         <button class="photo-close" onclick="closePhotoModal()">&times;</button>
+        <button class="fullscreen-btn" onclick="toggleFullscreen()">
+            <i class="fas fa-compress" id="fullscreenIcon"></i>
+        </button>
         <div class="zoom-controls">
             <button class="zoom-btn" onclick="zoomOut()">-</button>
             <button class="zoom-btn zoom-reset-btn" onclick="resetZoom()">1:1</button>
@@ -1802,7 +1805,7 @@
         let currentScale = 1;
         let isDragging = false;
         let startX, startY, translateX = 0, translateY = 0;
-        let isFullscreen = true;
+        let isFullscreen = false; // Изменено: по умолчанию обычный режим
         let minScale = 1;
         let currentAlgorithmType = null;
 
@@ -2623,9 +2626,10 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 // Сбрасываем масштаб и позицию
                 resetZoom();
                 
-                // Автоматически включаем полноэкранный режим
-                isFullscreen = true;
-                modal.classList.add('fullscreen');
+                // По умолчанию обычный режим (не полноэкранный)
+                isFullscreen = false;
+                modal.classList.remove('fullscreen');
+                document.getElementById('fullscreenIcon').className = 'fas fa-expand';
                 
                 modal.classList.add('active');
                 
@@ -2642,6 +2646,7 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             translateY = 0;
             isFullscreen = false;
             modal.classList.remove('fullscreen');
+            document.getElementById('fullscreenIcon').className = 'fas fa-expand';
             
             // Удаляем обработчики событий
             removePhotoEventListeners();
@@ -2763,6 +2768,21 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         function updateImageTransform() {
             const photoImage = document.getElementById('photoImage');
             photoImage.style.transform = `scale(${currentScale}) translate(${translateX}px, ${translateY}px)`;
+        }
+
+        function toggleFullscreen() {
+            const modal = document.getElementById('photoModal');
+            const fullscreenIcon = document.getElementById('fullscreenIcon');
+            
+            isFullscreen = !isFullscreen;
+            
+            if (isFullscreen) {
+                modal.classList.add('fullscreen');
+                fullscreenIcon.className = 'fas fa-compress';
+            } else {
+                modal.classList.remove('fullscreen');
+                fullscreenIcon.className = 'fas fa-expand';
+            }
         }
 
         function changePhoto(direction) {
@@ -3761,6 +3781,7 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         window.zoomIn = zoomIn;
         window.zoomOut = zoomOut;
         window.resetZoom = resetZoom;
+        window.toggleFullscreen = toggleFullscreen;
         window.openPhotoGridModal = openPhotoGridModal;
         window.closePhotoGridModal = closePhotoGridModal;
         window.openPhotoModalFromGrid = openPhotoModalFromGrid;
