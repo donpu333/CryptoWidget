@@ -883,39 +883,43 @@
             display: none !important;
         }
 
-        /* Стили для кнопок фото в ТВХ тексте */
-        .photo-btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
+        /* Стили для встроенных фото в ТВХ тексте */
+        .embedded-photos {
+            margin: 15px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .embedded-photo {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
             cursor: pointer;
-            font-family: 'JetBrains Mono', monospace;
-            margin: 10px 5px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
+            transition: transform 0.3s ease;
+            border: 2px solid #3D3D3D;
         }
 
-        .photo-btn:hover {
-            background-color: var(--secondary);
+        .embedded-photo:hover {
+            transform: scale(1.05);
+            border-color: var(--primary);
         }
 
-        .photo-btn-long {
-            background-color: #4CAF50;
+        .photo-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
         }
 
-        .photo-btn-long:hover {
-            background-color: #2E7D32;
-        }
-
-        .photo-btn-short {
-            background-color: #F44336;
-        }
-
-        .photo-btn-short:hover {
-            background-color: #C62828;
+        .photo-section-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary);
+            font-size: 1rem;
         }
 
         /* Стили для модального окна с фото */
@@ -1147,107 +1151,6 @@
             cursor: grabbing;
         }
 
-        /* НОВЫЕ СТИЛИ ДЛЯ СЕТКИ ФОТО */
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-            padding: 10px;
-        }
-
-        .photo-grid-item {
-            position: relative;
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-            aspect-ratio: 16/9;
-        }
-
-        .photo-grid-item:hover {
-            transform: scale(1.05);
-        }
-
-        .photo-grid-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .photo-grid-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 5px;
-            font-size: 0.8rem;
-            text-align: center;
-        }
-
-        /* Стили для модального окна с сеткой фото */
-        .photo-grid-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            padding: 20px;
-        }
-
-        .photo-grid-modal.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .photo-grid-modal-content {
-            background-color: #1E1E1E;
-            border-radius: 8px;
-            padding: 20px;
-            max-width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            width: 100%;
-        }
-
-        .photo-grid-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .photo-grid-modal-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .photo-grid-modal-close {
-            background: none;
-            border: none;
-            color: #9CA3AF;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        .photo-grid-modal-close:hover {
-            color: white;
-        }
-
         /* Стили для алгоритма */
         .algorithm-sub-buttons {
             display: none;
@@ -1257,13 +1160,125 @@
         }
 
         .algorithm-sub-buttons button {
-            background-color: #4CAF50;
+            background-color: #757575;
             padding: 8px 16px;
             font-size: 14px;
         }
 
         .algorithm-sub-buttons button:hover {
+            background-color: #616161;
+        }
+
+        /* Стили для улучшенного отображения ТВХ текста */
+        .tvh-content {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .tvh-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .tvh-content::-webkit-scrollbar-track {
+            background: #2D2D2D;
+            border-radius: 4px;
+        }
+
+        .tvh-content::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .tvh-content::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .photo-gallery-item {
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            aspect-ratio: 4/3;
+        }
+
+        .photo-gallery-item:hover {
+            transform: scale(1.05);
+        }
+
+        .photo-gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-gallery-caption {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px;
+            font-size: 0.7rem;
+            text-align: center;
+        }
+
+        /* Стили для кнопок фото в ТВХ тексте */
+        .photo-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            margin: 10px 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .photo-btn:hover {
+            background-color: var(--secondary);
+        }
+
+        .photo-btn-long {
+            background-color: #4CAF50;
+        }
+
+        .photo-btn-long:hover {
             background-color: #2E7D32;
+        }
+
+        .photo-btn-short {
+            background-color: #F44336;
+        }
+
+        .photo-btn-short:hover {
+            background-color: #C62828;
+        }
+
+        /* Стили для кнопки возврата */
+        .back-button {
+            background-color: #FF9800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-button:hover {
+            background-color: #F57C00;
         }
     </style>
 </head>
@@ -1545,9 +1560,44 @@
 
                 <div id="algorithmButtons" class="algorithm-sub-buttons">
                     <button onclick="showTvhText('algorithmPremises')">Отбор по дневки </button>
-                    <button onclick="showTvhText('algorithmFalseBreakthrough')">Ложный пробой</button>
-                    <button onclick="showTvhText('algorithmBreakthrough')">Пробой</button>
-					<button onclick="showTvhText('algorithmFalseBreakthrough')">U-Формация</button>
+                    <button onclick="toggleAlgorithmSubButtons('falseBreakthroughAlgorithm')">Ложный пробой</button>
+                    <button onclick="toggleAlgorithmSubButtons('breakthroughAlgorithm')">Пробой</button>
+					<button onclick="showTvhText('algorithmUFormation')">U-Формация</button>
+                    <button onclick="showTvhText('algorithmVFormation')">V-Формация</button>
+                    <button onclick="showTvhText('algorithmChannel')">Каннал</button>
+                    <button onclick="showTvhText('algorithmTailedBar')">Бар с хвостами</button>
+                    <button onclick="showTvhText('algorithmBarClosing')">Закрытие баров</button>
+                    <button onclick="showTvhText('algorithmTradingLevels')">Уровни которые я торгую</button>
+                    <button onclick="showTvhText('algorithmBreakthroughModels')">Пробойные модели</button>
+                </div>
+
+                <!-- Дополнительные кнопки для алгоритма ложного пробоя -->
+                <div id="falseBreakthroughAlgorithmButtons" class="algorithm-sub-buttons" style="display: none;">
+                    <button class="back-button" onclick="backToAlgorithmMain()">
+                        <i class="fas fa-arrow-left"></i> Назад к алгоритму
+                    </button>
+                    <button onclick="showTvhText('algorithmNoRetracement')">Безоткатное движение</button>
+                    <button onclick="showTvhText('algorithmParanormalBars')">Подход на паранормальных барах</button>
+                    <button onclick="showTvhText('algorithmDistribution')">Дистрибуция</button>
+                    <button onclick="showTvhText('algorithmFarClosing')">Дальнее закрытие от уровня</button>
+                    <button onclick="showTvhText('algorithmFarRetest')">Дальный ретест</button>
+                    <button onclick="showTvhText('algorithmInfectedZone')">Зона зараженности</button>
+                    <button onclick="showTvhText('algorithmExtremum')">Экстремум</button>
+                </div>
+
+                <!-- Дополнительные кнопки для алгоритма пробоя -->
+                <div id="breakthroughAlgorithmButtons" class="algorithm-sub-buttons" style="display: none;">
+                    <button class="back-button" onclick="backToAlgorithmMain()">
+                        <i class="fas fa-arrow-left"></i> Назад к алгоритму
+                    </button>
+                    <button onclick="showTvhText('algorithmSqueeze')">Поджатие</button>
+                    <button onclick="showTvhText('algorithmNarrowTrading')">Узкая проторговка</button>
+                    <button onclick="showTvhText('algorithmConsolidation')">Консолидация вдоль уровня с поджатием</button>
+                    <button onclick="showTvhText('algorithmRange')">Рендж</button>
+                    <button onclick="showTvhText('algorithmCloseToLevel')">Закрытие в близи уровня</button>
+                    <button onclick="showTvhText('algorithmNearRetest')">Ближний ретест</button>
+                    <button onclick="showTvhText('algorithmNoReactionToLP')">Нет реакции на ЛП</button>
+                    <button onclick="showTvhText('algorithmDailyClose')">Закрытие дневки под хай /лоу После паронормального бара нет отката</button>
                 </div>
 
                 <div id="breakthroughText" class="text-display">
@@ -1654,13 +1704,13 @@
     <div class="overlay" id="tvhOverlay"></div>
     <div class="tvh-text-content" id="tvhTextContent">
         <button class="tvh-text-close" onclick="closeTvhText()">&times;</button>
-        <div id="tvhTextInner"></div>
+        <div class="tvh-content" id="tvhTextInner"></div>
         <button class="tvh-copy-btn" onclick="copyTvhText()">
             <i class="fas fa-copy"></i> Копировать
         </button>
     </div>
 
-    <!-- Модальное окно для фото (слайд-шоу) -->
+    <!-- Модальное окно для фото -->
     <div class="photo-modal" id="photoModal">
         <button class="photo-close" onclick="closePhotoModal()">&times;</button>
         <button class="fullscreen-btn" onclick="toggleFullscreen()">
@@ -1685,19 +1735,6 @@
             <button class="nav-btn" id="nextPhotoBtn" onclick="changePhoto(1)">
                 Следующее <i class="fas fa-chevron-right"></i>
             </button>
-        </div>
-    </div>
-
-    <!-- Модальное окно для сетки фото -->
-    <div class="photo-grid-modal" id="photoGridModal">
-        <div class="photo-grid-modal-content">
-            <div class="photo-grid-modal-header">
-                <div class="photo-grid-modal-title" id="photoGridTitle">Фотографии</div>
-                <button class="photo-grid-modal-close" onclick="closePhotoGridModal()">&times;</button>
-            </div>
-            <div class="photo-grid" id="photoGridContainer">
-                <!-- Фотографии будут добавлены динамически -->
-            </div>
         </div>
     </div>
 
@@ -1801,7 +1838,7 @@
         let minScale = 1;
         let currentAlgorithmType = null;
 
-        // ТВХ тексты с двумя кнопками фото (лонг и шорт)
+        // Полная база ТВХ текстов с фото
         const tvhTexts = {
             tvhPrimaryMovement: {
                 text: `
@@ -1820,24 +1857,30 @@
                     4) Пониженная волатильность.<br>
                     Больше 2-х раза не перезахожу.</p>
                     
-                    <div>
-                        <button class="photo-btn photo-btn-long" onclick="openPhotoGridModal('tvhPrimaryMovement', 'long')">
-                            <i class="fas fa-camera"></i> Фото Лонг
-                        </button>
-                        <button class="photo-btn photo-btn-short" onclick="openPhotoGridModal('tvhPrimaryMovement', 'short')">
-                            <i class="fas fa-camera"></i> Фото Шорт
-                        </button>
+                    <div class="photo-section">
+                        <div class="photo-section-title">Примеры Лонг</div>
+                        <div class="photo-gallery">
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/QNT%201H%20102.44%20proboy%20long.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/QNT%201H%20102.44%20proboy%20long.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/ETH%201H%20%20long%20proboy%202610.72.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/QNT%201H%20102.44%20proboy%20long.png?raw=true" alt="QNT 1H">
+                                <div class="photo-gallery-caption">QNT 1H</div>
+                            </div>
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/ETH%201H%20%20long%20proboy%202610.72.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/QNT%201H%20102.44%20proboy%20long.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/ETH%201H%20%20long%20proboy%202610.72.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/ETH%201H%20%20long%20proboy%202610.72.png?raw=true" alt="ETH 1H">
+                                <div class="photo-gallery-caption">ETH 1H</div>
+                            </div>
+                        </div>
                     </div>
-                `,
-                photos: {
-                    long: [
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/QNT%201H%20102.44%20proboy%20long.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/ETH%201H%20%20long%20proboy%202610.72.png?raw=true'
-                    ],
-                    short: [
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/1000000BOBUSDT%20%200.04944%201h%20proboy%20short%20(1).png?raw=true'
-                    ]
-                }
+                    
+                    <div class="photo-section">
+                        <div class="photo-section-title">Примеры Шорт</div>
+                        <div class="photo-gallery">
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/1000000BOBUSDT%20%200.04944%201h%20proboy%20short%20(1).png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/1000000BOBUSDT%20%200.04944%201h%20proboy%20short%20(1).png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/1000000BOBUSDT%20%200.04944%201h%20proboy%20short%20(1).png?raw=true" alt="BOBUSDT 1H">
+                                <div class="photo-gallery-caption">BOBUSDT 1H</div>
+                            </div>
+                        </div>
+                    </div>
+                `
             },
             tvhTradingAbove: {
                 text: `
@@ -1851,30 +1894,26 @@
                     4) Пониженная волатильность.<br>
                     Больше 2-х раза не перезахожу.</p>
                     
-                    <div>
-                        <button class="photo-btn photo-btn-long" onclick="openPhotoGridModal('tvhTradingAbove', 'long')">
-                            <i class="fas fa-camera"></i> Фото Лонг
-                        </button>
-                        <button class="photo-btn photo-btn-short" onclick="openPhotoGridModal('tvhTradingAbove', 'short')">
-                            <i class="fas fa-camera"></i> Фото Шорт
-                        </button>
+                    <div class="photo-section">
+                        <div class="photo-section-title">Примеры Лонг</div>
+                        <div class="photo-gallery">
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/ZKUSDT%200.03101%201h%20%20proboy%20LONG.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/ZKUSDT%200.03101%201h%20%20proboy%20LONG.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/ZKUSDT%200.03101%201h%20%20proboy%20LONG.png?raw=true" alt="ZKUSDT">
+                                <div class="photo-gallery-caption">ZKUSDT</div>
+                            </div>
+                        </div>
                     </div>
-                `,
-                photos: {
-                    long: [
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/ZKUSDT%200.03101%201h%20%20proboy%20LONG.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/TRB%201H%2038.733%20%20proboy%20long.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/SPXUSDT%201h%201.2229%20proboy%20long.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/HYPEUSDT%20%2044.088%201h%20proboy%20LONG.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/DYDXUSDT%200.681%201h%20proboy%20LONG.png?raw=true'
-                    ],
-                    short: [
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/LAUSDT%201h%20%200.988%20proboy%20short.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/CKBUSDT%200.003402%201h%20proboy%20short.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/CFXUSDT%200.16540%201h%20proboy%20short.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/BIOUSDT%200.12500%201h%20proboy%20short.png?raw=true'
-                    ]
-                }
+                    
+                    <div class="photo-section">
+                        <div class="photo-section-title">Примеры Шорт</div>
+                        <div class="photo-gallery">
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/LAUSDT%201h%20%200.988%20proboy%20short.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/LAUSDT%201h%20%200.988%20proboy%20short.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/LAUSDT%201h%20%200.988%20proboy%20short.png?raw=true" alt="LAUSDT">
+                                <div class="photo-gallery-caption">LAUSDT</div>
+                            </div>
+                        </div>
+                    </div>
+                `
             },
             tvhTradingBelow: {
                 text: `
@@ -1890,28 +1929,16 @@
                     4) Пониженная волатильности.<br>
                     Больше 2-х раза не перезахожу</p>
                     
-                    <div>
-                        <button class="photo-btn photo-btn-long" onclick="openPhotoGridModal('tvhTradingBelow', 'long')">
-                            <i class="fas fa-camera"></i> Фото Лонг
-                        </button>
-                        <button class="photo-btn photo-btn-short" onclick="openPhotoGridModal('tvhTradingBelow', 'short')">
-                            <i class="fas fa-camera"></i> Фото Шорт
-                        </button>
+                    <div class="photo-section">
+                        <div class="photo-section-title">Примеры Лонг</div>
+                        <div class="photo-gallery">
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/MUSDT%200.4729%201h%20proboy%20LONG.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/MUSDT%200.4729%201h%20proboy%20LONG.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/MUSDT%200.4729%201h%20proboy%20LONG.png?raw=true" alt="MUSDT">
+                                <div class="photo-gallery-caption">MUSDT</div>
+                            </div>
+                        </div>
                     </div>
-                `,
-                photos: {
-                    long: [
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/MUSDT%200.4729%201h%20proboy%20LONG.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/EIGEN%201h%201.6205%20proboy%20long.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/DEEPUSDT%200.15500%201h%20proboy%20LONG.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/BRETTUSDT%201h%20%200.05593%20proboy%20long.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/ATOM%201H%20%20long%20proboy%205.098.png?raw=true'
-                    ],
-                    short: [
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/RAYSOLUSDT%20%203.1138%201h%20%20proboy%20short.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/ONDOUSDT%200.8581%201h%20proboy%20short.png?raw=true'
-                    ]
-                }
+                `
             },
             tvhSecondaryMovement: {
                 text: `
@@ -1926,29 +1953,16 @@
                     4) Пониженная волатильности.<br>
                     Больше 2-х раза не перезахожу</p>
                     
-                    <div>
-                        <button class="photo-btn photo-btn-long" onclick="openPhotoGridModal('tvhSecondaryMovement', 'long')">
-                            <i class="fas fa-camera"></i> Фото Лонг
-                        </button>
-                        <button class="photo-btn photo-btn-short" onclick="openPhotoGridModal('tvhSecondaryMovement', 'short')">
-                            <i class="fas fa-camera"></i> Фото Шорт
-                        </button>
+                    <div class="photo-section">
+                        <div class="photo-section-title">Примеры Лонг</div>
+                        <div class="photo-gallery">
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/TRXUSDT%200,33485%201h%20proboy%20LONG.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/TRXUSDT%200,33485%201h%20proboy%20LONG.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/TRXUSDT%200,33485%201h%20proboy%20LONG.png?raw=true" alt="TRXUSDT">
+                                <div class="photo-gallery-caption">TRXUSDT</div>
+                            </div>
+                        </div>
                     </div>
-                `,
-                photos: {
-                    long: [
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/TRXUSDT%200,33485%201h%20proboy%20LONG.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/SKYAIUSDT%200.06005%201h%20proboy%20LONG.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/SAFE%201H%200.5977%20proboy%20long.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/QNTUSDT%201h%20119.84%20%20proboy%20long.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/PARTI%201H%20LONG%20PROBOY%200.3165000.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/GPSUSDT%201h%20%200.02745%20proboy%20long.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/FARTCOIN%201H%20%20proboy%20long%201.4778000.png?raw=true'
-                    ],
-                    short: [
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/LDO%201h%200.8576%20proboy%20short.png?raw=true'
-                    ]
-                }
+                `
             },
             tvhEntry: {
                 text: `
@@ -1963,192 +1977,40 @@
                     4) Пониженная волатильности.<br>
                     Больше 2-х раза не перезахожу</p>
                     
-                    <div>
-                        <button class="photo-btn photo-btn-long" onclick="openPhotoGridModal('tvhEntry', 'long')">
-                            <i class="fas fa-camera"></i> Фото Лонг
-                        </button>
-                        <button class="photo-btn photo-btn-short" onclick="openPhotoGridModal('tvhEntry', 'short')">
-                            <i class="fas fa-camera"></i> Фото Шорт
-                        </button>
+                    <div class="photo-section">
+                        <div class="photo-section-title">Примеры Лонг</div>
+                        <div class="photo-gallery">
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/UMAUSDT%201h%201.412%20%20proboy%20long.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/UMAUSDT%201h%201.412%20%20proboy%20long.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/UMAUSDT%201h%201.412%20%20proboy%20long.png?raw=true" alt="UMAUSDT">
+                                <div class="photo-gallery-caption">UMAUSDT</div>
+                            </div>
+                        </div>
                     </div>
-                `,
-                photos: {
-                    long: [
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/UMAUSDT%201h%201.412%20%20proboy%20long.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/GALAUSDT%20%200.01828%201h%20proboy%20LONG.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/FILUSDT%202.722%201h%20proboy%20LONG.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/CYBER%201h%20long%20proboy%201.410000.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/APE%201H%20%200.7163%20proboy%20long.png?raw=true'
-                    ],
-                    short: [
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/XPINUSDT%200.0013180%201h%20proboy%20short.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/WIF%201h%200.9194%20proboy%20short.png?raw=true',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/PUMPUSDT%20%200.004704%201h%20proboy%20short.png?raw=true'
-                    ]
-                }
+                `
             },
-            tvhFalsePrimaryMovement: {
-                text: `
-                    <h3>ТВХ№1 первичное движение</h3>
-                    <p>На 5 минутном графики должно быть поджатие (не должен выйти повышенный объем).<br>
-                    Подходить к уровню на маленьких барах затухание волатильности<br>
-                    (желательно чтоб бары были одного цвета) твх осуществляется ниже или выше уровня на 1 цент.</p>
-                    <p>Условия перезахода<br>
-                    1) Картинка не поломалась.<br>
-                    2) Уровень не пилится<br>
-                    3) Нет глубокого отката.<br>
-                    4) Пониженная волатильности.<br>
-                    Больше 2-х раза не перезахожу</p>
-                    
-                    <div>
-                        <button class="photo-btn photo-btn-long" onclick="openPhotoGridModal('tvhFalsePrimaryMovement', 'long')">
-                            <i class="fas fa-camera"></i> Фото Лонг
-                        </button>
-                        <button class="photo-btn photo-btn-short" onclick="openPhotoGridModal('tvhFalsePrimaryMovement', 'short')">
-                            <i class="fas fa-camera"></i> Фото Шорт
-                        </button>
-                    </div>
-                `,
-                photos: {
-                    long: [
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+Лонг+ТВХ+ложного+первичного+движения'
-                    ],
-                    short: [
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+Шорт+ТВХ+ложного+первичного+движения'
-                    ]
-                }
+            // Добавляем остальные ТВХ тексты
+            tvhFalsePrimaryMovement: { 
+                text: "<h3>ТВХ ложного пробоя - Первичное движение</h3><p>Текст будет добавлен...</p>",
+                photos: { long: [], short: [] }
             },
-            tvhFalseTradingAbove: {
-                text: `
-                    <h3>ТВХ проторговки над уровнем</h3>
-                    <p>Первичное движение На 5 минутном графики инструмент подлетел и пробил уровень и закрылся под уровнем жду<br>
-                    проторговку минимум из 3 баров и захожу (не должен выйти повышенный объем) стоп ставлю за<br>
-                    бар пробивший уровень если стоп получается большой ставлю расчетный ну чтоб расчетный<br>
-                    стоп находился за уровнем.</p>
-                    <p>Условия перезахода<br>
-                    1) Картинка не поломалась.<br>
-                    2) Уровень не пилится<br>
-                    3) Нет глубокого отката.<br>
-                    4) Пониженная волатильности.<br>
-                    Больше 2-х раза не перезахожу</p>
-                    
-                    <div>
-                        <button class="photo-btn photo-btn-long" onclick="openPhotoGridModal('tvhFalseTradingAbove', 'long')">
-                            <i class="fas fa-camera"></i> Фото Лонг
-                        </button>
-                        <button class="photo-btn photo-btn-short" onclick="openPhotoGridModal('tvhFalseTradingAbove', 'short')">
-                            <i class="fas fa-camera"></i> Фото Шорт
-                        </button>
-                    </div>
-                `,
-                photos: {
-                    long: [
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+Лонг+ТВХ+ложной+проторговки+над+уровнем'
-                    ],
-                    short: [
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+Шорт+ТВХ+ложной+проторговки+над+уровнем'
-                    ]
-                }
+            tvhFalseTradingAbove: { 
+                text: "<h3>ТВХ ложного пробоя - Проторговки над уровнем</h3><p>Текст будет добавлен...</p>",
+                photos: { long: [], short: [] }
             },
-            tvhFalseTradingBelow: {
-                text: `
-                    <h3>ТВХ проторговки под уровнем</h3>
-                    <p>Первичное движение На 5 минутном графики инструмент подлетел и пробил уровень и закрылся под уровнем жду<br>
-                    проторговку минимум из 3 баров и захожу (не должен выйти повышенный объем) стоп ставлю за<br>
-                    бар пробивший уровень если стоп получается большой ставлю расчетный ну чтоб расчетный<br>
-                    стоп находился за уровнем.</p>
-                    <p>Условия перезахода<br>
-                    1) Картинка не поломалась.<br>
-                    2) Уровень не пилится<br>
-                    3) Нет глубокого отката.<br>
-                    4) Понишенная волатильность.<br>
-                    Больше 2-х раза не перезахожу</p>
-                    
-                    <div>
-                        <button class="photo-btn photo-btn-long" onclick="openPhotoGridModal('tvhFalseTradingBelow', 'long')">
-                            <i class="fas fa-camera"></i> Фото Лонг
-                        </button>
-                        <button class="photo-btn photo-btn-short" onclick="openPhotoGridModal('tvhFalseTradingBelow', 'short')">
-                            <i class="fas fa-camera"></i> Фото Шорт
-                        </button>
-                    </div>
-                `,
-                photos: {
-                    long: [
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+Лонг+ТВХ+ложной+проторговки+под+уровнем'
-                    ],
-                    short: [
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+Шорт+ТВХ+ложной+проторговки+под+уровнем'
-                    ]
-                }
+            tvhFalseTradingBelow: { 
+                text: "<h3>ТВХ ложного пробоя - Проторговки под уровнем</h3><p>Текст будет добавлен...</p>",
+                photos: { long: [], short: [] }
             },
-            tvhFalseSecondaryMovement: {
-                text: `
-                    <h3>ТВХ во вторичное движение</h3>
-                    <p>На 5 минутном графики инструмент должен сделать ЛП не глубокий, инструмент должен отойти<br>
-                    от уровня, (не должен выйти повышенный объем) отскок не должен быть глубокий и после этого<br>
-                    инструмент должен вернутся обратно к уровню в течение 1 часа если инструмент не вернулся в<br>
-                    течение часа жду еще один ЛП и захожу.должно быть затухание волатильности.Стоп ставлю за<br>
-                    бар пробивший уровень если бар пробивший бар коротки ставлю за предыдущий.Если фрактал<br>
-                    отскока не глубокий и стоп помещается ставлю за фрактал.</p>
-                    <p>Условия перезахода<br>
-                    1) Картинка не поломалась.<br>
-                    2) Уровень не пилится<br>
-                    3) Нет глубокого отката.<br>
-                    4) Пониженная волатильности.<br>
-                    Больше 2-х раза не перезахожу</p>
-                    
-                    <div>
-                        <button class="photo-btn photo-btn-long" onclick="openPhotoGridModal('tvhFalseSecondaryMovement', 'long')">
-                            <i class="fas fa-camera"></i> Фото Лонг
-                        </button>
-                        <button class="photo-btn photo-btn-short" onclick="openPhotoGridModal('tvhFalseSecondaryMovement', 'short')">
-                            <i class="fas fa-camera"></i> Фото Шорт
-                        </button>
-                    </div>
-                `,
-                photos: {
-                    long: [
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+Лонг+ТВХ+ложного+вторичного+движения'
-                    ],
-                    short: [
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+Шорт+ТВХ+ложного+вторичного+движения'
-                    ]
-                }
+            tvhFalseSecondaryMovement: { 
+                text: "<h3>ТВХ ложного пробоя - Вторичное движение</h3><p>Текст будет добавлен...</p>",
+                photos: { long: [], short: [] }
             },
-            tvhFalseEntry: {
-                text: `
-                    <h3>ТВХ вход</h3>
-                    <p>На 5 минутном графики инструмент подлетел и пробил уровень и закрылся под уровнем жду<br>
-                    проторговку минимум из 3 баров и захожу (не должен выйти повышенный объем) стоп ставлю за<br>
-                    бар пробивший уровень если стоп получается большой ставлю расчетный ну чтоб расчетный<br>
-                    стоп находился за уровнем.</p>
-                    <p>Условия перезахода<br>
-                    1) Картинка не поломалась.<br>
-                    2) Уровень не пилится<br>
-                    3) Нет глубокого отката.<br>
-                    4) Пониженная волатильности.<br>
-                    Больше 2-х раза не перезахожу</p>
-                    
-                    <div>
-                        <button class="photo-btn photo-btn-long" onclick="openPhotoGridModal('tvhFalseEntry', 'long')">
-                            <i class="fas fa-camera"></i> Фото Лонг
-                        </button>
-                        <button class="photo-btn photo-btn-short" onclick="openPhotoGridModal('tvhFalseEntry', 'short')">
-                            <i class="fas fa-camera"></i> Фото Шорт
-                        </button>
-                    </div>
-                `,
-                photos: {
-                    long: [
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+Лонг+ТВХ+ложного+входа'
-                    ],
-                    short: [
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+Шорт+ТВХ+ложного+входа'
-                    ]
-                }
+            tvhFalseEntry: { 
+                text: "<h3>ТВХ ложного пробоя - Вход</h3><p>Текст будет добавлен...</p>",
+                photos: { long: [], short: [] }
             },
-            // НОВЫЕ ТЕКСТЫ ДЛЯ АЛГОРИТМА
+
+            // Алгоритмы
             algorithmPremises: {
                 text: `
                     <h3>Алгоритм - для одбора инструментов по дневки</h3>
@@ -2169,117 +2031,121 @@
                         <li>Соответствие общей рыночной ситуации</li>
                     </ul>
                     
-                    <div>
-                        <button class="photo-btn" onclick="openPhotoGridModal('algorithmPremises', 'general')">
-                            <i class="fas fa-camera"></i> Примеры предпосылок
-                        </button>
+                    <div class="photo-section">
+                        <div class="photo-section-title">Примеры формаций</div>
+                        <div class="photo-gallery">
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-1.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-1.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-2.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-4.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-3.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-1.png?raw=true" alt="Формация 1">
+                                <div class="photo-gallery-caption">Формация 1</div>
+                            </div>
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-2.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-1.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-2.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-4.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-3.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-2.png?raw=true" alt="Формация 2">
+                                <div class="photo-gallery-caption">Формация 2</div>
+                            </div>
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-4.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-1.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-2.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-4.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-3.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-4.png?raw=true" alt="Формация 3">
+                                <div class="photo-gallery-caption">Формация 3</div>
+                            </div>
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-3.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-1.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-2.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-4.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-3.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-3.png?raw=true" alt="Формация 4">
+                                <div class="photo-gallery-caption">Формация 4</div>
+                            </div>
+                        </div>
                     </div>
                 `,
-                photos: {
-                    general: [
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-1.png?raw=true+1',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-2.png?raw=true+2',
-                        'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-4.png?raw=true+3',
-						'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8/%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8-3.png?raw=true+4'
-                    ]
-                }
+                photos: { general: [] }
             },
-            algorithmFalseBreakthrough: {
-                text: `
-                    <h3>Алгоритм - Ложный пробой</h3>
-                    <p>Алгоритм идентификации и торговли ложных пробоев:</p>
-                    
-                    <h4>Этапы идентификации:</h4>
-                    <ol>
-                        <li>Определение сильного уровня сопротивления/поддержки</li>
-                        <li>Анализ подхода к уровню (резкий/плавный)</li>
-                        <li>Оценка объема при пробое</li>
-                        <li>Наблюдение за ценой после пробоя</li>
-                        <li>Подтверждение ложности пробоя</li>
-                    </ol>
-                    
-                    <h4>Критерии входа:</h4>
-                    <ul>
-                        <li>Возврат цены за уровень</li>
-                        <li>Формирование разворотной свечной модели</li>
-                        <li>Подтверждение снижением объема</li>
-                        <li>Совпадение с ключевым уровнем на старшем ТФ</li>
-                    </ul>
-                    
-                    <h4>Управление рисками:</h4>
-                    <ul>
-                        <li>Стоп-лосс за экстремум пробоя</li>
-                        <li>Постепенное увеличение позиции</li>
-                        <li>Учет общего рыночного контекста</li>
-                    </ul>
-                    
-                    <div>
-                        <button class="photo-btn" onclick="openPhotoGridModal('algorithmFalseBreakthrough', 'general')">
-                            <i class="fas fa-camera"></i> Примеры ложных пробоев
-                        </button>
-                    </div>
-                `,
-                photos: {
-                    general: [
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+ложного+пробоя+1',
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+ложного+пробоя+2',
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+ложного+пробоя+3'
-                    ]
-                }
+            algorithmNoRetracement: { 
+                text: "<h3>Алгоритм - Безоткатное движение</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
             },
-            algorithmBreakthrough: {
-                text: `
-                    <h3>Алгоритм - Пробой</h3>
-                    <p>Алгоритм идентификации и торговли истинных пробоев:</p>
-                    
-                    <h4>Этапы идентификации:</h4>
-                    <ol>
-                        <li>Подготовительная фаза - накопление у уровня</li>
-                        <li>Фаза пробоя - уверенное преодоление уровня</li>
-                        <li>Фаза подтверждения - удержание над уровнем</li>
-                        <li>Фаза развития - движение в направлении пробоя</li>
-                    </ol>
-                    
-                    <h4>Критерии входа:</h4>
-                    <ul>
-                        <li>Закрытие за уровнем на таймфрейме пробоя</li>
-                        <li>Подтверждение увеличенным объемом</li>
-                        <li>Отсутствие немедленного возврата за уровень</li>
-                        <li>Совпадение с направлением старшего тренда</li>
-                    </ul>
-                    
-                    <h4>Точки входа:</h4>
-                    <ul>
-                        <li>В момент пробоя (агрессивный вход)</li>
-                        <li>При ретесте уровня (консервативный вход)</li>
-                        <li>При продолжении движения (добавление)</li>
-                    </ul>
-                    
-                    <h4>Цели и стопы:</h4>
-                    <ul>
-                        <li>Тейк-профит по измерению движения</li>
-                        <li>Стоп-лосс под уровнем пробоя</li>
-                        <li>Трейлинг-стоп при сильном движении</li>
-                    </ul>
-                    
-                    <div>
-                        <button class="photo-btn" onclick="openPhotoGridModal('algorithmBreakthrough', 'general')">
-                            <i class="fas fa-camera"></i> Примеры пробоев
-                        </button>
-                    </div>
-                `,
-                photos: {
-                    general: [
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+пробоя+1',
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+пробоя+2',
-                        'https://via.placeholder.com/800x600/2D2D2D/FFFFFF?text=Пример+пробоя+3'
-                    ]
-                }
+            algorithmParanormalBars: { 
+                text: "<h3>Алгоритм - Подход на паранормальных барах</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmDistribution: { 
+                text: "<h3>Алгоритм - Дистрибуция</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmFarClosing: { 
+                text: "<h3>Алгоритм - Дальнее закрытие от уровня</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmFarRetest: { 
+                text: "<h3>Алгоритм - Дальный ретест</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmInfectedZone: { 
+                text: "<h3>Алгоритм - Зона зараженности</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmExtremum: { 
+                text: "<h3>Алгоритм - Экстремум</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmSqueeze: { 
+                text: "<h3>Алгоритм - Поджатие</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmNarrowTrading: { 
+                text: "<h3>Алгоритм - Узкая проторговка</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmConsolidation: { 
+                text: "<h3>Алгоритм - Консолидация вдоль уровня с поджатием</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmRange: { 
+                text: "<h3>Алгоритм - Рендж</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmCloseToLevel: { 
+                text: "<h3>Алгоритм - Закрытие в близи уровня</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmNearRetest: { 
+                text: "<h3>Алгоритм - Ближний ретест</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmNoReactionToLP: { 
+                text: "<h3>Алгоритм - Нет реакции на ЛП</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmDailyClose: { 
+                text: "<h3>Алгоритм - Закрытие дневки под хай /лоу После паронормального бара нет отката</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmUFormation: { 
+                text: "<h3>Алгоритм - U-Формация</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmVFormation: { 
+                text: "<h3>Алгоритм - V-Формация</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmChannel: { 
+                text: "<h3>Алгоритм - Каннал</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmTailedBar: { 
+                text: "<h3>Алгоритм - Бар с хвостами</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmBarClosing: { 
+                text: "<h3>Алгоритм - Закрытие баров</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmTradingLevels: { 
+                text: "<h3>Алгоритм - Уровни которые я торгую</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
+            },
+            algorithmBreakthroughModels: { 
+                text: "<h3>Алгоритм - Пробойные модели</h3><p>Текст будет добавлен...</p>",
+                photos: { general: [] }
             }
         };
-		
 
-        // Функция для показа уведомления
+        // Базовые функции
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -2291,7 +2157,6 @@
             }, 3000);
         }
 
-        // Функция для переключения меню
         function toggleMenu() {
             const menuContent = document.getElementById('menuContent');
             if (menuContent) {
@@ -2315,14 +2180,10 @@
         function countDecimals(value) {
             if (!value || value === '' || isNaN(parseFloat(value.replace(',', '.')))) return 0;
             
-            // Заменяем запятую на точку для корректного парсинга
             const normalizedValue = value.replace(',', '.');
-            
-            // Преобразуем в строку и проверяем наличие десятичной точки
             const str = normalizedValue.toString();
             if (str.indexOf('.') === -1) return 0;
             
-            // Возвращаем количество знаков после запятой
             return str.split('.')[1].length;
         }
 
@@ -2336,7 +2197,6 @@
         function formatNumber(num, decimals = 8, assetType = null) {
             if (isNaN(num)) return '0';
             
-            // Если указан custom, используем значение из поля ввода
             if (assetType === 'custom') {
                 const customDecimals = parseInt(document.getElementById('customDecimals').value) || 4;
                 const factor = Math.pow(10, customDecimals);
@@ -2344,29 +2204,24 @@
                 return rounded.toFixed(customDecimals);
             }
             
-            // Если не указан тип актива, используем стандартное форматирование
             if (!assetType) {
                 const factor = Math.pow(10, decimals);
                 const rounded = Math.round(num * factor) / factor;
                 return rounded.toString().replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.$/, '');
             }
             
-            // Форматирование в зависимости от типа актива
             const decimalPlaces = parseInt(assetType);
             const factor = Math.pow(10, decimalPlaces);
             const rounded = Math.round(num * factor) / factor;
             
-            // Для размера позиции - 1 знак после запятой
             if (decimals === 1) {
                 return rounded.toFixed(1);
             }
             
-            // Для цены - количество знаков в зависимости от типа актива
             if (decimals === 4 || decimals === 5 || decimals === 6 || decimals === 7 || decimals === 8) {
                 return rounded.toFixed(decimalPlaces);
             }
             
-            // Для остальных случаев - убираем лишние нули
             return rounded.toString().replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.$/, '');
         }
 
@@ -2383,7 +2238,7 @@
             return Math.abs((targetPrice - entryPrice) / entryPrice * 100).toFixed(2);
         }
 
-        // Функция для генерации текста расчета (без цены ликвидации)
+        // Функция для генерации текста расчета
         function generateCalculationText() {
             const entryPrice = parseFloat(normalizeNumber(document.getElementById('entryPrice').value)) || 0;
             const leverage = parseFloat(document.getElementById('leverage').value) || 1;
@@ -2397,7 +2252,6 @@
             const exchangeFee = parseFloat(document.getElementById('exchangeFee').value) || 0.0500;
             const assetType = document.getElementById('assetType').value;
 
-            // Получаем название типа сделки
             let tradeTypeName = '';
             switch(tradeType) {
                 case 'long-breakout': tradeTypeName = 'Лонг Пробой'; break;
@@ -2406,7 +2260,6 @@
                 case 'short-fakeout': tradeTypeName = 'Шорт Ложный пробой'; break;
             }
 
-            // Получаем метод расчета стоп-лосса
             let stopMethodName = '';
             switch(stopMethod) {
                 case 'atr': stopMethodName = 'По ATR'; break;
@@ -2414,7 +2267,6 @@
                 case 'percent': stopMethodName = 'По проценту'; break;
             }
 
-            // Рассчитываем стоп-лосс
             let stopLossPrice, priceDifference;
             if (stopMethod === 'atr') {
                 priceDifference = atr * (riskPercent / 100);
@@ -2427,11 +2279,9 @@
                 stopLossPrice = isLong ? entryPrice - priceDifference : entryPrice + priceDifference;
             }
 
-            // Рассчитываем размер позиции с учетом комиссии
             const positionSize = priceDifference > 0 ? 
                 riskAmount / (priceDifference * (1 + exchangeFee / 100 * 2)) : 0;
 
-            // Рассчитываем тейк-профиты с учетом комиссии (чтобы чистая прибыль была riskAmount * rewardRatio)
             const entryFee = entryPrice * positionSize * (exchangeFee / 100);
             
             const takeProfit1 = isLong ? 
@@ -2442,16 +2292,13 @@
                 entryPrice + (riskAmount * rewardRatio2 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize : 
                 entryPrice - (riskAmount * rewardRatio2 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize;
 
-            // Рассчитываем проценты
             const stopLossPercentValue = calculatePercentageChange(entryPrice, stopLossPrice);
             const takeProfit1Percent = calculatePercentageChange(entryPrice, takeProfit1);
             const takeProfit2Percent = calculatePercentageChange(entryPrice, takeProfit2);
 
-            // Рассчитываем комиссии только для максимального тейка
             const exitFee = takeProfit2 * positionSize * (exchangeFee / 100);
             const totalFee = entryFee + exitFee;
 
-            // Форматируем текст (без цены ликвидации)
             const text = `Дата: ${new Date().toLocaleString()}
 ===============================
 Тип сделки: ${tradeTypeName}
@@ -2528,108 +2375,34 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             }
         }
 
-        // НОВАЯ ФУНКЦИЯ: Открытие модального окна с сеткой фото
-        function openPhotoGridModal(type, direction) {
-            const modal = document.getElementById('photoGridModal');
-            const photoGridContainer = document.getElementById('photoGridContainer');
-            const photoGridTitle = document.getElementById('photoGridTitle');
-            
-            // Получаем массив фото для текущего типа и направления
-            currentPhotos = tvhTexts[type].photos[direction];
-            
-            // Устанавливаем заголовок
-            const directionText = direction === 'long' ? 'Лонг' : direction === 'short' ? 'Шорт' : 'Общие';
-            photoGridTitle.textContent = `Фотографии ${directionText}`;
-            
-            // Очищаем контейнер
-            photoGridContainer.innerHTML = '';
-            
-            // Добавляем фото в сетку
-            currentPhotos.forEach((photo, index) => {
-                const gridItem = document.createElement('div');
-                gridItem.className = 'photo-grid-item';
-                gridItem.onclick = () => openPhotoModalFromGrid(index);
-                
-                const img = document.createElement('img');
-                img.src = photo;
-                img.alt = `Фото ${index + 1}`;
-                
-                const overlay = document.createElement('div');
-                overlay.className = 'photo-grid-overlay';
-                overlay.textContent = `Фото ${index + 1}`;
-                
-                gridItem.appendChild(img);
-                gridItem.appendChild(overlay);
-                photoGridContainer.appendChild(gridItem);
-            });
-            
-            modal.classList.add('active');
-        }
-
-        // Функция для закрытия модального окна с сеткой фото
-        function closePhotoGridModal() {
-            const modal = document.getElementById('photoGridModal');
-            modal.classList.remove('active');
-        }
-
-        // Функция для открытия отдельного фото из сетки
-        function openPhotoModalFromGrid(index) {
-            currentPhotoIndex = index;
-            
+        // Функция для открытия фото в модальном окне
+        function openPhotoModal(photoUrl, photosArray = null) {
             const modal = document.getElementById('photoModal');
             const photoImage = document.getElementById('photoImage');
             
+            if (photosArray) {
+                currentPhotos = photosArray;
+                currentPhotoIndex = currentPhotos.indexOf(photoUrl);
+                if (currentPhotoIndex === -1) {
+                    currentPhotoIndex = 0;
+                    currentPhotos = [photoUrl];
+                }
+            } else {
+                currentPhotos = [photoUrl];
+                currentPhotoIndex = 0;
+            }
+            
             photoImage.src = currentPhotos[currentPhotoIndex];
             
-            // Сбрасываем масштаб и позицию
             resetZoom();
             
             updatePhotoCounter();
             updateNavigationButtons();
             updateThumbnails();
             
-            // Закрываем модальное окно сетки
-            closePhotoGridModal();
-            
-            // Открываем модальное окно фото
             modal.classList.add('active');
             
-            // Добавляем обработчики событий
             addPhotoEventListeners();
-        }
-
-        // ИСПРАВЛЕННЫЕ Функции для работы с фото (слайд-шоу)
-        function openPhotoModal(type, direction) {
-            const modal = document.getElementById('photoModal');
-            const photoImage = document.getElementById('photoImage');
-            const photoContainer = document.getElementById('photoContainer');
-            
-            // Получаем массив фото для текущего типа и направления
-            currentPhotos = tvhTexts[type].photos[direction];
-            currentPhotoIndex = 0;
-            currentScale = 1;
-            translateX = 0;
-            translateY = 0;
-            
-            if (currentPhotos.length > 0) {
-                photoImage.src = currentPhotos[0];
-                updatePhotoCounter();
-                updateNavigationButtons();
-                updateThumbnails();
-                
-                // Сбрасываем масштаб и позицию
-                resetZoom();
-                
-                // По умолчанию обычный режим (не полноэкранный)
-                isFullscreen = false;
-                modal.classList.remove('fullscreen');
-                document.getElementById('fullscreenIcon').className = 'fas fa-expand';
-                
-                modal.classList.add('active');
-                
-                // Добавляем обработчики событий
-                addPhotoEventListeners();
-            }
         }
 
         function closePhotoModal() {
@@ -2642,7 +2415,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             modal.classList.remove('fullscreen');
             document.getElementById('fullscreenIcon').className = 'fas fa-expand';
             
-            // Удаляем обработчики событий
             removePhotoEventListeners();
         }
 
@@ -2650,14 +2422,9 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             const photoImage = document.getElementById('photoImage');
             const photoContainer = document.getElementById('photoContainer');
             
-            // Обработчик колесика мыши для масштабирования
             photoContainer.addEventListener('wheel', handleWheel, { passive: false });
-            
-            // Обработчики для перетаскивания
             photoContainer.addEventListener('mousedown', startDrag);
             photoContainer.addEventListener('touchstart', startDragTouch);
-            
-            // Предотвращаем контекстное меню
             photoImage.addEventListener('contextmenu', (e) => e.preventDefault());
         }
 
@@ -2678,10 +2445,8 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             const zoomIntensity = 0.1;
             
             if (delta < 0) {
-                // Увеличение
                 currentScale = Math.min(currentScale + zoomIntensity, 5);
             } else {
-                // Уменьшение - не позволяем уменьшать меньше изначального размера
                 currentScale = Math.max(currentScale - zoomIntensity, minScale);
             }
             
@@ -2791,7 +2556,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             const photoImage = document.getElementById('photoImage');
             photoImage.src = currentPhotos[currentPhotoIndex];
             
-            // Сбрасываем масштаб и позицию при смене фото
             resetZoom();
             
             updatePhotoCounter();
@@ -2805,7 +2569,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             const photoImage = document.getElementById('photoImage');
             photoImage.src = currentPhotos[currentPhotoIndex];
             
-            // Сбрасываем масштаб и позицию при смене фото
             resetZoom();
             
             updatePhotoCounter();
@@ -2822,7 +2585,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             const prevBtn = document.getElementById('prevPhotoBtn');
             const nextBtn = document.getElementById('nextPhotoBtn');
             
-            // Включаем/выключаем кнопки в зависимости от количества фото
             prevBtn.disabled = currentPhotos.length <= 1;
             nextBtn.disabled = currentPhotos.length <= 1;
         }
@@ -2850,7 +2612,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         }
 
         function zoomOut() {
-            // Не позволяем уменьшать меньше изначального размера
             currentScale = Math.max(minScale, currentScale - 0.2);
             updateImageTransform();
         }
@@ -2867,11 +2628,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             const modal = document.getElementById('photoModal');
             if (event.target === modal) {
                 closePhotoModal();
-            }
-            
-            const gridModal = document.getElementById('photoGridModal');
-            if (event.target === gridModal) {
-                closePhotoGridModal();
             }
         });
 
@@ -2892,11 +2648,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 } else if (e.key === '0') {
                     resetZoom();
                 }
-            }
-            
-            const gridModal = document.getElementById('photoGridModal');
-            if (gridModal.classList.contains('active') && e.key === 'Escape') {
-                closePhotoGridModal();
             }
         });
 
@@ -2956,23 +2707,19 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
 
             // Инициализация
             function init() {
-                // Установка плеча по умолчанию на 10
                 leverageInput.value = 10;
                 leverageValue.textContent = '10x';
 
-                // Установка риска по умолчанию на 10% (изменено с 5%)
                 riskPercentInput.value = 10;
                 riskPercentValue.textContent = '10';
                 previewAtrPercent.textContent = '0.0000 USDT';
                 previewAtrPercentValue.textContent = '10%';
 
-                // Установка процента стоп-лосса по умолчанию на 2%
                 stopLossPercentInput.value = 2;
                 stopLossPercentValue.textContent = '2';
                 previewPercentValue.textContent = '0.0000 USDT';
                 previewPercent.textContent = '2%';
 
-                // Установка комиссии по умолчанию на 0.0500%
                 exchangeFeeInput.value = 0.0500;
                 exchangeFeeResult.textContent = '0.0500%';
 
@@ -2987,7 +2734,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                     longBtn.classList.add('active');
                     shortBtn.classList.remove('active');
 
-                    // Переключаем видимость кнопок типа сделки
                     if (isTradeTypeSelectorVisible && isLong) {
                         tradeTypeSelector.style.display = 'none';
                         isTradeTypeSelectorVisible = false;
@@ -3005,7 +2751,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                     shortBtn.classList.add('active');
                     longBtn.classList.remove('active');
 
-                    // Переключаем видимость кнопок типа сделки
                     if (isTradeTypeSelectorVisible && !isLong) {
                         tradeTypeSelector.style.display = 'none';
                         isTradeTypeSelectorVisible = false;
@@ -3018,12 +2763,10 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                     calculateRisk();
                 });
 
-                // Обработчики для кнопки типа сделки
                 tradeTypeButtons.forEach(button => {
                     button.addEventListener('click', () => {
                         tradeType = button.dataset.type;
 
-                        // Обновляем активные кнопки
                         tradeTypeButtons.forEach(btn => btn.classList.remove('active'));
                         button.classList.add('active');
 
@@ -3032,7 +2775,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 });
 
                 entryPriceInput.addEventListener('input', function() {
-                    // Автоматическое определение точности цены
                     const price = this.value;
                     if (price && !isNaN(parseFloat(normalizeNumber(price)))) {
                         const decimals = autoDetectPrecision(price);
@@ -3042,10 +2784,8 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                             decimalsInfo.textContent = `Автоматически определено: ${decimals} знака после запятой`;
                             decimalsInfo.style.display = 'block';
                             
-                            // Устанавливаем выбранное значение в селекторе
                             assetTypeSelect.value = decimals.toString();
                             
-                            // Если выбрано custom, обновляем значение
                             if (assetTypeSelect.value === 'custom') {
                                 customDecimalsInput.value = decimals;
                                 customDecimalsGroup.style.display = 'block';
@@ -3094,7 +2834,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                     calculateRisk();
                 });
                 
-                // Обработчик для выбора точности
                 assetTypeSelect.addEventListener('change', () => {
                     if (assetTypeSelect.value === 'custom') {
                         customDecimalsGroup.style.display = 'block';
@@ -3104,15 +2843,12 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                     calculateRisk();
                 });
                 
-                // Обработчик для ручного ввода количества знаков
                 customDecimalsInput.addEventListener('input', calculateRisk);
 
-                // Обработчики для переключателя метода ввода стоп-лосса
                 stopMethodButtons.forEach(button => {
                     button.addEventListener('click', () => {
                         stopMethod = button.dataset.method;
 
-                        // Обновляем активные кнопки и группы ввода
                         stopMethodButtons.forEach(btn => btn.classList.remove('active'));
                         button.classList.add('active');
 
@@ -3132,7 +2868,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                     });
                 });
 
-                // Обработчик для прямого ввода цены стоп-лосса
                 stopLossPriceInput.addEventListener('input', () => {
                     const entryPrice = parseFloat(normalizeNumber(entryPriceInput.value)) || 0;
                     const stopLossPrice = parseFloat(normalizeNumber(stopLossPriceInput.value)) || 0;
@@ -3147,26 +2882,22 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                     calculateRisk();
                 });
 
-                // Обработчик для ввода процента стоп-лосса
                 stopLossPercentInput.addEventListener('input', () => {
                     updateSliderValues();
                     updatePercentPreview();
                     calculateRisk();
                 });
 
-                // Инициализация кнопки экспорта
                 document.getElementById('exportTextBtn').addEventListener('click', exportToText);
                 document.getElementById('exportTelegramBtn').addEventListener('click', sendToTelegram);
                 document.getElementById('copyCalculationBtn').addEventListener('click', copyCalculationToClipboard);
 
-                // Проверяем авторизацию пользователя
                 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
                 if (currentUser && currentUser.email) {
                     updateUserUI(currentUser.email);
                 }
             }
 
-            // Обновление кнопок типа сделки в зависимости от направления
             function updateTradeTypeButtons() {
                 const longBreakoutBtn = document.querySelector('.trade-type-btn.long-breakout');
                 const longFakeoutBtn = document.querySelector('.trade-type-btn.long-fakeout');
@@ -3174,31 +2905,26 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 const shortFakeoutBtn = document.querySelector('.trade-type-btn.short-fakeout');
 
                 if (isLong) {
-                    // Показываем только лонг кнопки
                     longBreakoutBtn.style.display = '';
                     longFakeoutBtn.style.display = '';
                     shortBreakoutBtn.style.display = 'none';
                     shortFakeoutBtn.style.display = 'none';
 
-                    // Активируем лонг пробой по умолчанию
                     tradeType = 'long-breakout';
                     longBreakoutBtn.classList.add('active');
                     longFakeoutBtn.classList.remove('active');
                 } else {
-                    // Показываем только шорт кнопки
                     longBreakoutBtn.style.display = 'none';
                     longFakeoutBtn.style.display = 'none';
                     shortBreakoutBtn.style.display = '';
                     shortFakeoutBtn.style.display = '';
 
-                    // Активируем шорт пробой по умолчанию
                     tradeType = 'short-breakout';
                     shortBreakoutBtn.classList.add('active');
                     shortFakeoutBtn.classList.remove('active');
                 }
             }
 
-            // Обновление значений слайдеров
             function updateSliderValues() {
                 riskPercentValue.textContent = riskPercentInput.value;
                 rewardRatio1Value.textContent = rewardRatio1Input.value;
@@ -3206,19 +2932,16 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 stopLossPercentValue.textContent = stopLossPercentInput.value;
             }
 
-            // Предварительный просмотр ATR
             function updateAtrPreview() {
                 const atr = parseFloat(atrInput.value) || 0;
                 const riskPercent = parseFloat(riskPercentInput.value) / 100;
 
-                // Отображаем точное значение ATR без округления
                 atrValueSpan.textContent = formatNumber(atr, 8) + ' USDT';
                 previewAtrPercent.textContent = formatNumber(atr * riskPercent, 8) + ' USDT';
                 previewAtrPercentValue.textContent = riskPercentInput.value + '%';
                 atrResultSpan.textContent = formatNumber(atr, 8) + ' USDT';
             }
 
-            // Предварительный просмотр процента
             function updatePercentPreview() {
                 const entryPrice = parseFloat(normalizeNumber(entryPriceInput.value)) || 0;
                 const stopLossPercent = parseFloat(stopLossPercentInput.value) / 100;
@@ -3233,7 +2956,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 }
             }
 
-            // Основная функция расчета
             function calculateRisk() {
                 const entryPrice = parseFloat(normalizeNumber(entryPriceInput.value)) || 0;
                 const leverage = parseFloat(leverageInput.value) || 1;
@@ -3244,13 +2966,12 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 const rewardRatio2 = parseFloat(rewardRatio2Input.value) || 5;
                 const stopLossPriceDirect = parseFloat(normalizeNumber(stopLossPriceInput.value)) || 0;
                 const stopLossPercent = parseFloat(stopLossPercentInput.value) / 100 || 0.02;
-                const exchangeFee = parseFloat(exchangeFeeInput.value) / 100 || 0.0005; // 0.0500%
+                const exchangeFee = parseFloat(exchangeFeeInput.value) / 100 || 0.0005;
                 const assetType = assetTypeSelect.value;
                 const decimalPlaces = assetType === 'custom' ? 
                     parseInt(document.getElementById('customDecimals').value) || 4 : 
                     parseInt(assetType);
 
-                // 1. Расчет разницы цен для стоп-лосса
                 let priceDifference;
                 if (stopMethod === 'atr') {
                     priceDifference = atr * riskPercent;
@@ -3260,7 +2981,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                     priceDifference = entryPrice * stopLossPercent;
                 }
 
-                // 2. Расчет стоп-лосса
                 let stopLossPrice;
                 if (stopMethod === 'atr') {
                     stopLossPrice = isLong ? 
@@ -3274,11 +2994,9 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                         entryPrice + priceDifference;
                 }
 
-                // 3. Расчет размера позиции с учетом комиссии
                 const positionSize = priceDifference > 0 ? 
                     riskAmount / (priceDifference * (1 + exchangeFee * 2)) : 0;
 
-                // 4. Расчет тейк-профитов с учетом комиссии (чтобы чистая прибыль была riskAmount * rewardRatio)
                 const entryFee = entryPrice * positionSize * exchangeFee;
                 
                 const takeProfit1 = isLong ? 
@@ -3289,25 +3007,20 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                     entryPrice + (riskAmount * rewardRatio2 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize : 
                     entryPrice - (riskAmount * rewardRatio2 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
 
-                // 5. Расчет цены ликвидации
                 const liquidationPrice = isLong ? 
                     entryPrice * (1 - 1/leverage) : 
                     entryPrice * (1 + 1/leverage);
 
-                // 6. Расчет процентных изменений
                 const stopLossPercentValue = calculatePercentageChange(entryPrice, stopLossPrice);
                 const takeProfit1Percent = calculatePercentageChange(entryPrice, takeProfit1);
                 const takeProfit2Percent = calculatePercentageChange(entryPrice, takeProfit2);
                 const liquidationPricePercent = calculatePercentageChange(entryPrice, liquidationPrice);
 
-                // 7. Расчет убытка в USDT для стоп-лосса
                 const stopLossUsdt = priceDifference * positionSize;
 
-                // 8. Расчет комиссий только для максимального тейка
                 const exitFee = takeProfit2 * positionSize * exchangeFee;
                 const totalFee = entryFee + exitFee;
 
-                // Обновление интерфейса с учетом типа актива
                 entryPriceResult.textContent = `${formatNumber(entryPrice, decimalPlaces, assetType)} USDT`;
                 positionSizeSpan.textContent = formatNumber(positionSize, 1);
                 stopLossSpan.innerHTML = `${formatNumber(stopLossPrice, decimalPlaces, assetType)} USDT <span class="percentage-value">(${stopLossPercentValue}%)</span><span class="loss-usdt">-${formatNumber(stopLossUsdt, 2)} USDT</span>`;
@@ -3315,7 +3028,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 exchangeFeeResult.textContent = `${formatNumber(exchangeFee * 100, 4)}%`;
                 atrResultSpan.textContent = `${formatNumber(atr, 8)} USDT`;
 
-                // Генерация уровней тейк-профита
                 generateTakeProfitLevels(
                     entryPrice, 
                     stopLossPrice, 
@@ -3330,7 +3042,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 );
             }
 
-            // Генерация уровней тейк-профита
             function generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, ratio1, ratio2, riskAmount, positionSize, exchangeFee, decimalPlaces, assetType) {
                 takeProfitLevelsDiv.innerHTML = '';
 
@@ -3362,7 +3073,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 });
             }
 
-            // Запуск приложения
             init();
         });
 
@@ -3413,12 +3123,36 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             }
         }
 
+        function toggleAlgorithmSubButtons(type) {
+            document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tvh-sub-buttons').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.algorithm-sub-buttons').forEach(el => el.style.display = 'none');
+            document.getElementById('actionButtons').style.display = 'none';
+
+            if (type === 'falseBreakthroughAlgorithm') {
+                document.getElementById('falseBreakthroughAlgorithmButtons').style.display = 'flex';
+                document.getElementById('breakthroughAlgorithmButtons').style.display = 'none';
+            } else if (type === 'breakthroughAlgorithm') {
+                document.getElementById('breakthroughAlgorithmButtons').style.display = 'flex';
+                document.getElementById('falseBreakthroughAlgorithmButtons').style.display = 'none';
+            }
+        }
+
+        function backToAlgorithmMain() {
+            document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tvh-sub-buttons').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.algorithm-sub-buttons').forEach(el => el.style.display = 'none');
+            document.getElementById('actionButtons').style.display = 'none';
+
+            document.getElementById('algorithmButtons').style.display = 'flex';
+            currentAlgorithmType = 'algorithm';
+        }
+
         function showTvhText(type) {
             const tvhTextContent = document.getElementById('tvhTextContent');
             const tvhTextInner = document.getElementById('tvhTextInner');
             const tvhOverlay = document.getElementById('tvhOverlay');
             
-            // Получаем данные ТВХ (текст с кнопками фото)
             const tvhData = tvhTexts[type];
             
             tvhTextInner.innerHTML = tvhData.text;
@@ -3463,12 +3197,10 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             const container = document.getElementById(`${currentVisibleText}Text`);
             if (!container) return '';
 
-            // Для ТВХ текстов просто возвращаем весь текст
             if (currentVisibleText.includes('tvh')) {
                 return container.textContent.trim();
             }
 
-            // Для других текстов с чекбоксами
             const selectedItems = getSelectedItems();
             if (selectedItems.length === 0) return container.querySelector('h3').textContent + '\n' + container.querySelector('p').textContent;
 
@@ -3550,13 +3282,11 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         // Menu functions
         function showCalculator() {
             toggleMenu();
-            // Перенаправляем на страницу калькулятора
             window.location.href = 'index.html';
         }
 
         function showAlerts() {
             toggleMenu();
-            // Перенаправляем на страницу алертов
             window.location.href = 'alerts.html';
         }
 
@@ -3645,13 +3375,11 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             
-            // Простая валидация
             if (!email || !password) {
                 showNotification('Заполните все поля!', 'error');
                 return;
             }
             
-            // В реальном приложении здесь был бы запрос к серверу
             const user = {
                 email: email,
                 name: email.split('@')[0]
@@ -3668,7 +3396,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             const password = document.getElementById('registerPassword').value;
             const confirmPassword = document.getElementById('registerConfirmPassword').value;
             
-            // Простая валидация
             if (!email || !password || !confirmPassword) {
                 showNotification('Заполните все поля!', 'error');
                 return;
@@ -3679,7 +3406,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 return;
             }
             
-            // В реальном приложении здесь был бы запрос к серверу
             const user = {
                 email: email,
                 name: email.split('@')[0]
@@ -3721,13 +3447,11 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
 
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
-            // Проверяем авторизацию пользователя
             const currentUser = JSON.parse(localStorage.getItem('currentUser'));
             if (currentUser && currentUser.email) {
                 updateUserUI(currentUser.email);
             }
 
-            // Загружаем настройки Telegram
             const savedBotToken = localStorage.getItem('telegramBotToken');
             const savedChatId = localStorage.getItem('telegramChatId');
             
@@ -3739,7 +3463,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
                 document.getElementById('telegramChatId').value = savedChatId;
             }
 
-            // Закрываем ТВХ текст при клике на оверлей
             document.getElementById('tvhOverlay').addEventListener('click', closeTvhText);
         });
 
@@ -3759,6 +3482,8 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         window.toggleText = toggleText;
         window.toggleTvhButtons = toggleTvhButtons;
         window.toggleAlgorithmButtons = toggleAlgorithmButtons;
+        window.toggleAlgorithmSubButtons = toggleAlgorithmSubButtons;
+        window.backToAlgorithmMain = backToAlgorithmMain;
         window.showTvhText = showTvhText;
         window.closeTvhText = closeTvhText;
         window.copyTvhText = copyTvhText;
@@ -3776,9 +3501,6 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         window.zoomOut = zoomOut;
         window.resetZoom = resetZoom;
         window.toggleFullscreen = toggleFullscreen;
-        window.openPhotoGridModal = openPhotoGridModal;
-        window.closePhotoGridModal = closePhotoGridModal;
-        window.openPhotoModalFromGrid = openPhotoModalFromGrid;
     </script>
 </body>
 </html>
