@@ -1583,6 +1583,7 @@
                     <button onclick="showTvhText('algorithmFarRetest')">Дальный ретест</button>
                     <button onclick="showTvhText('algorithmInfectedZone')">Зона зараженности</button>
                     <button onclick="showTvhText('algorithmExtremum')">Экстремум</button>
+					<button onclick="showTvhText('algorithmATRHalf')">День открывается с АТР более половины до уровня</button>
                 </div>
 
                 <!-- Дополнительные кнопки для алгоритма пробоя -->
@@ -2168,7 +2169,7 @@
 			  `  
             },
             algorithmExtremum: { 
-                text: ` "<h3>Алгоритм - Экстремум</h3>
+                text: ` <h3>Алгоритм - Экстремум</h3>
 					<p>Такую точку с первого раза инструменту будет сложно пройти, потому-что в таких точках будет большое количества лимитных ордеров.</p>
 					<div class="photo-section">
     <div class="photo-section-title">Экстремум</div>
@@ -2181,17 +2182,58 @@
 </div>
             `
             },
+			algorithmATRHalf: { 
+				 text:` <h3>Алгоритм - День открывается с АТР более половины до уровня</h3>
+					<p>80% времени инструмент ходит 1 ATR, значит вероятность что у инструмента хватит
+энергии дойти до уровня и еще пробить его уменьшается. К тому времени когда
+инструмент пройдет пол ATR и дойдет до уровня, у него повысится волатильность возле
+уровня, что приведет к большому стопу.</p>",
+<div class="photo-section">
+    <div class="photo-section-title">День открывается с АТР более половины до уровня</div>
+    <div class="photo-gallery">
+        <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B0%D1%82%D1%80%20%D0%BF%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8%D0%BD%D0%BE%20%D0%B4%D0%BE%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F%20.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B0%D1%82%D1%80%20%D0%BF%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8%D0%BD%D0%BE%20%D0%B4%D0%BE%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F%20.png?raw=true'])">
+            <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B0%D1%82%D1%80%20%D0%BF%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8%D0%BD%D0%BE%20%D0%B4%D0%BE%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F%20.png?raw=true" alt="Описание вашего фото">
+            <div class="photo-gallery-caption">День открывается с АТР более половины до уровня</div>
+        </div>
+    </div>
+</div>
+			`		
+            },
             algorithmSqueeze: { 
-                text: "<h3>Алгоритм - Поджатие</h3><p>Текст будет добавлен...</p>",
-                photos: { general: [] }
+                text:` <h3>Алгоритм - Поджатие</h3>
+					<p>Если перед уровнем стоит большое количество лимитных ордеров, то при подходе к уровню становится тяжелее идти. Ключевой игрок идет медленно, он пытается их разбить, чтобы расчистить себе дорогу для пробоя. Поэтому если он идет и пробивает маленькими барами, это означает во-первых, что стоит огромное количество лимитных ордеров и во-вторых, что если ключевой игрок это делает, то скорее всего он и уровень пробьет, потому что он гораздо сильнее.</p>",
+					<div class="photo-section">
+    <div class="photo-section-title">Поджатие</div>
+    <div class="photo-gallery">
+        <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%9F%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%9F%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5.png?raw=true'])">
+          <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%9F%D0%BE%D0%B4%D0%B6%D0%B0%D1%82%D0%B8%D0%B5.png?raw=true" alt="Поджатие">
+            <div class="photo-gallery-caption">Поджатие</div>
+        </div>
+    </div>
+</div>
+             `  
             },
             algorithmNarrowTrading: { 
-                text: "<h3>Алгоритм - Узкая проторговка</h3><p>Текст будет добавлен...</p>",
-                photos: { general: [] }
+                text:`<h3>Алгоритм - Узкая проторговка</h3>
+				<p>Это значит, что инструмент не откатывается. Кто-то удерживает его. Когда инструмент очень сильно поднялся перед уровнем все будут продавать. Если инструмент не откатывается сидит очень крупный покупатель, который не дает инструменту уйти вниз и поломать график. Либо же продавцов вообще нет. И наоборот если после сильного падения нет отката, нет </p>",
+				<div class="photo-section">
+    <div class="photo-section-title">Узкая проторговка
+  (Прилипание к уровню)</div>
+    <div class="photo-gallery">
+        <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%A3%D0%B7%D0%BA%D0%B0%D1%8F%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%A3%D0%B7%D0%BA%D0%B0%D1%8F%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0.png?raw=true'])">
+            <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%A3%D0%B7%D0%BA%D0%B0%D1%8F%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0.png?raw=true" alt="Описание вашего фото">
+            <div class="photo-gallery-caption">Узкая проторговка
+  (Прилипание к уровню)</div>
+        </div>
+    </div>
+</div>
+              `   
             },
             algorithmConsolidation: { 
-                text: "<h3>Алгоритм - Консолидация вдоль уровня с поджатием</h3><p>Текст будет добавлен...</p>",
+                text: ` <h3>Алгоритм - Консолидация вдоль уровня с поджатием</h3>
+				<p>Текст будет добавлен...</p>",
                 photos: { general: [] }
+				`
             },
             algorithmRange: { 
                 text: "<h3>Алгоритм - Рендж</h3><p>Текст будет добавлен...</p>",
