@@ -2102,8 +2102,19 @@
 
             // Добавляем остальные алгоритмы с аналогичной структурой
             algorithmFarRetest: { 
-                text: "<h3>Алгоритм - Дальный ретест</h3><p>Текст будет добавлен...</p>",
-                photos: { general: [] }
+                text:` 
+					"<h3>Алгоритм - Дальный ретест</h3>
+					 <p>Закрытие бара на значительном расстоянии от уровня.</p>
+					 <div class="photo-section">
+                        <div class="photo-section-title">Примеры</div>
+                        <div class="photo-gallery">
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://via.placeholder.com/600x400/9C27B0/FFFFFF?text=Дальнее+закрытие+1', ['https://via.placeholder.com/600x400/9C27B0/FFFFFF?text=Дальнее+закрытие+1'])">
+                                <img src="https://via.placeholder.com/600x400/9C27B0/FFFFFF?text=Дальнее+закрытие+1" alt="Дальнее закрытие">
+                                <div class="photo-gallery-caption">Пример 1</div>
+                            </div>
+                        </div>
+                    </div>
+                `
             },
             algorithmInfectedZone: { 
                 text: "<h3>Алгоритм - Зона зараженности</h3><p>Текст будет добавлен...</p>",
