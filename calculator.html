@@ -1599,6 +1599,7 @@
                     <button onclick="showTvhText('algorithmNearRetest')">Ближний ретест</button>
                     <button onclick="showTvhText('algorithmNoReactionToLP')">Нет реакции на ЛП</button>
                     <button onclick="showTvhText('algorithmDailyClose')">Закрытие дневки под хай /лоу После паронормального бара нет отката</button>
+					<button onclick="showTvhText('algorithmParanormalNoRetracement')">После паранормального бара нет отката</button>
                 </div>
 
                 <div id="breakthroughText" class="text-display">
@@ -2187,7 +2188,7 @@
 					<p>80% времени инструмент ходит 1 ATR, значит вероятность что у инструмента хватит
 энергии дойти до уровня и еще пробить его уменьшается. К тому времени когда
 инструмент пройдет пол ATR и дойдет до уровня, у него повысится волатильность возле
-уровня, что приведет к большому стопу.</p>",
+уровня, что приведет к большому стопу.</p>
 <div class="photo-section">
     <div class="photo-section-title">День открывается с АТР более половины до уровня</div>
     <div class="photo-gallery">
@@ -2317,9 +2318,39 @@ ATR, то у него большое количество энергии и ем
 				
             `
             },
+			algorithmParanormalNoRetracement: { 
+    text: `<h3>После паранормального бара нет отката</h3>
+        <p>После подхода паронормального бара и вообще сильного движения должен быть откат,
+если его нет, да еще и наблюдается консолидация, то есть подготовка к пробою, то
+вероятность пробоя увеличивается.Инструмент после сильного движения встает и у него с двух сторон образуются лимитные уровни.
+Есть исключения из правил если эта точка не является экстремум.</p>
+		<div class="photo-section">
+    <div class="photo-section-title">После паранормального бара нет отката</div>
+    <div class="photo-gallery">
+        <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D0%BE%D0%B4%D1%85%D0%BE%D0%B4%D0%B0%20%D0%BF%D0%B0%D1%80%D0%BE%D0%BD%D0%BE%D1%80%D0%BC%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B3%D0%BE%20%D0%B1%D0%B0%D1%80%D0%B0%20%D0%BA%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8E%20%D0%BD%D0%B5%D1%82%20%D0%BE%D1%82%D0%BA%D0%B0%D1%82%D0%B0.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D0%BE%D0%B4%D1%85%D0%BE%D0%B4%D0%B0%20%D0%BF%D0%B0%D1%80%D0%BE%D0%BD%D0%BE%D1%80%D0%BC%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B3%D0%BE%20%D0%B1%D0%B0%D1%80%D0%B0%20%D0%BA%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8E%20%D0%BD%D0%B5%D1%82%20%D0%BE%D1%82%D0%BA%D0%B0%D1%82%D0%B0.png?raw=true'])">
+            <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D0%BE%D0%B4%D1%85%D0%BE%D0%B4%D0%B0%20%D0%BF%D0%B0%D1%80%D0%BE%D0%BD%D0%BE%D1%80%D0%BC%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B3%D0%BE%20%D0%B1%D0%B0%D1%80%D0%B0%20%D0%BA%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8E%20%D0%BD%D0%B5%D1%82%20%D0%BE%D1%82%D0%BA%D0%B0%D1%82%D0%B0.png?raw=true" alt="После паранормального бара нет отката">
+            <div class="photo-gallery-caption">После паранормального бара нет отката</div>
+        </div>
+    </div>
+</div>
+		
+		`
+            },
+		
             algorithmUFormation: { 
-                text: "<h3>Алгоритм - U-Формация</h3><p>Текст будет добавлен...</p>",
-                photos: { general: [] }
+                text:`<h3>Алгоритм - U-Формация</h3>
+				<p>U-формация как устроена-это не очень сильное падение, чем более плоское дно и чем 
+дольше будет стоять инструмент на дне тем сильнее будет движение.В U-формация понятно что инструмент набирает большую позицию и что в U-формация можно зайти с коротким стопом.</p>
+<div class="photo-section">
+    <div class="photo-section-title"> U-Формация<</div>
+    <div class="photo-gallery">
+        <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/U-%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D1%8F-4.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/U-%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D1%8F-4.png?raw=true'])">
+            <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/U-%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D1%8F-4.png?raw=true" alt=" U-Формация<">
+            <div class="photo-gallery-caption"> U-Формация<</div>
+        </div>
+    </div>
+</div>
+			   `
             },
             algorithmVFormation: { 
                 text: "<h3>Алгоритм - V-Формация</h3><p>Текст будет добавлен...</p>",
