@@ -1280,6 +1280,19 @@
         .back-button:hover {
             background-color: #F57C00;
         }
+        
+        /* Стили для отображения ТВХ и алгоритмов */
+        .tvh-text-display, .algorithm-text-display {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            white-space: pre-line;
+            display: none;
+            margin-top: 15px;
+            border: 1px solid #3D3D3D;
+            max-height: none;
+            overflow-y: visible;
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -1559,16 +1572,16 @@
                 </div>
 
                 <div id="algorithmButtons" class="algorithm-sub-buttons">
-                    <button onclick="showTvhText('algorithmPremises')">Отбор по дневки </button>
+                    <button onclick="showAlgorithmText('algorithmPremises')">Отбор по дневки </button>
                     <button onclick="toggleAlgorithmSubButtons('falseBreakthroughAlgorithm')">Ложный пробой</button>
                     <button onclick="toggleAlgorithmSubButtons('breakthroughAlgorithm')">Пробой</button>
-					<button onclick="showTvhText('algorithmUFormation')">U-Формация</button>
-                    <button onclick="showTvhText('algorithmVFormation')">V-Формация</button>
-                    <button onclick="showTvhText('algorithmChannel')">Каннал</button>
-                    <button onclick="showTvhText('algorithmTailedBar')">Бар с хвостами</button>
-                    <button onclick="showTvhText('algorithmBarClosing')">Закрытие баров</button>
-                    <button onclick="showTvhText('algorithmTradingLevels')">Уровни которые я торгую</button>
-                    <button onclick="showTvhText('algorithmBreakthroughModels')">Пробойные модели</button>
+					<button onclick="showAlgorithmText('algorithmUFormation')">U-Формация</button>
+                    <button onclick="showAlgorithmText('algorithmVFormation')">V-Формация</button>
+                    <button onclick="showAlgorithmText('algorithmChannel')">Каннал</button>
+                    <button onclick="showAlgorithmText('algorithmTailedBar')">Бар с хвостами</button>
+                    <button onclick="showAlgorithmText('algorithmBarClosing')">Закрытие баров</button>
+                    <button onclick="showAlgorithmText('algorithmTradingLevels')">Уровни которые я торгую</button>
+                    <button onclick="showAlgorithmText('algorithmBreakthroughModels')">Пробойные модели</button>
                 </div>
 
                 <!-- Дополнительные кнопки для алгоритма ложного пробоя -->
@@ -1576,13 +1589,13 @@
                     <button class="back-button" onclick="backToAlgorithmMain()">
                         <i class="fas fa-arrow-left"></i> Назад к алгоритму
                     </button>
-                    <button onclick="showTvhText('algorithmNoRetracement')">Безоткатное движение</button>
-                    <button onclick="showTvhText('algorithmParanormalBars')">Подход на паранормальных барах</button>
-                    <button onclick="showTvhText('algorithmDistribution')">Дистрибуция</button>
-                    <button onclick="showTvhText('algorithmFarClosing')">Дальнее закрытие от уровня</button>
-                    <button onclick="showTvhText('algorithmFarRetest')">Дальный ретест</button>
-                    <button onclick="showTvhText('algorithmInfectedZone')">Зона зараженности</button>
-                    <button onclick="showTvhText('algorithmExtremum')">Экстремум</button>
+                    <button onclick="showAlgorithmText('algorithmNoRetracement')">Безоткатное движение</button>
+                    <button onclick="showAlgorithmText('algorithmParanormalBars')">Подход на паранормальных барах</button>
+                    <button onclick="showAlgorithmText('algorithmDistribution')">Дистрибуция</button>
+                    <button onclick="showAlgorithmText('algorithmFarClosing')">Дальнее закрытие от уровня</button>
+                    <button onclick="showAlgorithmText('algorithmFarRetest')">Дальный ретест</button>
+                    <button onclick="showAlgorithmText('algorithmInfectedZone')">Зона зараженности</button>
+                    <button onclick="showAlgorithmText('algorithmExtremum')">Экстремум</button>
                 </div>
 
                 <!-- Дополнительные кнопки для алгоритма пробоя -->
@@ -1590,14 +1603,14 @@
                     <button class="back-button" onclick="backToAlgorithmMain()">
                         <i class="fas fa-arrow-left"></i> Назад к алгоритму
                     </button>
-                    <button onclick="showTvhText('algorithmSqueeze')">Поджатие</button>
-                    <button onclick="showTvhText('algorithmNarrowTrading')">Узкая проторговка</button>
-                    <button onclick="showTvhText('algorithmConsolidation')">Консолидация вдоль уровня с поджатием</button>
-                    <button onclick="showTvhText('algorithmRange')">Рендж</button>
-                    <button onclick="showTvhText('algorithmCloseToLevel')">Закрытие в близи уровня</button>
-                    <button onclick="showTvhText('algorithmNearRetest')">Ближний ретест</button>
-                    <button onclick="showTvhText('algorithmNoReactionToLP')">Нет реакции на ЛП</button>
-                    <button onclick="showTvhText('algorithmDailyClose')">Закрытие дневки под хай /лоу После паронормального бара нет отката</button>
+                    <button onclick="showAlgorithmText('algorithmSqueeze')">Поджатие</button>
+                    <button onclick="showAlgorithmText('algorithmNarrowTrading')">Узкая проторговка</button>
+                    <button onclick="showAlgorithmText('algorithmConsolidation')">Консолидация вдоль уровня с поджатием</button>
+                    <button onclick="showAlgorithmText('algorithmRange')">Рендж</button>
+                    <button onclick="showAlgorithmText('algorithmCloseToLevel')">Закрытие в близи уровня</button>
+                    <button onclick="showAlgorithmText('algorithmNearRetest')">Ближний ретест</button>
+                    <button onclick="showAlgorithmText('algorithmNoReactionToLP')">Нет реакции на ЛП</button>
+                    <button onclick="showAlgorithmText('algorithmDailyClose')">Закрытие дневки под хай /лоу После паронормального бара нет отката</button>
                 </div>
 
                 <div id="breakthroughText" class="text-display">
@@ -1688,6 +1701,10 @@
                     <div class="checkbox-item"><input type="checkbox"><span class="item-text">Накопление в близи уровня</span></div>
                     <div class="checkbox-item"><input type="checkbox"><span class="item-text">Большой запас ATR</span></div>
                 </div>
+
+                <!-- Контейнеры для отображения ТВХ и алгоритмов -->
+                <div id="tvhTextDisplay" class="tvh-text-display"></div>
+                <div id="algorithmTextDisplay" class="algorithm-text-display"></div>
 
                 <div id="actionButtons" class="action-buttons-container">
                     <button id="copyBtn" class="action-btn" onclick="copySelectedText()">Копировать текст</button>
@@ -3082,10 +3099,12 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.tvh-sub-buttons').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.algorithm-sub-buttons').forEach(el => el.style.display = 'none');
+            document.getElementById('tvhTextDisplay').style.display = 'none';
+            document.getElementById('algorithmTextDisplay').style.display = 'none';
+            document.getElementById('actionButtons').style.display = 'none';
 
             if (currentVisibleText === type) {
                 currentVisibleText = null;
-                document.getElementById('actionButtons').style.display = 'none';
             } else {
                 document.getElementById(`${type}Text`).style.display = 'block';
                 currentVisibleText = type;
@@ -3097,6 +3116,8 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.tvh-sub-buttons').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.algorithm-sub-buttons').forEach(el => el.style.display = 'none');
+            document.getElementById('tvhTextDisplay').style.display = 'none';
+            document.getElementById('algorithmTextDisplay').style.display = 'none';
             document.getElementById('actionButtons').style.display = 'none';
 
             if (currentTvhType === type) {
@@ -3111,6 +3132,8 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.tvh-sub-buttons').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.algorithm-sub-buttons').forEach(el => el.style.display = 'none');
+            document.getElementById('tvhTextDisplay').style.display = 'none';
+            document.getElementById('algorithmTextDisplay').style.display = 'none';
             document.getElementById('actionButtons').style.display = 'none';
 
             if (currentAlgorithmType === 'algorithm') {
@@ -3125,6 +3148,8 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.tvh-sub-buttons').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.algorithm-sub-buttons').forEach(el => el.style.display = 'none');
+            document.getElementById('tvhTextDisplay').style.display = 'none';
+            document.getElementById('algorithmTextDisplay').style.display = 'none';
             document.getElementById('actionButtons').style.display = 'none';
 
             if (type === 'falseBreakthroughAlgorithm') {
@@ -3140,6 +3165,8 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.tvh-sub-buttons').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.algorithm-sub-buttons').forEach(el => el.style.display = 'none');
+            document.getElementById('tvhTextDisplay').style.display = 'none';
+            document.getElementById('algorithmTextDisplay').style.display = 'none';
             document.getElementById('actionButtons').style.display = 'none';
 
             document.getElementById('algorithmButtons').style.display = 'flex';
@@ -3147,16 +3174,29 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         }
 
         function showTvhText(type) {
-            const tvhTextContent = document.getElementById('tvhTextContent');
-            const tvhTextInner = document.getElementById('tvhTextInner');
-            const tvhOverlay = document.getElementById('tvhOverlay');
-            
+            const tvhTextDisplay = document.getElementById('tvhTextDisplay');
             const tvhData = tvhTexts[type];
             
-            tvhTextInner.innerHTML = tvhData.text;
+            tvhTextDisplay.innerHTML = tvhData.text;
+            tvhTextDisplay.style.display = 'block';
             
-            tvhTextContent.style.display = 'block';
-            tvhOverlay.style.display = 'block';
+            // Скрываем другие элементы
+            document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
+            document.getElementById('algorithmTextDisplay').style.display = 'none';
+            document.getElementById('actionButtons').style.display = 'none';
+        }
+
+        function showAlgorithmText(type) {
+            const algorithmTextDisplay = document.getElementById('algorithmTextDisplay');
+            const algorithmData = tvhTexts[type];
+            
+            algorithmTextDisplay.innerHTML = algorithmData.text;
+            algorithmTextDisplay.style.display = 'block';
+            
+            // Скрываем другие элементы
+            document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
+            document.getElementById('tvhTextDisplay').style.display = 'none';
+            document.getElementById('actionButtons').style.display = 'none';
         }
 
         function closeTvhText() {
@@ -3483,6 +3523,7 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         window.toggleAlgorithmSubButtons = toggleAlgorithmSubButtons;
         window.backToAlgorithmMain = backToAlgorithmMain;
         window.showTvhText = showTvhText;
+        window.showAlgorithmText = showAlgorithmText;
         window.closeTvhText = closeTvhText;
         window.copyTvhText = copyTvhText;
         window.copySelectedText = copySelectedText;
