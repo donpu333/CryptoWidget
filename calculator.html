@@ -1551,15 +1551,31 @@
                 </div>
 
                 <div id="tvhFalseBreakthroughButtons" class="tvh-sub-buttons">
-                    <button onclick="showTvhText('tvhFalsePrimaryMovement')">ТВХ №1 Первичное движение</button>
-                    <button onclick="showTvhText('tvhFalseTradingAbove')">ТВХ №2 После проторговки возле уровня</button>
-                    <button onclick="showTvhText('tvhFalseTradingBelow')">ТВХ №3 Проторговка после пробоя</button>
-                    <button onclick="showTvhText('tvhFalseSecondaryMovement')">ТВХ №4 во вторичное движение</button>
-                    <button onclick="showTvhText('tvhFalseEntry')">ТВХ №5 После ретеста</button>
+                    <button onclick="showTvhText('tvhFalsePrimaryMovement')">ТВХ первичное движение</button>
+                    <button onclick="showTvhText('tvhFalseTradingAbove')">ТВХ проторговки над уровнем</button>
+                    <button onclick="showTvhText('tvhFalseTradingBelow')">ТВХ проторговки под уровнем</button>
+                    <button onclick="showTvhText('tvhFalseSecondaryMovement')">ТВХ во вторичное движение</button>
+                    <button onclick="showTvhText('tvhFalseEntry')">ТВХ вход</button>
                 </div>
 
                 <div id="algorithmButtons" class="algorithm-sub-buttons">
-                    <button onclick="showTvhText('algorithmPremises')">Отбор по дневки</button>
+                    <button onclick="showTvhText('algorithmPremises')">Отбор по дневки </button>
+                    <button onclick="toggleAlgorithmSubButtons('falseBreakthroughAlgorithm')">Ложный пробой</button>
+                    <button onclick="toggleAlgorithmSubButtons('breakthroughAlgorithm')">Пробой</button>
+					<button onclick="showTvhText('algorithmUFormation')">U-Формация</button>
+                    <button onclick="showTvhText('algorithmVFormation')">V-Формация</button>
+                    <button onclick="showTvhText('algorithmChannel')">Каннал</button>
+                    <button onclick="showTvhText('algorithmTailedBar')">Бар с хвостами</button>
+                    <button onclick="showTvhText('algorithmBarClosing')">Закрытие баров</button>
+                    <button onclick="showTvhText('algorithmTradingLevels')">Уровни которые я торгую</button>
+                    <button onclick="showTvhText('algorithmBreakthroughModels')">Пробойные модели</button>
+                </div>
+
+                <!-- Дополнительные кнопки для алгоритма ложного пробоя -->
+                <div id="falseBreakthroughAlgorithmButtons" class="algorithm-sub-buttons" style="display: none;">
+                    <button class="back-button" onclick="backToAlgorithmMain()">
+                        <i class="fas fa-arrow-left"></i> Назад к алгоритму
+                    </button>
                     <button onclick="showTvhText('algorithmNoRetracement')">Безоткатное движение</button>
                     <button onclick="showTvhText('algorithmParanormalBars')">Подход на паранормальных барах</button>
                     <button onclick="showTvhText('algorithmDistribution')">Дистрибуция</button>
@@ -1567,6 +1583,13 @@
                     <button onclick="showTvhText('algorithmFarRetest')">Дальный ретест</button>
                     <button onclick="showTvhText('algorithmInfectedZone')">Зона зараженности</button>
                     <button onclick="showTvhText('algorithmExtremum')">Экстремум</button>
+                </div>
+
+                <!-- Дополнительные кнопки для алгоритма пробоя -->
+                <div id="breakthroughAlgorithmButtons" class="algorithm-sub-buttons" style="display: none;">
+                    <button class="back-button" onclick="backToAlgorithmMain()">
+                        <i class="fas fa-arrow-left"></i> Назад к алгоритму
+                    </button>
                     <button onclick="showTvhText('algorithmSqueeze')">Поджатие</button>
                     <button onclick="showTvhText('algorithmNarrowTrading')">Узкая проторговка</button>
                     <button onclick="showTvhText('algorithmConsolidation')">Консолидация вдоль уровня с поджатием</button>
@@ -1574,14 +1597,7 @@
                     <button onclick="showTvhText('algorithmCloseToLevel')">Закрытие в близи уровня</button>
                     <button onclick="showTvhText('algorithmNearRetest')">Ближний ретест</button>
                     <button onclick="showTvhText('algorithmNoReactionToLP')">Нет реакции на ЛП</button>
-                    <button onclick="showTvhText('algorithmDailyClose')">Закрытие дневки под хай /лоу</button>
-                    <button onclick="showTvhText('algorithmUFormation')">U-Формация</button>
-                    <button onclick="showTvhText('algorithmVFormation')">V-Формация</button>
-                    <button onclick="showTvhText('algorithmChannel')">Каннал</button>
-                    <button onclick="showTvhText('algorithmTailedBar')">Бар с хвостами</button>
-                    <button onclick="showTvhText('algorithmBarClosing')">Закрытие баров</button>
-                    <button onclick="showTvhText('algorithmTradingLevels')">Уровни которые я торгую</button>
-                    <button onclick="showTvhText('algorithmBreakthroughModels')">Пробойные модели</button>
+                    <button onclick="showTvhText('algorithmDailyClose')">Закрытие дневки под хай /лоу После паронормального бара нет отката</button>
                 </div>
 
                 <div id="breakthroughText" class="text-display">
@@ -1820,10 +1836,10 @@
         let startX, startY, translateX = 0, translateY = 0;
         let isFullscreen = false;
         let minScale = 1;
+        let currentAlgorithmType = null;
 
         // Полная база ТВХ текстов с фото
         const tvhTexts = {
-            // ТВХ пробой (уже существующие)
             tvhPrimaryMovement: {
                 text: `
                     <h3>ТВХ №1 Первичное движение</h3>
@@ -1866,128 +1882,137 @@
                     </div>
                 `
             },
-
-            // ТВХ ложный пробой (новая структура как у пробоя)
-            tvhFalsePrimaryMovement: {
+            tvhTradingAbove: {
                 text: `
-                    <h3>ТВХ №1 Ложный пробой - Первичное движение</h3>
-                    <p>Первичное движение при ложном пробое характеризуется резким подходом к уровню на больших барах с повышенной волатильностью.
-                       Часовые бары должны показывать признаки дистрибуции, закрытие происходит далеко от уровня.
-                       На 5-минутном таймфрейме наблюдается V-образный подход без накопления.</p>
-                    
-                    <p>Ключевые признаки ложного пробоя:<br>
-                    1) Резкий подход к уровню<br>
-                    2) Отсутствие накопления<br>
-                    3) Повышенная волатильность<br>
-                    4) Закрытие вдали от уровня</p>
+                   <h3>ТВХ №2 После проторговки возле уровня</h3>
+                   <p>На 1 час должен закрыться в близи уровня или может сделать ЛП и не откатывать,
+                      на 5 мин начинается проторговка с низкой волатильностью(все предпосылки к пробо.)</p>
+                    <p>Условия перезахода<br>
+                    1) Картинка не поломалась.<br>
+                    2) Уровень не пилится.<br>
+                    3) Нет глубокого отката.<br>
+                    4) Пониженная волатильность.<br>
+                    Больше 2-х раза не перезахожу.</p>
                     
                     <div class="photo-section">
-                        <div class="photo-section-title">Примеры Ложный пробой Лонг</div>
+                        <div class="photo-section-title">Примеры Лонг</div>
                         <div class="photo-gallery">
-                            <div class="photo-gallery-item" onclick="openPhotoModal('https://via.placeholder.com/600x400/4CAF50/FFFFFF?text=Ложный+пробой+Лонг+1', ['https://via.placeholder.com/600x400/4CAF50/FFFFFF?text=Ложный+пробой+Лонг+1', 'https://via.placeholder.com/600x400/4CAF50/FFFFFF?text=Ложный+пробой+Лонг+2'])">
-                                <img src="https://via.placeholder.com/600x400/4CAF50/FFFFFF?text=Ложный+пробой+Лонг+1" alt="Ложный пробой Лонг 1">
-                                <div class="photo-gallery-caption">Пример 1</div>
-                            </div>
-                            <div class="photo-gallery-item" onclick="openPhotoModal('https://via.placeholder.com/600x400/4CAF50/FFFFFF?text=Ложный+пробой+Лонг+2', ['https://via.placeholder.com/600x400/4CAF50/FFFFFF?text=Ложный+пробой+Лонг+1', 'https://via.placeholder.com/600x400/4CAF50/FFFFFF?text=Ложный+пробой+Лонг+2'])">
-                                <img src="https://via.placeholder.com/600x400/4CAF50/FFFFFF?text=Ложный+пробой+Лонг+2" alt="Ложный пробой Лонг 2">
-                                <div class="photo-gallery-caption">Пример 2</div>
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/ZKUSDT%200.03101%201h%20%20proboy%20LONG.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/ZKUSDT%200.03101%201h%20%20proboy%20LONG.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/ZKUSDT%200.03101%201h%20%20proboy%20LONG.png?raw=true" alt="ZKUSDT">
+                                <div class="photo-gallery-caption">ZKUSDT</div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="photo-section">
-                        <div class="photo-section-title">Примеры Ложный пробой Шорт</div>
+                        <div class="photo-section-title">Примеры Шорт</div>
                         <div class="photo-gallery">
-                            <div class="photo-gallery-item" onclick="openPhotoModal('https://via.placeholder.com/600x400/F44336/FFFFFF?text=Ложный+пробой+Шорт+1', ['https://via.placeholder.com/600x400/F44336/FFFFFF?text=Ложный+пробой+Шорт+1'])">
-                                <img src="https://via.placeholder.com/600x400/F44336/FFFFFF?text=Ложный+пробой+Шорт+1" alt="Ложный пробой Шорт 1">
-                                <div class="photo-gallery-caption">Пример 1</div>
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/LAUSDT%201h%20%200.988%20proboy%20short.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/LAUSDT%201h%20%200.988%20proboy%20short.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B8%20%D0%B2%D0%BE%D0%B7%D0%BB%D0%B5%20%D1%83%D1%80%D0%BE%D0%B2%D0%BD%D1%8F/LAUSDT%201h%20%200.988%20proboy%20short.png?raw=true" alt="LAUSDT">
+                                <div class="photo-gallery-caption">LAUSDT</div>
                             </div>
                         </div>
                     </div>
                 `
             },
-
-            tvhFalseTradingAbove: {
+            tvhTradingBelow: {
                 text: `
-                    <h3>ТВХ №2 Ложный пробой - После проторговки возле уровня</h3>
-                    <p>При ложном пробое после проторговки наблюдается слабое накопление с частыми прошитиями уровня.
-                       Объемы снижаются, волатильность затухает, но отсутствует четкое направление.</p>
+                    <h3>ТВХ №3 Проторговка после пробоя</h3>
+                    <p>На часавике бар пробил и закрылся далеко от уровня.
+                       на 5 минутки  должен оброзоватся локальный уровень БСУ БПУ1 БПУ2 стоп ставить за дневной уровень.
+                       Также подход на часовеке и на 5м должен быть плавным на низкой волатильности (все предпосылки к пробо.).<br>
+                   </p>
+                    <p>Условия перезахода<br>
+                    1) Картинка не поломалась.<br>
+                    2) Уровень не пилится<br>
+                    3) Нет глубокого отката.<br>
+                    4) Пониженная волатильности.<br>
+                    Больше 2-х раза не перезахожу</p>
                     
                     <div class="photo-section">
-                        <div class="photo-section-title">Примеры</div>
+                        <div class="photo-section-title">Примеры Лонг</div>
                         <div class="photo-gallery">
-                            <div class="photo-gallery-item" onclick="openPhotoModal('https://via.placeholder.com/600x400/2196F3/FFFFFF?text=Ложный+пробой+Проторговка+1', ['https://via.placeholder.com/600x400/2196F3/FFFFFF?text=Ложный+пробой+Проторговка+1'])">
-                                <img src="https://via.placeholder.com/600x400/2196F3/FFFFFF?text=Ложный+пробой+Проторговка+1" alt="Ложный пробой Проторговка">
-                                <div class="photo-gallery-caption">Пример проторговки</div>
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/MUSDT%200.4729%201h%20proboy%20LONG.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/MUSDT%200.4729%201h%20proboy%20LONG.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D1%80%D0%BE%D1%82%D0%BE%D1%80%D0%B3%D0%BE%D0%B2%D0%BA%D0%B0%20%D0%BF%D0%BE%D1%81%D0%BB%D0%B5%20%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D1%8F/MUSDT%200.4729%201h%20proboy%20LONG.png?raw=true" alt="MUSDT">
+                                <div class="photo-gallery-caption">MUSDT</div>
                             </div>
                         </div>
                     </div>
                 `
             },
-
-            tvhFalseTradingBelow: {
+            tvhSecondaryMovement: {
                 text: `
-                    <h3>ТВХ №3 Ложный пробой - Проторговка после пробоя</h3>
-                    <p>После ложного пробоя цена возвращается в диапазон, образуя слабую консолидацию.
-                       Отсутствует импульс для продолжения движения, объемы снижаются.</p>
+                    <h3>ТВХ №4 Во вторичное движение</h3>
+                    <p>1 час подлетел из далека делает лп и делает не клубокий отскок не больше 30% от ATR. Возрат через 2-4 часовых бара или V образно.
+                        на 5 минутки должно быть закругление.<br>
+                    Стоп ставлю расчетный.</p>
+                    <p>Условия перезахода<br>
+                    1) Картинка не поломалась.<br>
+                    2) Уровень не пилится<br>
+                    3) Нет глубокого отката.<br>
+                    4) Пониженная волатильности.<br>
+                    Больше 2-х раза не перезахожу</p>
                     
                     <div class="photo-section">
-                        <div class="photo-section-title">Примеры</div>
+                        <div class="photo-section-title">Примеры Лонг</div>
                         <div class="photo-gallery">
-                            <div class="photo-gallery-item" onclick="openPhotoModal('https://via.placeholder.com/600x400/FF9800/FFFFFF?text=Проторговка+после+пробоя+1', ['https://via.placeholder.com/600x400/FF9800/FFFFFF?text=Проторговка+после+пробоя+1'])">
-                                <img src="https://via.placeholder.com/600x400/FF9800/FFFFFF?text=Проторговка+после+пробоя+1" alt="Проторговка после пробоя">
-                                <div class="photo-gallery-caption">Пример 1</div>
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/TRXUSDT%200,33485%201h%20proboy%20LONG.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/TRXUSDT%200,33485%201h%20proboy%20LONG.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%BD%D0%BE%D0%B5/TRXUSDT%200,33485%201h%20proboy%20LONG.png?raw=true" alt="TRXUSDT">
+                                <div class="photo-gallery-caption">TRXUSDT</div>
                             </div>
                         </div>
                     </div>
                 `
             },
-
-            tvhFalseSecondaryMovement: {
+            tvhEntry: {
                 text: `
-                    <h3>ТВХ №4 Ложный пробой - Во вторичное движение</h3>
-                    <p>Вторичное движение при ложном пробое характеризуется слабым отскоком и быстрым возвратом.
-                       Цена не может закрепиться за уровнем, образуя ложный импульс.</p>
+                    <h3>ТВХ №5 После ретеста</h3>
+                    <p>Часовой бар закрывается под уровнем (или над) не далеко.На 5 мин возвращение к уровню и должен произойти ЛП,
+                       твх на после возвращением за уровень втором красном баре при шорте и на втором зеленом при лонг.
+                       Также подход на часовеке и на 5м должен быть плавным на низкой волатильности (все предпосылки к пробо.) </p>
+                    <p>Условия перезахода<br>
+                    1) Картинка не поломалась.<br>
+                    2) Уровень не пилится<br>
+                    3) Нет глубокого отката.<br>
+                    4) Пониженная волатильности.<br>
+                    Больше 2-х раза не перезахожу</p>
                     
                     <div class="photo-section">
-                        <div class="photo-section-title">Примеры</div>
+                        <div class="photo-section-title">Примеры Лонг</div>
                         <div class="photo-gallery">
-                            <div class="photo-gallery-item" onclick="openPhotoModal('https://via.placeholder.com/600x400/9C27B0/FFFFFF?text=Вторичное+движение+1', ['https://via.placeholder.com/600x400/9C27B0/FFFFFF?text=Вторичное+движение+1'])">
-                                <img src="https://via.placeholder.com/600x400/9C27B0/FFFFFF?text=Вторичное+движение+1" alt="Вторичное движение">
-                                <div class="photo-gallery-caption">Пример 1</div>
+                            <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/UMAUSDT%201h%201.412%20%20proboy%20long.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/UMAUSDT%201h%201.412%20%20proboy%20long.png?raw=true'])">
+                                <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%BE%D1%81%D0%BB%D0%B5%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82%D0%B0/UMAUSDT%201h%201.412%20%20proboy%20long.png?raw=true" alt="UMAUSDT">
+                                <div class="photo-gallery-caption">UMAUSDT</div>
                             </div>
                         </div>
                     </div>
                 `
             },
-
-            tvhFalseEntry: {
-                text: `
-                    <h3>ТВХ №5 Ложный пробой - После ретеста</h3>
-                    <p>Ретест при ложном пробое происходит быстро, цена не задерживается у уровня.
-                       Отсутствует подтверждение пробоя, объемы на ретесте низкие.</p>
-                    
-                    <div class="photo-section">
-                        <div class="photo-section-title">Примеры</div>
-                        <div class="photo-gallery">
-                            <div class="photo-gallery-item" onclick="openPhotoModal('https://via.placeholder.com/600x400/607D8B/FFFFFF?text=Ретест+ложный+1', ['https://via.placeholder.com/600x400/607D8B/FFFFFF?text=Ретест+ложный+1'])">
-                                <img src="https://via.placeholder.com/600x400/607D8B/FFFFFF?text=Ретест+ложный+1" alt="Ложный ретест">
-                                <div class="photo-gallery-caption">Пример 1</div>
-                            </div>
-                        </div>
-                    </div>
-                `
+            // Добавляем остальные ТВХ тексты
+            tvhFalsePrimaryMovement: { 
+                text: "<h3>ТВХ ложного пробоя - Первичное движение</h3><p>Текст будет добавлен...</p>",
+                photos: { long: [], short: [] }
+            },
+            tvhFalseTradingAbove: { 
+                text: "<h3>ТВХ ложного пробоя - Проторговки над уровнем</h3><p>Текст будет добавлен...</p>",
+                photos: { long: [], short: [] }
+            },
+            tvhFalseTradingBelow: { 
+                text: "<h3>ТВХ ложного пробоя - Проторговки под уровнем</h3><p>Текст будет добавлен...</p>",
+                photos: { long: [], short: [] }
+            },
+            tvhFalseSecondaryMovement: { 
+                text: "<h3>ТВХ ложного пробоя - Вторичное движение</h3><p>Текст будет добавлен...</p>",
+                photos: { long: [], short: [] }
+            },
+            tvhFalseEntry: { 
+                text: "<h3>ТВХ ложного пробоя - Вход</h3><p>Текст будет добавлен...</p>",
+                photos: { long: [], short: [] }
             },
 
-            // Остальные существующие ТВХ...
-            tvhTradingAbove: { text: "<h3>ТВХ №2 После проторговки возле уровня</h3><p>Текст будет добавлен...</p>" },
-            tvhTradingBelow: { text: "<h3>ТВХ №3 Проторговка после пробоя</h3><p>Текст будет добавлен...</p>" },
-            tvhSecondaryMovement: { text: "<h3>ТВХ №4 во вторичное движение</h3><p>Текст будет добавлен...</p>" },
-            tvhEntry: { text: "<h3>ТВХ №5 После ретеста</h3><p>Текст будет добавлен...</p>" },
-
-            // Алгоритмы (все с такой же структурой как algorithmPremises)
-           algorithmPremises: {
-    text: `
+            // Алгоритмы
+            algorithmPremises: {
+                 text: `
         <h3>Алгоритм - для отбора инструментов по дневке</h3>
 
         <h3>Пробой</h3>
@@ -2073,32 +2098,36 @@
             algorithmDistribution: { 
                 text: `
                     <h3>Алгоритм - Дистрибуция</h3>
-                    <p>Дистрибуция - процесс распределения актива крупными игроками.</p>
-                    <div class="photo-section">
-                        <div class="photo-section-title">Примеры дистрибуции</div>
-                        <div class="photo-gallery">
-                            <div class="photo-gallery-item" onclick="openPhotoModal('https://via.placeholder.com/600x400/FF9800/FFFFFF?text=Дистрибуция+1', ['https://via.placeholder.com/600x400/FF9800/FFFFFF?text=Дистрибуция+1'])">
-                                <img src="https://via.placeholder.com/600x400/FF9800/FFFFFF?text=Дистрибуция+1" alt="Дистрибуция">
-                                <div class="photo-gallery-caption">Пример 1</div>
-                            </div>
-                        </div>
-                    </div>
+                    <p>На дневки это выглядит в виде больших баров. Но если вдруг на коротком тайм-фрейме
+внутри большого дневного бара идет маленькое поступательное движение на коротких
+барах, это скорее всего приведет к пробою.Дистрибуция ведет к развороту либо 
+к остановке.</p>
+<div class="photo-section">
+    <div class="photo-section-title">Дистрибуция</div>
+    <div class="photo-gallery">
+        <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B4%D0%B8%D1%81%D1%82%D1%80%D0%B8%D0%B1%D1%83%D1%86%D0%B8%D1%8F%20%D0%BD%D0%B0%20%D1%81%D1%82%D0%B0%D1%80%D1%88%D0%BE%D0%BC%20%D1%82%D0%B0%D0%B9%D0%BC%D0%B5.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B4%D0%B8%D1%81%D1%82%D1%80%D0%B8%D0%B1%D1%83%D1%86%D0%B8%D1%8F%20%D0%BD%D0%B0%20%D1%81%D1%82%D0%B0%D1%80%D1%88%D0%BE%D0%BC%20%D1%82%D0%B0%D0%B9%D0%BC%D0%B5.png?raw=true'])">
+            <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B4%D0%B8%D1%81%D1%82%D1%80%D0%B8%D0%B1%D1%83%D1%86%D0%B8%D1%8F%20%D0%BD%D0%B0%20%D1%81%D1%82%D0%B0%D1%80%D1%88%D0%BE%D0%BC%20%D1%82%D0%B0%D0%B9%D0%BC%D0%B5.png?raw=true" alt="Описание вашего фото">
+            <div class="photo-gallery-caption">Дистрибуция</div>
+        </div>
+    </div>
+</div>
                 `
             },
 
             algorithmFarClosing: { 
                 text: `
                     <h3>Алгоритм - Дальнее закрытие от уровня</h3>
-                    <p>Закрытие бара на значительном расстоянии от уровня.</p>
-                    <div class="photo-section">
-                        <div class="photo-section-title">Примеры</div>
-                        <div class="photo-gallery">
-                            <div class="photo-gallery-item" onclick="openPhotoModal('https://via.placeholder.com/600x400/9C27B0/FFFFFF?text=Дальнее+закрытие+1', ['https://via.placeholder.com/600x400/9C27B0/FFFFFF?text=Дальнее+закрытие+1'])">
-                                <img src="https://via.placeholder.com/600x400/9C27B0/FFFFFF?text=Дальнее+закрытие+1" alt="Дальнее закрытие">
-                                <div class="photo-gallery-caption">Пример 1</div>
-                            </div>
-                        </div>
-                    </div>
+                    <p>Инструмент подошел к уровню, но закрывается далеко от него. 
+Есть сильное сопротивление, и следовательно возрастает вероятность разворота.</p>
+                   <div class="photo-section">
+    <div class="photo-section-title">Дальнее закрытие от уровня</div>
+    <div class="photo-gallery">
+        <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B4%D0%B0%D0%BB%D1%8C%D0%BD%D0%B5%D0%B5%20%D0%B7%D0%B0%D0%BA%D1%80%D1%8B%D1%82%D0%B8%D0%B5.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B4%D0%B0%D0%BB%D1%8C%D0%BD%D0%B5%D0%B5%20%D0%B7%D0%B0%D0%BA%D1%80%D1%8B%D1%82%D0%B8%D0%B5.png?raw=true'])">
+            <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B4%D0%B0%D0%BB%D1%8C%D0%BD%D0%B5%D0%B5%20%D0%B7%D0%B0%D0%BA%D1%80%D1%8B%D1%82%D0%B8%D0%B5.png?raw=true" alt="Описание вашего фото">
+            <div class="photo-gallery-caption">Дальнее закрытие от уровня</div>
+        </div>
+    </div>
+</div>
                 `
             },
 
@@ -2106,25 +2135,51 @@
             algorithmFarRetest: { 
                 text:` 
 					"<h3>Алгоритм - Дальный ретест</h3>
-					 <p>Закрытие бара на значительном расстоянии от уровня.</p>
-					 <div class="photo-section">
-                        <div class="photo-section-title">Примеры</div>
-                        <div class="photo-gallery">
-                            <div class="photo-gallery-item" onclick="openPhotoModal('https://via.placeholder.com/600x400/9C27B0/FFFFFF?text=Дальнее+закрытие+1', ['https://via.placeholder.com/600x400/9C27B0/FFFFFF?text=Дальнее+закрытие+1'])">
-                                <img src="https://via.placeholder.com/600x400/9C27B0/FFFFFF?text=Дальнее+закрытие+1" alt="Дальнее закрытие">
-                                <div class="photo-gallery-caption">Пример 1</div>
-                            </div>
-                        </div>
-                    </div>
+					 <p>Дальний ретест от 2 недель - 1 месяца до 1 года в 90% случаях с первого раза не пробивается будет отбой или ложный пробой.
+Что усиливает дальний ретест; 
+1)Если инструмент много проходит без остановки
+2)Если инструмент подходит к уровню на паранормальных барах(если последний бар перед уровнем паронормальный 90% будет отбой или ложный пробой)
+В каких случаях это правило отменяется; если подход был на паранормальных барах а перед уровнем инструмент замедляется и подходит на маленьких барах, и закрывается под самый уровень.</p>
+					<div class="photo-section">
+    <div class="photo-section-title">Дальный ретест</div>
+    <div class="photo-gallery">
+        <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B4%D0%B0%D0%BB%D1%8C%D0%BD%D0%BD%D0%B8%D0%B9%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B4%D0%B0%D0%BB%D1%8C%D0%BD%D0%BD%D0%B8%D0%B9%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82.png?raw=true'])">
+            <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B4%D0%B0%D0%BB%D1%8C%D0%BD%D0%BD%D0%B8%D0%B9%20%D1%80%D0%B5%D1%82%D0%B5%D1%81%D1%82.png?raw=true" alt="Описание вашего фото">
+            <div class="photo-gallery-caption">Дальный ретест</div>
+        </div>
+    </div>
+</div>
                 `
             },
             algorithmInfectedZone: { 
-                text: "<h3>Алгоритм - Зона зараженности</h3><p>Текст будет добавлен...</p>",
-                photos: { general: [] }
+               text: `
+                    <h3>Алгоритм - Зона Заражённости</h3>
+                    <p>Зона заражённости это когда инструмент попадает в одну из зон где была проторговка инструменту тяжело проходить такие зоны, зона заражённости скорей всего будет служить 
+Поддержкой или сопротивлением и скорей всего это будет остановка отбой или ложный пробой.с первого раза инструмент такую зону не пройдет, нужно чтоб эту зону прочистили ,прочистить такую зону может один бар (снимите все лимитные заявки) Если Заражённая зона больше двух недель она не актуальна</p>
+             <div class="photo-section">
+    <div class="photo-section-title">Зона Заражённости</div>
+    <div class="photo-gallery">
+        <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B7%D0%B0%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B0%D1%8F%20%D0%B7%D0%BE%D0%BD%D0%B0.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B7%D0%B0%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B0%D1%8F%20%D0%B7%D0%BE%D0%BD%D0%B0.png?raw=true'])">
+            <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%B7%D0%B0%D1%80%D0%B0%D0%B6%D0%B5%D0%BD%D0%B0%D1%8F%20%D0%B7%D0%BE%D0%BD%D0%B0.png?raw=true" alt="Описание вашего фото">
+            <div class="photo-gallery-caption">Зона Заражённости</div>
+        </div>
+    </div>
+</div>
+			  `  
             },
             algorithmExtremum: { 
-                text: "<h3>Алгоритм - Экстремум</h3><p>Текст будет добавлен...</p>",
-                photos: { general: [] }
+                text: ` "<h3>Алгоритм - Экстремум</h3>
+					<p>Такую точку с первого раза инструменту будет сложно пройти, потому-что в таких точках будет большое количества лимитных ордеров.</p>
+					<div class="photo-section">
+    <div class="photo-section-title">Экстремум</div>
+    <div class="photo-gallery">
+        <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D1%8D%D0%BA%D1%81%D1%82%D1%80%D0%B5%D0%BC%D1%83%D0%BC.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D1%8D%D0%BA%D1%81%D1%82%D1%80%D0%B5%D0%BC%D1%83%D0%BC.png?raw=true'])">
+            <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D1%8D%D0%BA%D1%81%D1%82%D1%80%D0%B5%D0%BC%D1%83%D0%BC.png?raw=true" alt="Описание вашего фото">
+            <div class="photo-gallery-caption">Экстремум</div>
+        </div>
+    </div>
+</div>
+            `
             },
             algorithmSqueeze: { 
                 text: "<h3>Алгоритм - Поджатие</h3><p>Текст будет добавлен...</p>",
@@ -3127,10 +3182,10 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.tvh-sub-buttons').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.algorithm-sub-buttons').forEach(el => el.style.display = 'none');
-            document.getElementById('actionButtons').style.display = 'none';
 
             if (currentVisibleText === type) {
                 currentVisibleText = null;
+                document.getElementById('actionButtons').style.display = 'none';
             } else {
                 document.getElementById(`${type}Text`).style.display = 'block';
                 currentVisibleText = type;
@@ -3158,7 +3213,37 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             document.querySelectorAll('.algorithm-sub-buttons').forEach(el => el.style.display = 'none');
             document.getElementById('actionButtons').style.display = 'none';
 
+            if (currentAlgorithmType === 'algorithm') {
+                currentAlgorithmType = null;
+            } else {
+                document.getElementById('algorithmButtons').style.display = 'flex';
+                currentAlgorithmType = 'algorithm';
+            }
+        }
+
+        function toggleAlgorithmSubButtons(type) {
+            document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tvh-sub-buttons').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.algorithm-sub-buttons').forEach(el => el.style.display = 'none');
+            document.getElementById('actionButtons').style.display = 'none';
+
+            if (type === 'falseBreakthroughAlgorithm') {
+                document.getElementById('falseBreakthroughAlgorithmButtons').style.display = 'flex';
+                document.getElementById('breakthroughAlgorithmButtons').style.display = 'none';
+            } else if (type === 'breakthroughAlgorithm') {
+                document.getElementById('breakthroughAlgorithmButtons').style.display = 'flex';
+                document.getElementById('falseBreakthroughAlgorithmButtons').style.display = 'none';
+            }
+        }
+
+        function backToAlgorithmMain() {
+            document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tvh-sub-buttons').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.algorithm-sub-buttons').forEach(el => el.style.display = 'none');
+            document.getElementById('actionButtons').style.display = 'none';
+
             document.getElementById('algorithmButtons').style.display = 'flex';
+            currentAlgorithmType = 'algorithm';
         }
 
         function showTvhText(type) {
@@ -3168,14 +3253,10 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
             
             const tvhData = tvhTexts[type];
             
-            if (tvhData && tvhData.text) {
-                tvhTextInner.innerHTML = tvhData.text;
-                
-                tvhTextContent.style.display = 'block';
-                tvhOverlay.style.display = 'block';
-            } else {
-                showNotification('Контент для этого раздела пока не добавлен', 'warning');
-            }
+            tvhTextInner.innerHTML = tvhData.text;
+            
+            tvhTextContent.style.display = 'block';
+            tvhOverlay.style.display = 'block';
         }
 
         function closeTvhText() {
@@ -3499,6 +3580,8 @@ ${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPerc
         window.toggleText = toggleText;
         window.toggleTvhButtons = toggleTvhButtons;
         window.toggleAlgorithmButtons = toggleAlgorithmButtons;
+        window.toggleAlgorithmSubButtons = toggleAlgorithmSubButtons;
+        window.backToAlgorithmMain = backToAlgorithmMain;
         window.showTvhText = showTvhText;
         window.closeTvhText = closeTvhText;
         window.copyTvhText = copyTvhText;
