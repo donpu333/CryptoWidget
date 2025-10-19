@@ -1593,6 +1593,7 @@
                     </button>
 					<button onclick="showTvhText('algorithmBreakthroughModels')">Пробойные модели</button>
                     <button onclick="showTvhText('algorithmSqueeze')">Поджатие</button>
+					<button onclick="showTvhText('algorithmNoImpulse')">Отсутствие импульса где он должен быть</button>
                     <button onclick="showTvhText('algorithmNarrowTrading')">Узкая проторговка</button>
                     <button onclick="showTvhText('algorithmConsolidation')">Консолидация вдоль уровня с поджатием</button>
                     <button onclick="showTvhText('algorithmRange')">Рендж</button>
@@ -2449,7 +2450,22 @@ ATR, то у него большое количество энергии и ем
 </div>
 				`
             },
-            
+            algorithmNoImpulse: { 
+    text: `
+        <h3>Отсутствие импульса где он должен быть</h3>
+        <p>Если инструмент долго стоял(накопление) и много прошел и потом подходит к уровню делает ложный пробойки инструмент не откатывается и идет обратно к уровню(ближний ретест)картинка сломалась(ложный пробой)Если позиция открыта нужно подтянуть стоп.
+Это можно трактовать как ближний ретест.</p>
+<div class="photo-section">
+    <div class="photo-section-title">Примеры формаций</div>
+    <div class="photo-gallery">
+        <div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%9E%D1%82%D1%81%D1%83%D1%82%D1%81%D1%82%D0%B2%D0%B8%D0%B5%20%D0%B8%D0%BC%D0%BF%D1%83%D0%BB%D1%8C%D1%81%D0%B0%20%D0%B3%D0%B4%D0%B5%20%D0%BE%D0%BD%20%D0%B4%D0%BE%D0%BB%D0%B6%D0%B5%D0%BD%20%D0%B1%D1%8B%D1%82%D1%8C.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%9E%D1%82%D1%81%D1%83%D1%82%D1%81%D1%82%D0%B2%D0%B8%D0%B5%20%D0%B8%D0%BC%D0%BF%D1%83%D0%BB%D1%8C%D1%81%D0%B0%20%D0%B3%D0%B4%D0%B5%20%D0%BE%D0%BD%20%D0%B4%D0%BE%D0%BB%D0%B6%D0%B5%D0%BD%20%D0%B1%D1%8B%D1%82%D1%8C.png?raw=true'])">
+            <img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC/%D0%9E%D1%82%D1%81%D1%83%D1%82%D1%81%D1%82%D0%B2%D0%B8%D0%B5%20%D0%B8%D0%BC%D0%BF%D1%83%D0%BB%D1%8C%D1%81%D0%B0%20%D0%B3%D0%B4%D0%B5%20%D0%BE%D0%BD%20%D0%B4%D0%BE%D0%BB%D0%B6%D0%B5%D0%BD%20%D0%B1%D1%8B%D1%82%D1%8C.png?raw=true" alt="Отсутствие импульса где он должен быть">
+            <div class="photo-gallery-caption">Отсутствие импульса где он должен быть</div>
+        </div>
+    </div>
+</div>
+			`
+            },
             algorithmBreakthroughModels: { 
                 text:`<h3>Алгоритм - Пробойные модели</h3>
                 <div class="photo-section">
