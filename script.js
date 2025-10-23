@@ -85,6 +85,9 @@ const blinkingTickers = {
     'short-wait': new Set()
 };
 
+// Добавлено: Объект для отслеживания мерцающих алертов
+const blinkingAlerts = new Set();
+
 class BinanceAPIManager {
     constructor() {
         this.connectionState = {
@@ -1305,8 +1308,12 @@ function stopTickerBlinking(symbol, watchlistType) {
     console.log(`Остановлено мерцание для ${symbol} в списке ${watchlistType}`);
 }
 
-// Добавлено: Функция для запуска мерцания алерта в списках алертов
+// Добавлено: Функция для запуска мерцания алерта в списке алертов
 function startAlertBlinking(alertId, condition) {
+    // Добавляем алерт в набор мерцающих
+    blinkingAlerts.add(alertId);
+    
+    // Находим элемент алерта
     const alertElement = document.getElementById(`alert-${alertId}`);
     if (!alertElement) return;
     
@@ -1314,11 +1321,15 @@ function startAlertBlinking(alertId, condition) {
     const blinkClass = condition === '>' ? 'alert-triggered-long' : 'alert-triggered-short';
     alertElement.classList.add(blinkClass);
     
-    console.log(`Запущено постоянное мерцание для алерта ${alertId}`);
+    console.log(`Запущено мерцание для алерта ${alertId}`);
 }
 
 // Добавлено: Функция для остановки мерцания алерта
 function stopAlertBlinking(alertId) {
+    // Удаляем алерт из набора мерцающих
+    blinkingAlerts.delete(alertId);
+    
+    // Находим элемент алерта и убираем классы мерцания
     const alertElement = document.getElementById(`alert-${alertId}`);
     if (alertElement) {
         alertElement.classList.remove('alert-triggered-long', 'alert-triggered-short');
@@ -1352,12 +1363,12 @@ async function checkAlerts() {
                     // Логируем детали срабатывания для отладки
                     console.log(`Alert triggered: ${alert.symbol} ${alert.condition} ${alert.value} | Current: ${price} | Time: ${new Date().toISOString()}`);
 
-                    // Запускаем мерцание в вотчлисте если указан (постоянное)
+                    // Запускаем мерцание в вотчлисте если указан
                     if (alert.watchlistType && alert.watchlistType !== 'none') {
                         startTickerBlinking(alert.symbol, alert.watchlistType, alert.condition);
                     }
 
-                    // Запускаем мерцание в списке алертов (постоянное как в вотчлисте)
+                    // Запускаем мерцание алерта в списке алертов
                     startAlertBlinking(alert.id, alert.condition);
 
                     // Отправка уведомлений и обработка срабатывания
@@ -1372,6 +1383,7 @@ async function checkAlerts() {
                         if (alert.watchlistType && alert.watchlistType !== 'none') {
                             stopTickerBlinking(alert.symbol, alert.watchlistType);
                         }
+                        // Останавливаем мерцание алерта
                         stopAlertBlinking(alert.id);
                         console.log(`Alert ${alert.id} reached notification limit`);
                     }
@@ -1387,7 +1399,7 @@ async function checkAlerts() {
     }
 }
 
-// Функция для обработки сработавшего алерта
+// Новая функция для обработки сработавшего алерта
 async function handleTriggeredAlert(alert, currentPrice) {
     const message = `🚨 Алерт сработал!\nСимвол: ${alert.symbol}\n` +
         `Условие: ${alert.condition} ${alert.value}\n` +
@@ -2083,7 +2095,7 @@ function deleteAlert(alertId) {
     if (confirm('Вы уверены, что хотите удалить этот алерт?')) {
         userAlerts = userAlerts.filter(alert => alert.id !== alertId);
         delete activeTriggeredAlerts[alertId];
-        // Останавливаем мерцание при удалении
+        // Останавливаем мерцание алерта
         stopAlertBlinking(alertId);
         saveAppState();
         loadUserAlerts(currentAlertFilter);
@@ -2095,6 +2107,8 @@ function clearAllAlerts() {
     if (confirm('Вы уверены, что хотите удалить все алерты?')) {
         userAlerts = [];
         activeTriggeredAlerts = {};
+        // Останавливаем все мерцания алертов
+        blinkingAlerts.clear();
         saveAppState();
         loadUserAlerts(currentAlertFilter);
         showNotification('Успешно', 'Все алерты удалены');
@@ -2119,6 +2133,7 @@ function reactivateAlert(alertId) {
     if (alert.watchlistType && alert.watchlistType !== 'none') {
         stopTickerBlinking(alert.symbol, alert.watchlistType);
     }
+    // Останавливаем мерцание алерта
     stopAlertBlinking(alertId);
     
     saveAppState();
