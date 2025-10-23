@@ -1203,7 +1203,7 @@ function loadAppState() {
         console.log("Состояние загружено");
         return true;
     } catch (error) {
-        console.error("Ошибка при загрузке состояния:", error);
+        console.error("Ошибка при загрузении состояния:", error);
         return false;
     }
 }
@@ -1705,6 +1705,57 @@ async function createAlertForSymbol(symbol, currentPrice) {
     }
 }
 
+// НОВАЯ ФУНКЦИЯ: Добавление тикера в ватчлист при создании алерта
+function addTickerToWatchlistFromAlert(symbol, condition, value, alertType) {
+    let targetListType = '';
+    
+    // Определяем в какой список добавить тикер на основе типа алерта и условия
+    if (alertType === 'price') {
+        if (condition === '>') {
+            targetListType = 'long'; // Пробой лонг
+        } else if (condition === '<') {
+            targetListType = 'short'; // Пробой шорт
+        }
+    } else if (alertType === 'liquidation') {
+        if (condition === '>') {
+            targetListType = 'long-wait'; // Ложный пробой лонг
+        } else if (condition === '<') {
+            targetListType = 'short-wait'; // Ложный пробой шорт
+        }
+    }
+    
+    // Если определили целевой список и тикера там еще нет
+    if (targetListType && !tickersData[targetListType][symbol]) {
+        const now = new Date();
+        const isBinanceTicker = allBinanceTickers.hasOwnProperty(symbol);
+        
+        // Создаем запись тикера
+        tickersData[targetListType][symbol] = {
+            name: isBinanceTicker ? allBinanceTickers[symbol].name : symbol.replace(/USDT$/, ''),
+            price: '0.000000',
+            change: '0.00',
+            isBinance: isBinanceTicker,
+            addedDate: now.toISOString(),
+            stars: 0,
+            marketType: isBinanceTicker ? allBinanceTickers[symbol].type : 'spot',
+            comment: `Алерт: ${condition} ${value}`,
+            trend: null,
+            fromAlert: true // Помечаем что тикер добавлен из алерта
+        };
+        
+        // Добавляем на страницу
+        const list = document.getElementById(`${targetListType}-list`);
+        if (list) {
+            addTickerToList(symbol, targetListType);
+        }
+        
+        // Сохраняем изменения
+        saveTickersToStorage();
+        
+        console.log(`Тикер ${symbol} добавлен в список ${targetListType} из алерта`);
+    }
+}
+
 async function addUserAlert(symbol, type, condition, value, notificationMethods, notificationCount, chatId) {
     try {
         // Проверяем наличие подключения для Telegram
@@ -1742,12 +1793,12 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
         userAlerts.push(newAlert);
         saveAppState();
 
+        // ДОБАВЛЕНО: Добавляем тикер в соответствующий ватчлист
+        addTickerToWatchlistFromAlert(symbol, condition, value, type);
+
         // Обновляем список алертов сразу после добавления
         loadUserAlerts(currentAlertFilter);
-        // ОБНОВЛЯЕМ СТРАНИЦУ ПОСЛЕ СОЗДАНИЯ АЛЕРТА
-        setTimeout(() => {
-            location.reload();
-        }, 1000);
+        
         return true;
     } catch (error) {
         console.error("Ошибка при добавлении алерта:", error);
@@ -2665,10 +2716,6 @@ function setupEventListeners() {
                     resetForm();
                     // Обновляем список алертов
                     loadUserAlerts(currentAlertFilter);
-                    // ОБНОВЛЯЕМ СТРАНИЦУ ПОСЛЕ СОЗДАНИЯ АЛЕРТА
-        setTimeout(() => {
-            location.reload();
-        }, 1000);
                 }
             }
         });
@@ -2988,4 +3035,4 @@ window.toggleMenu = toggleMenu;
 window.resetForm = resetForm;
 window.reactivateAlert = reactivateAlert;
 window.exportAlertToTelegram = exportAlertToTelegram;
-window.exportAllActiveAlerts = exportAllActiveAlerts; 
+window.exportAllActiveAlerts = exportAllActiveAlerts;
