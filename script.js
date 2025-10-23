@@ -77,10 +77,6 @@ let alertCooldowns = {};
 let activeTriggeredAlerts = {};
 let currentPrices = {}; // Добавлено: кэш текущих цен
 
-// Глобальные переменные для рыночных данных
-let allFutures = [];
-let allSpot = [];
-
 class BinanceAPIManager {
     constructor() {
         this.connectionState = {
@@ -1267,34 +1263,6 @@ function comparePrices(currentPrice, condition, targetPrice) {
     return false;
 }
 
-// Функция для мерцания тикера в списках вотчлиста
-function flashTickerInWatchlist(symbol, condition) {
-    const listTypes = ['long', 'short', 'long-wait', 'short-wait'];
-    
-    listTypes.forEach(listType => {
-        const tickerItem = document.querySelector(`.ticker-item[data-ticker="${symbol}"][data-list-type="${listType}"]`);
-        if (tickerItem) {
-            // Добавляем класс мерцания в зависимости от типа алерта
-            if (condition === '>') {
-                tickerItem.classList.add('alert-triggered-long');
-            } else {
-                tickerItem.classList.add('alert-triggered-short');
-            }
-
-            // Перемещаем тикер в начало списка
-            const list = document.getElementById(`${listType}-list`);
-            if (list && tickerItem.parentElement === list) {
-                list.insertBefore(tickerItem, list.firstChild);
-            }
-
-            // Через 5 секунд убираем анимацию
-            setTimeout(() => {
-                tickerItem.classList.remove('alert-triggered-long', 'alert-triggered-short');
-            }, 5000);
-        }
-    });
-}
-
 async function checkAlerts() {
     const now = Date.now();
     for (const alert of userAlerts.filter(a => !a.triggered)) {
@@ -1313,9 +1281,6 @@ async function checkAlerts() {
                 if (now - lastNotification > 60000) { // 60 секунд кд
                     // Логируем детали срабатывания для отладки
                     console.log(`Alert triggered: ${alert.symbol} ${alert.condition} ${alert.value} | Current: ${price} | Time: ${new Date().toISOString()}`);
-
-                    // Вызываем мерцание тикера во всех списках вотчлиста
-                    flashTickerInWatchlist(alert.symbol, alert.condition);
 
                     // Отправка уведомлений и обработка срабатывания
                     await handleTriggeredAlert(alert, price);
@@ -1370,6 +1335,32 @@ async function handleTriggeredAlert(alert, currentPrice) {
     const message = `🚨 Алерт сработал!\nСимвол: ${alert.symbol}\n` +
         `Условие: ${alert.condition} ${alert.value}\n` +
         `Текущая цена: ${formatNumber(currentPrice, 8)}`;
+
+    // Определяем тип вотчлиста на основе условия алерта
+    let watchlistType = '';
+    if (alert.condition === '>') {
+        watchlistType = 'long'; // Пробой лонг
+    } else if (alert.condition === '<') {
+        watchlistType = 'short'; // Пробой шорт
+    }
+
+    // Добавляем тикер в соответствующий список вотчлиста
+    if (watchlistType && !tickersData[watchlistType][alert.symbol]) {
+        addTickerToWatchlist(alert.symbol, watchlistType);
+        
+        // Добавляем класс для мерцания новому элементу
+        setTimeout(() => {
+            const newTickerItem = document.querySelector(`.ticker-item[data-ticker="${alert.symbol}"][data-list-type="${watchlistType}"]`);
+            if (newTickerItem) {
+                newTickerItem.classList.add('alert-triggered-flash');
+                
+                // Убираем мерцание через 5 секунд
+                setTimeout(() => {
+                    newTickerItem.classList.remove('alert-triggered-flash');
+                }, 5000);
+            }
+        }, 100);
+    }
 
     // Отправка в Telegram
     if (alert.notificationMethods.includes('telegram') && alert.chatId) {
@@ -1767,7 +1758,9 @@ function addTickerToWatchlist(symbol, watchlistType) {
         sortTickersByStars(watchlistType);
         
         console.log(`Тикер ${symbol} добавлен в список ${watchlistType}`);
+        return true;
     }
+    return false;
 }
 
 async function addUserAlert(symbol, type, condition, value, notificationMethods, notificationCount, chatId, watchlistType = null) {
