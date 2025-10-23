@@ -1355,6 +1355,30 @@ function restoreBlinkingAlerts() {
     });
 }
 
+// Добавлено: Функция для подсветки сработавшего алерта
+function highlightTriggeredAlert(alertId, condition) {
+    const alertElement = document.getElementById(`alert-${alertId}`);
+    if (!alertElement) return;
+
+    // Добавляем класс для анимации в зависимости от типа алерта
+    if (condition === '>') {
+        alertElement.classList.add('alert-triggered-long');
+    } else {
+        alertElement.classList.add('alert-triggered-short');
+    }
+
+    // Перемещаем алерт в начало списка
+    const container = alertElement.parentElement;
+    if (container) {
+        container.insertBefore(alertElement, container.firstChild);
+    }
+
+    // Через 5 секунд убираем анимацию
+    setTimeout(() => {
+        alertElement.classList.remove('alert-triggered-long', 'alert-triggered-short');
+    }, 5000);
+}
+
 async function checkAlerts() {
     const now = Date.now();
     for (const alert of userAlerts.filter(a => !a.triggered)) {
@@ -1381,6 +1405,9 @@ async function checkAlerts() {
 
                     // Запускаем постоянное мерцание в списке алертов
                     startAlertBlinking(alert.id, alert.condition);
+
+                    // Запускаем временную подсветку алерта
+                    highlightTriggeredAlert(alert.id, alert.condition);
 
                     // Отправка уведомлений и обработка срабатывания
                     await handleTriggeredAlert(alert, price);
@@ -3180,3 +3207,4 @@ window.resetForm = resetForm;
 window.reactivateAlert = reactivateAlert;
 window.exportAlertToTelegram = exportAlertToTelegram;
 window.exportAllActiveAlerts = exportAllActiveAlerts;
+window.highlightTriggeredAlert = highlightTriggeredAlert;
