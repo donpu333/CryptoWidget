@@ -1307,8 +1307,31 @@ function stopTickerBlinking(symbol, watchlistType) {
 
 // Добавлено: Функция для проверки завершения всех уведомлений
 function hasAllNotificationsSent(alert) {
-    if (alert.notificationCount === 0) return false; // Бесконечные уведомления - не останавливаем мерцание
+    // Если notificationCount = 0 - бесконечные уведомления, никогда не останавливаем мерцание
+    if (alert.notificationCount === 0) return false;
+    
+    // Если установлено ограничение, проверяем достигли ли мы его
     return alert.triggeredCount >= alert.notificationCount;
+}
+
+// Добавлено: Функция для проверки и восстановления мерцания активных алертов
+function checkAndRestoreBlinking() {
+    const activeAlerts = userAlerts.filter(alert => 
+        !alert.triggered && 
+        alert.watchlistType && 
+        alert.watchlistType !== 'none' &&
+        activeTriggeredAlerts[alert.id] // Алерт сработал, но еще не завершил все уведомления
+    );
+
+    activeAlerts.forEach(alert => {
+        // Проверяем, не завершены ли все уведомления
+        if (!hasAllNotificationsSent(alert)) {
+            // Восстанавливаем мерцание если оно было потеряно
+            if (!blinkingTickers[alert.watchlistType].has(alert.symbol)) {
+                startTickerBlinking(alert.symbol, alert.watchlistType, alert.condition);
+            }
+        }
+    });
 }
 
 async function checkAlerts() {
@@ -1343,10 +1366,15 @@ async function checkAlerts() {
                     // Обновляем интерфейс с подсветкой сработавшего алерта
                     highlightTriggeredAlert(alert.id, alert.condition);
 
-                    // Проверяем, все ли уведомления отправлены
-                    if (alert.notificationCount > 0 && alert.triggeredCount >= alert.notificationCount) {
+                    // УВЕЛИЧИВАЕМ СЧЕТЧИК СРАБАТЫВАНИЙ
+                    alert.triggeredCount = (alert.triggeredCount || 0) + 1;
+
+                    // ПРОВЕРЯЕМ, ЗАВЕРШИЛИСЬ ЛИ ВСЕ УВЕДОМЛЕНИЯ
+                    const allNotificationsSent = hasAllNotificationsSent(alert);
+                    
+                    if (allNotificationsSent) {
                         alert.triggered = true;
-                        // Останавливаем мерцание если все уведомления отправлены
+                        // Останавливаем мерцание только если все уведомления отправлены
                         if (alert.watchlistType && alert.watchlistType !== 'none') {
                             stopTickerBlinking(alert.symbol, alert.watchlistType);
                         }
@@ -1398,7 +1426,7 @@ async function handleTriggeredAlert(alert, currentPrice) {
     if (alert.notificationMethods.includes('telegram') && alert.chatId) {
         try {
             await sendTelegramNotification(message, alert.chatId);
-            alert.triggeredCount = (alert.triggeredCount || 0) + 1;
+            // Счетчик увеличивается в основной функции checkAlerts
         } catch (error) {
             console.error('Failed to send Telegram alert:', error);
         }
@@ -1408,7 +1436,8 @@ async function handleTriggeredAlert(alert, currentPrice) {
     showNotification('Алерт сработал',
         `Символ: ${alert.symbol}\n` +
         `Условие: ${alert.condition} ${alert.value}\n` +
-        `Текущая цена: ${formatNumber(currentPrice, 8)}`);
+        `Текущая цена: ${formatNumber(currentPrice, 8)}\n` +
+        `Уведомление ${alert.triggeredCount || 1}/${alert.notificationCount === 0 ? '∞' : alert.notificationCount}`);
 }
 
 // Функция для форматирования чисел
@@ -3065,6 +3094,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Добавлено: Обновление текущих цен каждые 5 секунд
         setInterval(updateCurrentPrices, 5000);
         updateCurrentPrices(); // Первоначальное обновление
+
+        // Добавлено: Проверяем и восстанавливаем мерцание каждую секунду
+        setInterval(checkAndRestoreBlinking, 1000);
 
         // Инициализация сортируемых списков
         initializeSortableLists();
