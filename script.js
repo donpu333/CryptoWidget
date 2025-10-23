@@ -85,9 +85,6 @@ const blinkingTickers = {
     'short-wait': new Set()
 };
 
-// Добавлено: Объект для отслеживания мерцающих алертов в списках алертов
-const blinkingAlerts = new Set();
-
 class BinanceAPIManager {
     constructor() {
         this.connectionState = {
@@ -1310,8 +1307,6 @@ function stopTickerBlinking(symbol, watchlistType) {
 
 // Добавлено: Функция для запуска мерцания алерта в списках алертов
 function startAlertBlinking(alertId, condition) {
-    blinkingAlerts.add(alertId);
-    
     const alertElement = document.getElementById(`alert-${alertId}`);
     if (!alertElement) return;
     
@@ -1319,13 +1314,11 @@ function startAlertBlinking(alertId, condition) {
     const blinkClass = condition === '>' ? 'alert-triggered-long' : 'alert-triggered-short';
     alertElement.classList.add(blinkClass);
     
-    console.log(`Запущено мерцание для алерта ${alertId}`);
+    console.log(`Запущено постоянное мерцание для алерта ${alertId}`);
 }
 
 // Добавлено: Функция для остановки мерцания алерта
 function stopAlertBlinking(alertId) {
-    blinkingAlerts.delete(alertId);
-    
     const alertElement = document.getElementById(`alert-${alertId}`);
     if (alertElement) {
         alertElement.classList.remove('alert-triggered-long', 'alert-triggered-short');
@@ -1364,7 +1357,7 @@ async function checkAlerts() {
                         startTickerBlinking(alert.symbol, alert.watchlistType, alert.condition);
                     }
 
-                    // Запускаем мерцание в списке алертов (каждую 1 секунду)
+                    // Запускаем мерцание в списке алертов (постоянное как в вотчлисте)
                     startAlertBlinking(alert.id, alert.condition);
 
                     // Отправка уведомлений и обработка срабатывания
@@ -2102,8 +2095,6 @@ function clearAllAlerts() {
     if (confirm('Вы уверены, что хотите удалить все алерты?')) {
         userAlerts = [];
         activeTriggeredAlerts = {};
-        // Останавливаем все мерцания
-        blinkingAlerts.clear();
         saveAppState();
         loadUserAlerts(currentAlertFilter);
         showNotification('Успешно', 'Все алерты удалены');
