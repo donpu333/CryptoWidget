@@ -77,6 +77,14 @@ let alertCooldowns = {};
 let activeTriggeredAlerts = {};
 let currentPrices = {}; // Добавлено: кэш текущих цен
 
+// Добавлено: Объект для отслеживания мерцающих тикеров в списках вотчлиста
+const blinkingTickers = {
+    'long': new Set(),
+    'short': new Set(),
+    'long-wait': new Set(),
+    'short-wait': new Set()
+};
+
 class BinanceAPIManager {
     constructor() {
         this.connectionState = {
@@ -1203,7 +1211,7 @@ function loadAppState() {
         console.log("Состояние загружено");
         return true;
     } catch (error) {
-        console.error("Ошибка при загрузении состояния:", error);
+        console.error("Ошибка при загрузке состояния:", error);
         return false;
     }
 }
@@ -1263,6 +1271,46 @@ function comparePrices(currentPrice, condition, targetPrice) {
     return false;
 }
 
+// Добавлено: Функция для запуска мерцания тикера в списках вотчлиста
+function startTickerBlinking(symbol, watchlistType, condition) {
+    if (!watchlistType || watchlistType === 'none') return;
+    
+    // Добавляем тикер в набор мерцающих
+    blinkingTickers[watchlistType].add(symbol);
+    
+    // Находим элемент тикера в соответствующем списке
+    const tickerElement = document.querySelector(`.ticker-item[data-ticker="${symbol}"][data-list-type="${watchlistType}"]`);
+    if (!tickerElement) return;
+    
+    // Добавляем класс мерцания в зависимости от типа алерта
+    const blinkClass = condition === '>' ? 'blinking-long' : 'blinking-short';
+    tickerElement.classList.add(blinkClass);
+    
+    console.log(`Запущено мерцание для ${symbol} в списке ${watchlistType}`);
+}
+
+// Добавлено: Функция для остановки мерцания тикера
+function stopTickerBlinking(symbol, watchlistType) {
+    if (!watchlistType || watchlistType === 'none') return;
+    
+    // Удаляем тикер из набора мерцающих
+    blinkingTickers[watchlistType].delete(symbol);
+    
+    // Находим элемент тикера и убираем классы мерцания
+    const tickerElement = document.querySelector(`.ticker-item[data-ticker="${symbol}"][data-list-type="${watchlistType}"]`);
+    if (tickerElement) {
+        tickerElement.classList.remove('blinking-long', 'blinking-short');
+    }
+    
+    console.log(`Остановлено мерцание для ${symbol} в списке ${watchlistType}`);
+}
+
+// Добавлено: Функция для проверки завершения всех уведомлений
+function hasAllNotificationsSent(alert) {
+    if (alert.notificationCount === 0) return false; // Бесконечные уведомления - не останавливаем мерцание
+    return alert.triggeredCount >= alert.notificationCount;
+}
+
 async function checkAlerts() {
     const now = Date.now();
     for (const alert of userAlerts.filter(a => !a.triggered)) {
@@ -1282,6 +1330,11 @@ async function checkAlerts() {
                     // Логируем детали срабатывания для отладки
                     console.log(`Alert triggered: ${alert.symbol} ${alert.condition} ${alert.value} | Current: ${price} | Time: ${new Date().toISOString()}`);
 
+                    // Запускаем мерцание в вотчлисте если указан
+                    if (alert.watchlistType && alert.watchlistType !== 'none') {
+                        startTickerBlinking(alert.symbol, alert.watchlistType, alert.condition);
+                    }
+
                     // Отправка уведомлений и обработка срабатывания
                     await handleTriggeredAlert(alert, price);
                     alertCooldowns[cooldownKey] = now;
@@ -1290,8 +1343,13 @@ async function checkAlerts() {
                     // Обновляем интерфейс с подсветкой сработавшего алерта
                     highlightTriggeredAlert(alert.id, alert.condition);
 
+                    // Проверяем, все ли уведомления отправлены
                     if (alert.notificationCount > 0 && alert.triggeredCount >= alert.notificationCount) {
                         alert.triggered = true;
+                        // Останавливаем мерцание если все уведомления отправлены
+                        if (alert.watchlistType && alert.watchlistType !== 'none') {
+                            stopTickerBlinking(alert.symbol, alert.watchlistType);
+                        }
                         console.log(`Alert ${alert.id} reached notification limit`);
                     }
 
@@ -1705,32 +1763,13 @@ async function createAlertForSymbol(symbol, currentPrice) {
     }
 }
 
-// НОВАЯ ФУНКЦИЯ: Добавление тикера в ватчлист при создании алерта
-function addTickerToWatchlistFromAlert(symbol, condition, value, alertType) {
-    let targetListType = '';
-    
-    // Определяем в какой список добавить тикер на основе типа алерта и условия
-    if (alertType === 'price') {
-        if (condition === '>') {
-            targetListType = 'long'; // Пробой лонг
-        } else if (condition === '<') {
-            targetListType = 'short'; // Пробой шорт
-        }
-    } else if (alertType === 'liquidation') {
-        if (condition === '>') {
-            targetListType = 'long-wait'; // Ложный пробой лонг
-        } else if (condition === '<') {
-            targetListType = 'short-wait'; // Ложный пробой шорт
-        }
-    }
-    
-    // Если определили целевой список и тикера там еще нет
-    if (targetListType && !tickersData[targetListType][symbol]) {
+// Добавлено: Функция для добавления тикера в соответствующий список вотчлиста
+function addTickerToWatchlist(symbol, watchlistType) {
+    if (!tickersData[watchlistType][symbol]) {
         const now = new Date();
         const isBinanceTicker = allBinanceTickers.hasOwnProperty(symbol);
         
-        // Создаем запись тикера
-        tickersData[targetListType][symbol] = {
+        tickersData[watchlistType][symbol] = {
             name: isBinanceTicker ? allBinanceTickers[symbol].name : symbol.replace(/USDT$/, ''),
             price: '0.000000',
             change: '0.00',
@@ -1738,25 +1777,23 @@ function addTickerToWatchlistFromAlert(symbol, condition, value, alertType) {
             addedDate: now.toISOString(),
             stars: 0,
             marketType: isBinanceTicker ? allBinanceTickers[symbol].type : 'spot',
-            comment: `Алерт: ${condition} ${value}`,
-            trend: null,
-            fromAlert: true // Помечаем что тикер добавлен из алерта
+            comment: '',
+            trend: null
         };
-        
+
         // Добавляем на страницу
-        const list = document.getElementById(`${targetListType}-list`);
-        if (list) {
-            addTickerToList(symbol, targetListType);
-        }
-        
-        // Сохраняем изменения
+        const list = document.getElementById(`${watchlistType}-list`);
+        addTickerToList(symbol, watchlistType);
         saveTickersToStorage();
         
-        console.log(`Тикер ${symbol} добавлен в список ${targetListType} из алерта`);
+        // Сортируем список по звездам
+        sortTickersByStars(watchlistType);
+        
+        console.log(`Тикер ${symbol} добавлен в список ${watchlistType}`);
     }
 }
 
-async function addUserAlert(symbol, type, condition, value, notificationMethods, notificationCount, chatId) {
+async function addUserAlert(symbol, type, condition, value, notificationMethods, notificationCount, chatId, watchlistType = null) {
     try {
         // Проверяем наличие подключения для Telegram
         if (notificationMethods.includes('telegram')) {
@@ -1787,18 +1824,22 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
             createdAt: new Date().toISOString(),
             triggered: false,
             lastNotificationTime: 0,
-            marketType
+            marketType,
+            watchlistType: watchlistType // Добавляем тип вотчлиста
         };
 
         userAlerts.push(newAlert);
         saveAppState();
 
-        // ДОБАВЛЕНО: Добавляем тикер в соответствующий ватчлист
-        addTickerToWatchlistFromAlert(symbol, condition, value, type);
+        // Если указан тип вотчлиста, добавляем тикер в соответствующий список
+        if (watchlistType && watchlistType !== 'none') {
+            addTickerToWatchlist(symbol, watchlistType);
+        }
 
         // Обновляем список алертов сразу после добавления
         loadUserAlerts(currentAlertFilter);
         
+        showNotification('Успешно', `Алерт для ${symbol} создан`);
         return true;
     } catch (error) {
         console.error("Ошибка при добавлении алерта:", error);
@@ -1919,6 +1960,13 @@ function loadUserAlerts(filter = 'active') {
             </div>
         ` : '';
 
+        // Добавлено: Отображение типа вотчлиста
+        const watchlistBadge = alert.watchlistType && alert.watchlistType !== 'none' ? `
+            <span class="watchlist-badge ${alert.watchlistType}">
+                ${getWatchlistTypeName(alert.watchlistType)}
+            </span>
+        ` : '';
+
         const alertHtml = `
             <div id="alert-${alert.id}" class="alert-card rounded-md p-4 shadow-sm ${isActiveTriggered ? (isUp ? 'alert-triggered-long' : 'alert-triggered-short') : ''}" data-symbol="${alert.symbol}">
                 <div class="flex justify-between items-start">
@@ -1928,6 +1976,7 @@ function loadUserAlerts(filter = 'active') {
                                 <div>
                                     <div class="flex items-center">
                                         <h3 class="font-medium text-light">${alert.symbol}</h3>
+                                        ${watchlistBadge}
                                         <button onclick="copyToClipboard('${alert.symbol}')" class="copy-btn relative">
                                             <i class="far fa-copy"></i>
                                             <span class="copy-tooltip">Копировать тикер</span>
@@ -2006,6 +2055,17 @@ function loadUserAlerts(filter = 'active') {
     updateAlertsCounter();
 }
 
+// Добавлено: Функция для получения читаемого названия типа вотчлиста
+function getWatchlistTypeName(watchlistType) {
+    const names = {
+        'long': 'Пробой лонг',
+        'short': 'Пробой шорт', 
+        'long-wait': 'Ложный пробой лонг',
+        'short-wait': 'Ложный пробой шорт'
+    };
+    return names[watchlistType] || watchlistType;
+}
+
 function updateAlertsCounter() {
     const activeLongAlertsCount = userAlerts.filter(alert => !alert.triggered && alert.condition === '>').length;
     const activeShortAlertsCount = userAlerts.filter(alert => !alert.triggered && alert.condition === '<').length;
@@ -2053,6 +2113,12 @@ function reactivateAlert(alertId) {
     alert.triggered = false;
     alert.triggeredCount = 0;
     delete activeTriggeredAlerts[alertId];
+    
+    // Останавливаем мерцание при реактивации
+    if (alert.watchlistType && alert.watchlistType !== 'none') {
+        stopTickerBlinking(alert.symbol, alert.watchlistType);
+    }
+    
     saveAppState();
     loadUserAlerts(currentAlertFilter);
     showNotification('Успешно', 'Алерт снова активен');
@@ -2136,6 +2202,16 @@ function openEditModal(alert) {
                         <span>Применить</span>
                     </button>
                 </div>
+            </div>
+            <div>
+                <label class="block text-gray-300 text-sm font-medium mb-2">Вотчлист</label>
+                <select id="editWatchlistType" class="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                    <option value="none" ${!alert.watchlistType || alert.watchlistType === 'none' ? 'selected' : ''}>Не добавлять в вотчлист</option>
+                    <option value="long" ${alert.watchlistType === 'long' ? 'selected' : ''}>Пробой лонг</option>
+                    <option value="short" ${alert.watchlistType === 'short' ? 'selected' : ''}>Пробой шорт</option>
+                    <option value="long-wait" ${alert.watchlistType === 'long-wait' ? 'selected' : ''}>Ложный пробой лонг</option>
+                    <option value="short-wait" ${alert.watchlistType === 'short-wait' ? 'selected' : ''}>Ложный пробой шорт</option>
+                </select>
             </div>
             <div>
                 <label class="block text-gray-300 text-sm font-medium mb-2">Количество уведомлений</label>
@@ -2256,6 +2332,7 @@ function handleEditSubmit(alertId) {
     const type = document.getElementById('editAlertType')?.value;
     const condition = document.getElementById('editCondition')?.value;
     const value = document.getElementById('editValue')?.value;
+    const watchlistType = document.getElementById('editWatchlistType')?.value;
     const useTelegram = document.getElementById('editTelegram')?.checked;
     const useEmail = document.getElementById('editEmail')?.checked;
     const userEmail = useEmail ? document.getElementById('editUserEmail')?.value : '';
@@ -2300,11 +2377,28 @@ function handleEditSubmit(alertId) {
         createdAt: userAlerts.find(a => a.id === parseInt(alertId))?.createdAt || new Date().toISOString(),
         triggered: false,
         lastNotificationTime: 0,
-        marketType: getMarketTypeBySymbol(symbol)
+        marketType: getMarketTypeBySymbol(symbol),
+        watchlistType: watchlistType
     };
 
     // Обновляем массив алертов
     userAlerts = userAlerts.map(a => a.id === parseInt(alertId) ? updatedAlert : a);
+    
+    // Обновляем вотчлист если изменился тип
+    const oldAlert = userAlerts.find(a => a.id === parseInt(alertId));
+    if (oldAlert && oldAlert.watchlistType !== watchlistType) {
+        // Останавливаем мерцание в старом списке
+        if (oldAlert.watchlistType && oldAlert.watchlistType !== 'none') {
+            stopTickerBlinking(symbol, oldAlert.watchlistType);
+            delete tickersData[oldAlert.watchlistType][symbol];
+        }
+        // Добавляем в новый список если выбран
+        if (watchlistType && watchlistType !== 'none') {
+            addTickerToWatchlist(symbol, watchlistType);
+        }
+        saveTickersToStorage();
+    }
+
     saveAppState();
 
     if (useEmail) {
@@ -2501,6 +2595,12 @@ function resetForm() {
             emailCheckbox.checked = false;
         }
 
+        // Сбрасываем выбор вотчлиста
+        const watchlistType = document.getElementById('watchlistType');
+        if (watchlistType) {
+            watchlistType.value = 'none';
+        }
+
         // Скрываем дополнительные поля и очищаем их
         const userChatIdInput = document.getElementById('userChatId');
         if (userChatIdInput) {
@@ -2648,6 +2748,7 @@ function setupEventListeners() {
             const alertType = document.getElementById('alertType')?.value;
             const condition = document.getElementById('condition')?.value;
             const value = document.getElementById('value')?.value;
+            const watchlistType = document.getElementById('watchlistType')?.value;
             const useTelegram = document.getElementById('telegram')?.checked;
             const useEmail = document.getElementById('email')?.checked;
             const userEmail = useEmail ? document.getElementById('userEmail')?.value : '';
@@ -2695,7 +2796,8 @@ function setupEventListeners() {
                     createdAt: userAlerts.find(a => a.id === parseInt(editAlertId))?.createdAt || new Date().toISOString(),
                     triggered: false,
                     lastNotificationTime: 0,
-                    marketType: getMarketTypeBySymbol(symbol)
+                    marketType: getMarketTypeBySymbol(symbol),
+                    watchlistType: watchlistType
                 };
 
                 userAlerts = userAlerts.map(a => a.id === parseInt(editAlertId) ? updatedAlert : a);
@@ -2710,7 +2812,7 @@ function setupEventListeners() {
                 resetForm();
             } else {
                 // Создание нового алерта
-                const success = await addUserAlert(symbol, alertType, condition, value, notificationMethods, notificationCount, userChatId);
+                const success = await addUserAlert(symbol, alertType, condition, value, notificationMethods, notificationCount, userChatId, watchlistType);
                 if (success) {
                     showNotification('Успешно', `Алерт для ${symbol} создан`);
                     resetForm();
@@ -2781,6 +2883,7 @@ function setupEventListeners() {
                 const userEmail = useEmail ? document.getElementById('userEmail')?.value : null;
                 const notificationCount = document.getElementById('notificationCount')?.value || '5';
                 const alertType = document.getElementById('alertType')?.value || 'price';
+                const watchlistType = document.getElementById('watchlistType')?.value || 'none';
 
                 const notificationMethods = [];
                 if (useTelegram) notificationMethods.push('telegram');
@@ -2837,7 +2940,8 @@ function setupEventListeners() {
                         parseFloat(value),
                         notificationMethods,
                         notificationCount,
-                        userChatId
+                        userChatId,
+                        watchlistType
                     );
 
                     if (success) {
