@@ -10,6 +10,268 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Стили для мерцания алертов */
+        .alert-triggered-long {
+            animation: flashLong 0.5s ease-in-out 3;
+            border-left: 4px solid #10B981;
+        }
+        
+        .alert-triggered-short {
+            animation: flashShort 0.5s ease-in-out 3;
+            border-left: 4px solid #EF4444;
+        }
+        
+        @keyframes flashLong {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(16, 185, 129, 0.2); }
+        }
+        
+        @keyframes flashShort {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(239, 68, 68, 0.2); }
+        }
+        
+        /* Стили для тикеров в вотчлисте */
+        .ticker-item.alert-triggered-long {
+            animation: flashLong 0.5s ease-in-out 3;
+            border-left: 4px solid #10B981;
+        }
+        
+        .ticker-item.alert-triggered-short {
+            animation: flashShort 0.5s ease-in-out 3;
+            border-left: 4px solid #EF4444;
+        }
+        
+        /* Стили для бейджей вотчлиста */
+        .watchlist-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            font-weight: 500;
+        }
+        
+        .watchlist-badge.long {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid #10B981;
+        }
+        
+        .watchlist-badge.short {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+            border: 1px solid #EF4444;
+        }
+        
+        .watchlist-badge.long-wait {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #F59E0B;
+            border: 1px solid #F59E0B;
+        }
+        
+        .watchlist-badge.short-wait {
+            background-color: rgba(139, 92, 246, 0.2);
+            color: #8B5CF6;
+            border: 1px solid #8B5CF6;
+        }
+        
+        /* Стили для текущей цены в алертах */
+        .current-price-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            padding: 4px 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        
+        .current-price-label {
+            color: #9CA3AF;
+        }
+        
+        .current-price-value {
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .current-price-value.price-up {
+            color: #10B981;
+        }
+        
+        .current-price-value.price-down {
+            color: #EF4444;
+        }
+        
+        .apply-price-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 6px;
+            background-color: #3B82F6;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .apply-price-btn:hover {
+            background-color: #2563EB;
+        }
+        
+        /* Стили для индикатора тренда */
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        
+        .trend-up {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+        }
+        
+        .trend-down {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+        }
+        
+        .trend-neutral {
+            background-color: rgba(156, 163, 175, 0.2);
+            color: #9CA3AF;
+        }
+        
+        /* Стили для звезд рейтинга */
+        .star-rating {
+            display: flex;
+            gap: 2px;
+            margin-left: 8px;
+        }
+        
+        .star {
+            color: #F59E0B;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .star:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Стили для комментариев */
+        .comment-btn {
+            position: relative;
+        }
+        
+        .comment-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1F2937;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 10;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+            border: 1px solid #374151;
+        }
+        
+        .comment-btn:hover .comment-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Стили для подсказок тикеров */
+        .suggestions-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #1F2937;
+            border: 1px solid #374151;
+            border-radius: 0 0 4px 4px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .suggestion-item:hover {
+            background-color: #374151;
+        }
+        
+        .suggestion-type {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .spot-type {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #3B82F6;
+        }
+        
+        .futures-type {
+            background-color: rgba(139, 92, 246, 0.2);
+            color: #8B5CF6;
+        }
+        
+        /* Стили для статуса подключения */
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-connected {
+            background-color: #10B981;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-error {
+            background-color: #EF4444;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-connecting {
+            background-color: #F59E0B;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
 </head>
 <body class="bg-dark">
     <nav class="shadow-sm">
@@ -92,7 +354,7 @@
                                 </div>
                                 <div id="marketTypeHint" class="market-type-hint"></div>
                             </div>
-                            <div id="coinError" class="validation-message">Пожалуйста, выберите криптовалюту</div>
+                            <div id="coinSearchError" class="validation-message">Пожалуйста, выберите криптовалюту</div>
                             <select id="symbol" size="5" class="w-full mt-2 px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary hidden">
                             </select>
                         </div>
@@ -170,6 +432,7 @@
                                         placeholder="Ваш Chat ID"
                                         class="ml-2 px-2 py-1 text-sm rounded-md hidden"
                                     >
+                                    <div id="userChatIdError" class="validation-message">Пожалуйста, укажите Telegram Chat ID</div>
                                 </div>
                                 <div class="notification-method">
                                     <input id="email" type="checkbox" class="h-4 w-4 focus:ring-primary">
