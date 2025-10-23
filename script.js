@@ -1276,9 +1276,9 @@ function flashTickerInWatchlist(symbol, condition) {
         if (tickerItem) {
             // Добавляем класс мерцания в зависимости от типа алерта
             if (condition === '>') {
-                tickerItem.classList.add('alert-triggered-long');
+                tickerItem.classList.add('alert-triggered-long', 'permanent-flash');
             } else {
-                tickerItem.classList.add('alert-triggered-short');
+                tickerItem.classList.add('alert-triggered-short', 'permanent-flash');
             }
 
             // Перемещаем тикер в начало списка
@@ -1286,11 +1286,6 @@ function flashTickerInWatchlist(symbol, condition) {
             if (list && tickerItem.parentElement === list) {
                 list.insertBefore(tickerItem, list.firstChild);
             }
-
-            // Через 5 секунд убираем анимацию
-            setTimeout(() => {
-                tickerItem.classList.remove('alert-triggered-long', 'alert-triggered-short');
-            }, 5000);
         }
     });
 }
@@ -1348,9 +1343,9 @@ function highlightTriggeredAlert(alertId, condition) {
 
     // Добавляем класс для анимации в зависимости от типа алерта
     if (condition === '>') {
-        alertElement.classList.add('alert-triggered-long');
+        alertElement.classList.add('alert-triggered-long', 'permanent-flash');
     } else {
-        alertElement.classList.add('alert-triggered-short');
+        alertElement.classList.add('alert-triggered-short', 'permanent-flash');
     }
 
     // Перемещаем алерт в начало списка
@@ -1358,11 +1353,6 @@ function highlightTriggeredAlert(alertId, condition) {
     if (container) {
         container.insertBefore(alertElement, container.firstChild);
     }
-
-    // Через 5 секунд убираем анимацию
-    setTimeout(() => {
-        alertElement.classList.remove('alert-triggered-long', 'alert-triggered-short');
-    }, 5000);
 }
 
 // Новая функция для обработки сработавшего алерта
@@ -1945,7 +1935,7 @@ function loadUserAlerts(filter = 'active') {
         ` : '';
 
         const alertHtml = `
-            <div id="alert-${alert.id}" class="alert-card rounded-md p-4 shadow-sm ${isActiveTriggered ? (isUp ? 'alert-triggered-long' : 'alert-triggered-short') : ''}" data-symbol="${alert.symbol}">
+            <div id="alert-${alert.id}" class="alert-card rounded-md p-4 shadow-sm ${isActiveTriggered ? (isUp ? 'alert-triggered-long permanent-flash' : 'alert-triggered-short permanent-flash') : ''}" data-symbol="${alert.symbol}">
                 <div class="flex justify-between items-start">
                     <div class="flex items-center">
                         <div class="flex-1">
