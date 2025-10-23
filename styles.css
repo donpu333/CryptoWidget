@@ -49,6 +49,38 @@ body {
     100% { opacity: 1; }
 }
 
+/* Стили для мерцания алертов */
+.alert-triggered-long {
+    animation: flashLong 0.5s ease-in-out 3;
+    border-left: 4px solid var(--accent-green);
+}
+
+.alert-triggered-short {
+    animation: flashShort 0.5s ease-in-out 3;
+    border-left: 4px solid var(--accent-red);
+}
+
+@keyframes flashLong {
+    0%, 100% { background-color: transparent; }
+    50% { background-color: rgba(46, 125, 50, 0.2); }
+}
+
+@keyframes flashShort {
+    0%, 100% { background-color: transparent; }
+    50% { background-color: rgba(198, 40, 40, 0.2); }
+}
+
+/* Стили для тикеров в вотчлисте */
+.ticker-item.alert-triggered-long {
+    animation: flashLong 0.5s ease-in-out 3;
+    border-left: 4px solid var(--accent-green);
+}
+
+.ticker-item.alert-triggered-short {
+    animation: flashShort 0.5s ease-in-out 3;
+    border-left: 4px solid var(--accent-red);
+}
+
 .btn-primary {
     background-color: var(--primary);
     transition: all 0.3s ease;
@@ -347,6 +379,14 @@ footer {
     font-weight: 500;
 }
 
+.current-price-value.price-up {
+    color: var(--accent-green);
+}
+
+.current-price-value.price-down {
+    color: var(--accent-red);
+}
+
 .apply-price-btn {
     color: var(--primary);
     cursor: pointer;
@@ -355,10 +395,15 @@ footer {
     display: flex;
     align-items: center;
     gap: 0.25rem;
+    padding: 2px 6px;
+    background-color: var(--primary);
+    color: white;
+    border-radius: 4px;
 }
 
 .apply-price-btn:hover {
-    color: var(--secondary);
+    background-color: var(--secondary);
+    color: white;
 }
 
 .validation-error {
@@ -680,31 +725,6 @@ nav .nav-container {
     padding: 0 1rem;
 }
 
-/* New styles for triggered alerts */
-.alert-triggered-long {
-    animation: pulse-long 1s infinite;
-    border-left: 4px solid var(--accent-green);
-    order: -1;
-}
-
-.alert-triggered-short {
-    animation: pulse-short 1s infinite;
-    border-left: 4px solid var(--accent-red);
-    order: -1;
-}
-
-@keyframes pulse-long {
-    0% { background-color: rgba(46, 125, 50, 0.2); }
-    50% { background-color: rgba(46, 125, 50, 0.5); }
-    100% { background-color: rgba(46, 125, 50, 0.2); }
-}
-
-@keyframes pulse-short {
-    0% { background-color: rgba(198, 40, 40, 0.2); }
-    50% { background-color: rgba(198, 40, 40, 0.5); }
-    100% { background-color: rgba(198, 40, 40, 0.2); }
-}
-
 /* Copy button styles */
 .copy-btn {
     background-color: transparent;
@@ -715,6 +735,7 @@ nav .nav-container {
     margin-left: 0.5rem;
     font-size: 0.75rem;
     transition: color 0.2s;
+    position: relative;
 }
 
 .copy-btn:hover {
@@ -738,6 +759,7 @@ nav .nav-container {
     opacity: 0;
     transition: opacity 0.3s;
     pointer-events: none;
+    white-space: nowrap;
 }
 
 .copy-btn:hover .copy-tooltip {
@@ -1088,22 +1110,21 @@ nav .nav-container {
 
 .comment-tooltip {
     position: absolute;
-    top: 50%;
+    top: -40px;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
     background-color: #2D2D2D;
     color: white;
     padding: 8px 12px;
     border-radius: 6px;
     font-size: 0.8rem;
-    white-space: nowrap;
+    white-space: normal;
     z-index: 100;
     box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     display: none;
     min-width: 150px;
     max-width: 250px;
     word-wrap: break-word;
-    white-space: normal;
     text-align: center;
 }
 
@@ -1122,6 +1143,11 @@ nav .nav-container {
     cursor: pointer;
     font-size: 0.85rem;
     margin-right: 2px;
+    transition: transform 0.2s;
+}
+
+.star:hover {
+    transform: scale(1.1);
 }
 
 .stats-bar {
@@ -1257,6 +1283,7 @@ nav .nav-container {
     transition: background-color 0.2s;
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
 .suggestion-item:hover {
@@ -1269,18 +1296,18 @@ nav .nav-container {
 
 .suggestion-type {
     font-size: 0.75rem;
-    color: #aaa;
-    background: rgba(255, 255, 255, 0.1);
     padding: 2px 6px;
     border-radius: 4px;
 }
 
 .spot-type {
-    color: #4caf50;
+    background-color: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
 }
 
 .futures-type {
-    color: #2196f3;
+    background-color: rgba(33, 150, 243, 0.2);
+    color: #2196F3;
 }
 
 /* Clear all button */
@@ -1302,12 +1329,14 @@ nav .nav-container {
 
 /* Trend indicators */
 .trend-indicator {
-    display: inline-block;
-    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.7rem;
     font-weight: 500;
+    margin-left: 8px;
 }
 
 .trend-up {
@@ -1389,142 +1418,37 @@ nav .nav-container {
     text-decoration: none;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .dashboard {
-        grid-template-columns: 1fr;
-    }
-
-    .panel {
-        min-width: auto;
-    }
-
-    .stats-bar {
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    .ticker-item {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-
-    .ticker-info {
-        flex: 1 1 100%;
-        margin-bottom: 10px;
-    }
-
-    .price-info {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .added-date {
-        margin-top: 0;
-        margin-left: 10px;
-    }
-
-    .action-buttons {
-        flex: 1 1 100%;
-        justify-content: flex-end;
-        margin-top: 8px;
-    }
-
-    .panel-header {
-        font-size: 1rem;
-        padding: 12px;
-    }
-
-    .panel-header i {
-        font-size: 1rem;
-    }
-
-    .ticker-input {
-        padding: 10px 12px;
-        font-size: 0.9rem;
-    }
-
-    .add-btn {
-        padding: 0 15px;
-        font-size: 1rem;
-    }
+/* Watchlist badge styles */
+.watchlist-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    font-weight: 500;
 }
 
-@media (max-width: 480px) {
-    .stats-bar {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .stat-value {
-        font-size: 1.2rem;
-    }
-
-    .stat-label {
-        font-size: 0.7rem;
-    }
-
-    .modal-content {
-        padding: 15px;
-    }
-
-    .modal-title {
-        font-size: 1.1rem;
-    }
-
-    .ticker-item {
-        padding: 10px;
-    }
-
-    .action-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 0.85rem;
-    }
-
-    .ticker-name {
-        font-size: 1rem;
-    }
-
-    .price-value {
-        font-size: 0.85rem;
-    }
-
-    .added-date {
-        font-size: 0.7rem;
-    }
+.watchlist-badge.long {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+    border: 1px solid #10B981;
 }
 
-/* Animation for pulse effect */
-@keyframes pulse {
-    0% {
-        transform: scale(0.95);
-        opacity: 0.7;
-    }
-    70% {
-        transform: scale(1.1);
-        opacity: 0.3;
-    }
-    100% {
-        transform: scale(0.95);
-        opacity: 0.7;
-    }
+.watchlist-badge.short {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #EF4444;
+    border: 1px solid #EF4444;
 }
 
-/* Specific styles for new panels */
-.panel.breakout-long {
-    border-left: 4px solid #10b981;
+.watchlist-badge.long-wait {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+    border: 1px solid #F59E0B;
 }
 
-.panel.breakout-short {
-    border-left: 4px solid #ef4444;
-}
-
-.panel.false-breakout-long {
-    border-left: 4px solid #f59e0b;
-}
-
-.panel.false-breakout-short {
-    border-left: 4px solid #f59e0b;
+.watchlist-badge.short-wait {
+    background-color: rgba(139, 92, 246, 0.2);
+    color: #8B5CF6;
+    border: 1px solid #8B5CF6;
 }
 
 /* File input styles */
@@ -1540,6 +1464,7 @@ nav .nav-container {
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
+    padding: 0.5rem 1rem;
 }
 
 .file-input-label:hover {
@@ -1554,32 +1479,6 @@ nav .nav-container {
     height: 100%;
     opacity: 0;
     cursor: pointer;
-}
-
-/* Watchlist badge styles */
-.watchlist-badge {
-    background-color: var(--accent-orange);
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    margin-left: 0.5rem;
-}
-
-.watchlist-badge.long {
-    background-color: var(--accent-green);
-}
-
-.watchlist-badge.short {
-    background-color: var(--accent-red);
-}
-
-.watchlist-badge.long-wait {
-    background-color: var(--warning-color);
-}
-
-.watchlist-badge.short-wait {
-    background-color: var(--warning-color);
 }
 
 /* Sortable ghost styles */
@@ -1658,6 +1557,17 @@ nav .nav-container {
     .panel {
         min-height: 500px;
     }
+    
+    .ticker-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .action-buttons {
+        width: 100%;
+        justify-content: flex-start;
+        margin-top: 10px;
+    }
 }
 
 /* Loading states */
@@ -1679,4 +1589,83 @@ nav .nav-container {
 /* Warning states */
 .warning {
     color: var(--warning-color);
+}
+
+/* Status dot animations */
+.status-dot.status-connected {
+    background-color: #10B981;
+    animation: pulse 2s infinite;
+}
+
+.status-dot.status-error {
+    background-color: #EF4444;
+    animation: pulse 2s infinite;
+}
+
+.status-dot.status-connecting {
+    background-color: #F59E0B;
+    animation: pulse 2s infinite;
+}
+
+/* Connection status styles */
+.connection-status.connected {
+    color: #10B981;
+}
+
+.connection-status.error {
+    color: #EF4444;
+}
+
+.connection-status.connecting {
+    color: #F59E0B;
+}
+
+/* Responsive menu */
+@media (max-width: 768px) {
+    .menu-content {
+        right: auto;
+        left: 0;
+        min-width: 180px;
+    }
+    
+    .compact-filters {
+        flex-wrap: wrap;
+    }
+    
+    .compact-filter-btn {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+}
+
+/* High contrast support */
+@media (prefers-contrast: high) {
+    .alert-card {
+        border: 2px solid var(--primary);
+    }
+    
+    .ticker-item {
+        border: 1px solid;
+    }
+    
+    .btn-primary {
+        border: 1px solid var(--secondary);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .alert-triggered-long,
+    .alert-triggered-short,
+    .ticker-item.alert-triggered-long,
+    .ticker-item.alert-triggered-short {
+        animation: none;
+        background-color: rgba(33, 150, 243, 0.1);
+    }
 }
