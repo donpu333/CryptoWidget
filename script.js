@@ -77,6 +77,10 @@ let alertCooldowns = {};
 let activeTriggeredAlerts = {};
 let currentPrices = {}; // Добавлено: кэш текущих цен
 
+// Глобальные переменные для рыночных данных
+let allFutures = [];
+let allSpot = [];
+
 class BinanceAPIManager {
     constructor() {
         this.connectionState = {
@@ -1263,6 +1267,34 @@ function comparePrices(currentPrice, condition, targetPrice) {
     return false;
 }
 
+// Функция для мерцания тикера в списках вотчлиста
+function flashTickerInWatchlist(symbol, condition) {
+    const listTypes = ['long', 'short', 'long-wait', 'short-wait'];
+    
+    listTypes.forEach(listType => {
+        const tickerItem = document.querySelector(`.ticker-item[data-ticker="${symbol}"][data-list-type="${listType}"]`);
+        if (tickerItem) {
+            // Добавляем класс мерцания в зависимости от типа алерта
+            if (condition === '>') {
+                tickerItem.classList.add('alert-triggered-long');
+            } else {
+                tickerItem.classList.add('alert-triggered-short');
+            }
+
+            // Перемещаем тикер в начало списка
+            const list = document.getElementById(`${listType}-list`);
+            if (list && tickerItem.parentElement === list) {
+                list.insertBefore(tickerItem, list.firstChild);
+            }
+
+            // Через 5 секунд убираем анимацию
+            setTimeout(() => {
+                tickerItem.classList.remove('alert-triggered-long', 'alert-triggered-short');
+            }, 5000);
+        }
+    });
+}
+
 async function checkAlerts() {
     const now = Date.now();
     for (const alert of userAlerts.filter(a => !a.triggered)) {
@@ -1281,6 +1313,9 @@ async function checkAlerts() {
                 if (now - lastNotification > 60000) { // 60 секунд кд
                     // Логируем детали срабатывания для отладки
                     console.log(`Alert triggered: ${alert.symbol} ${alert.condition} ${alert.value} | Current: ${price} | Time: ${new Date().toISOString()}`);
+
+                    // Вызываем мерцание тикера во всех списках вотчлиста
+                    flashTickerInWatchlist(alert.symbol, alert.condition);
 
                     // Отправка уведомлений и обработка срабатывания
                     await handleTriggeredAlert(alert, price);
