@@ -77,6 +77,14 @@ let alertCooldowns = {};
 let activeTriggeredAlerts = {};
 let currentPrices = {}; // Добавлено: кэш текущих цен
 
+// Добавлено: Объект для отслеживания мерцающих тикеров в списках вотчлиста
+const blinkingTickers = {
+    'long': new Set(),
+    'short': new Set(),
+    'long-wait': new Set(),
+    'short-wait': new Set()
+};
+
 class BinanceAPIManager {
     constructor() {
         this.connectionState = {
@@ -1263,6 +1271,46 @@ function comparePrices(currentPrice, condition, targetPrice) {
     return false;
 }
 
+// Добавлено: Функция для запуска мерцания тикера в списках вотчлиста
+function startTickerBlinking(symbol, watchlistType, condition) {
+    if (!watchlistType || watchlistType === 'none') return;
+    
+    // Добавляем тикер в набор мерцающих
+    blinkingTickers[watchlistType].add(symbol);
+    
+    // Находим элемент тикера в соответствующем списке
+    const tickerElement = document.querySelector(`.ticker-item[data-ticker="${symbol}"][data-list-type="${watchlistType}"]`);
+    if (!tickerElement) return;
+    
+    // Добавляем класс мерцания в зависимости от типа алерта
+    const blinkClass = condition === '>' ? 'blinking-long' : 'blinking-short';
+    tickerElement.classList.add(blinkClass);
+    
+    console.log(`Запущено мерцание для ${symbol} в списке ${watchlistType}`);
+}
+
+// Добавлено: Функция для остановки мерцания тикера
+function stopTickerBlinking(symbol, watchlistType) {
+    if (!watchlistType || watchlistType === 'none') return;
+    
+    // Удаляем тикер из набора мерцающих
+    blinkingTickers[watchlistType].delete(symbol);
+    
+    // Находим элемент тикера и убираем классы мерцания
+    const tickerElement = document.querySelector(`.ticker-item[data-ticker="${symbol}"][data-list-type="${watchlistType}"]`);
+    if (tickerElement) {
+        tickerElement.classList.remove('blinking-long', 'blinking-short');
+    }
+    
+    console.log(`Остановлено мерцание для ${symbol} в списке ${watchlistType}`);
+}
+
+// Добавлено: Функция для проверки завершения всех уведомлений
+function hasAllNotificationsSent(alert) {
+    if (alert.notificationCount === 0) return false; // Бесконечные уведомления - не останавливаем мерцание
+    return alert.triggeredCount >= alert.notificationCount;
+}
+
 async function checkAlerts() {
     const now = Date.now();
     for (const alert of userAlerts.filter(a => !a.triggered)) {
@@ -1282,6 +1330,11 @@ async function checkAlerts() {
                     // Логируем детали срабатывания для отладки
                     console.log(`Alert triggered: ${alert.symbol} ${alert.condition} ${alert.value} | Current: ${price} | Time: ${new Date().toISOString()}`);
 
+                    // Запускаем мерцание в вотчлисте если указан
+                    if (alert.watchlistType && alert.watchlistType !== 'none') {
+                        startTickerBlinking(alert.symbol, alert.watchlistType, alert.condition);
+                    }
+
                     // Отправка уведомлений и обработка срабатывания
                     await handleTriggeredAlert(alert, price);
                     alertCooldowns[cooldownKey] = now;
@@ -1290,8 +1343,13 @@ async function checkAlerts() {
                     // Обновляем интерфейс с подсветкой сработавшего алерта
                     highlightTriggeredAlert(alert.id, alert.condition);
 
+                    // Проверяем, все ли уведомления отправлены
                     if (alert.notificationCount > 0 && alert.triggeredCount >= alert.notificationCount) {
                         alert.triggered = true;
+                        // Останавливаем мерцание если все уведомления отправлены
+                        if (alert.watchlistType && alert.watchlistType !== 'none') {
+                            stopTickerBlinking(alert.symbol, alert.watchlistType);
+                        }
                         console.log(`Alert ${alert.id} reached notification limit`);
                     }
 
@@ -1335,32 +1393,6 @@ async function handleTriggeredAlert(alert, currentPrice) {
     const message = `🚨 Алерт сработал!\nСимвол: ${alert.symbol}\n` +
         `Условие: ${alert.condition} ${alert.value}\n` +
         `Текущая цена: ${formatNumber(currentPrice, 8)}`;
-
-    // Определяем тип вотчлиста на основе условия алерта
-    let watchlistType = '';
-    if (alert.condition === '>') {
-        watchlistType = 'long'; // Пробой лонг
-    } else if (alert.condition === '<') {
-        watchlistType = 'short'; // Пробой шорт
-    }
-
-    // Добавляем тикер в соответствующий список вотчлиста
-    if (watchlistType && !tickersData[watchlistType][alert.symbol]) {
-        addTickerToWatchlist(alert.symbol, watchlistType);
-        
-        // Добавляем класс для мерцания новому элементу
-        setTimeout(() => {
-            const newTickerItem = document.querySelector(`.ticker-item[data-ticker="${alert.symbol}"][data-list-type="${watchlistType}"]`);
-            if (newTickerItem) {
-                newTickerItem.classList.add('alert-triggered-flash');
-                
-                // Убираем мерцание через 5 секунд
-                setTimeout(() => {
-                    newTickerItem.classList.remove('alert-triggered-flash');
-                }, 5000);
-            }
-        }, 100);
-    }
 
     // Отправка в Telegram
     if (alert.notificationMethods.includes('telegram') && alert.chatId) {
@@ -1758,9 +1790,7 @@ function addTickerToWatchlist(symbol, watchlistType) {
         sortTickersByStars(watchlistType);
         
         console.log(`Тикер ${symbol} добавлен в список ${watchlistType}`);
-        return true;
     }
-    return false;
 }
 
 async function addUserAlert(symbol, type, condition, value, notificationMethods, notificationCount, chatId, watchlistType = null) {
@@ -2083,6 +2113,12 @@ function reactivateAlert(alertId) {
     alert.triggered = false;
     alert.triggeredCount = 0;
     delete activeTriggeredAlerts[alertId];
+    
+    // Останавливаем мерцание при реактивации
+    if (alert.watchlistType && alert.watchlistType !== 'none') {
+        stopTickerBlinking(alert.symbol, alert.watchlistType);
+    }
+    
     saveAppState();
     loadUserAlerts(currentAlertFilter);
     showNotification('Успешно', 'Алерт снова активен');
@@ -2351,8 +2387,9 @@ function handleEditSubmit(alertId) {
     // Обновляем вотчлист если изменился тип
     const oldAlert = userAlerts.find(a => a.id === parseInt(alertId));
     if (oldAlert && oldAlert.watchlistType !== watchlistType) {
-        // Удаляем из старого списка если был добавлен
+        // Останавливаем мерцание в старом списке
         if (oldAlert.watchlistType && oldAlert.watchlistType !== 'none') {
+            stopTickerBlinking(symbol, oldAlert.watchlistType);
             delete tickersData[oldAlert.watchlistType][symbol];
         }
         // Добавляем в новый список если выбран
