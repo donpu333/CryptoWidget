@@ -77,13 +77,9 @@ let alertCooldowns = {};
 let activeTriggeredAlerts = {};
 let currentPrices = {}; // Добавлено: кэш текущих цен
 
-// Добавлено: Объект для отслеживания мерцающих тикеров в списках вотчлиста
-const blinkingTickers = {
-    'long': new Set(),
-    'short': new Set(),
-    'long-wait': new Set(),
-    'short-wait': new Set()
-};
+// Глобальные переменные для рыночных данных
+let allFutures = [];
+let allSpot = [];
 
 class BinanceAPIManager {
     constructor() {
@@ -1271,44 +1267,32 @@ function comparePrices(currentPrice, condition, targetPrice) {
     return false;
 }
 
-// Добавлено: Функция для запуска мерцания тикера в списках вотчлиста
-function startTickerBlinking(symbol, watchlistType, condition) {
-    if (!watchlistType || watchlistType === 'none') return;
+// Функция для мерцания тикера в списках вотчлиста
+function flashTickerInWatchlist(symbol, condition) {
+    const listTypes = ['long', 'short', 'long-wait', 'short-wait'];
     
-    // Добавляем тикер в набор мерцающих
-    blinkingTickers[watchlistType].add(symbol);
-    
-    // Находим элемент тикера в соответствующем списке
-    const tickerElement = document.querySelector(`.ticker-item[data-ticker="${symbol}"][data-list-type="${watchlistType}"]`);
-    if (!tickerElement) return;
-    
-    // Добавляем класс мерцания в зависимости от типа алерта
-    const blinkClass = condition === '>' ? 'blinking-long' : 'blinking-short';
-    tickerElement.classList.add(blinkClass);
-    
-    console.log(`Запущено мерцание для ${symbol} в списке ${watchlistType}`);
-}
+    listTypes.forEach(listType => {
+        const tickerItem = document.querySelector(`.ticker-item[data-ticker="${symbol}"][data-list-type="${listType}"]`);
+        if (tickerItem) {
+            // Добавляем класс мерцания в зависимости от типа алерта
+            if (condition === '>') {
+                tickerItem.classList.add('alert-triggered-long');
+            } else {
+                tickerItem.classList.add('alert-triggered-short');
+            }
 
-// Добавлено: Функция для остановки мерцания тикера
-function stopTickerBlinking(symbol, watchlistType) {
-    if (!watchlistType || watchlistType === 'none') return;
-    
-    // Удаляем тикер из набора мерцающих
-    blinkingTickers[watchlistType].delete(symbol);
-    
-    // Находим элемент тикера и убираем классы мерцания
-    const tickerElement = document.querySelector(`.ticker-item[data-ticker="${symbol}"][data-list-type="${watchlistType}"]`);
-    if (tickerElement) {
-        tickerElement.classList.remove('blinking-long', 'blinking-short');
-    }
-    
-    console.log(`Остановлено мерцание для ${symbol} в списке ${watchlistType}`);
-}
+            // Перемещаем тикер в начало списка
+            const list = document.getElementById(`${listType}-list`);
+            if (list && tickerItem.parentElement === list) {
+                list.insertBefore(tickerItem, list.firstChild);
+            }
 
-// Добавлено: Функция для проверки завершения всех уведомлений
-function hasAllNotificationsSent(alert) {
-    if (alert.notificationCount === 0) return false; // Бесконечные уведомления - не останавливаем мерцание
-    return alert.triggeredCount >= alert.notificationCount;
+            // Через 5 секунд убираем анимацию
+            setTimeout(() => {
+                tickerItem.classList.remove('alert-triggered-long', 'alert-triggered-short');
+            }, 5000);
+        }
+    });
 }
 
 async function checkAlerts() {
@@ -1330,10 +1314,8 @@ async function checkAlerts() {
                     // Логируем детали срабатывания для отладки
                     console.log(`Alert triggered: ${alert.symbol} ${alert.condition} ${alert.value} | Current: ${price} | Time: ${new Date().toISOString()}`);
 
-                    // Запускаем мерцание в вотчлисте если указан
-                    if (alert.watchlistType && alert.watchlistType !== 'none') {
-                        startTickerBlinking(alert.symbol, alert.watchlistType, alert.condition);
-                    }
+                    // Вызываем мерцание тикера во всех списках вотчлиста
+                    flashTickerInWatchlist(alert.symbol, alert.condition);
 
                     // Отправка уведомлений и обработка срабатывания
                     await handleTriggeredAlert(alert, price);
@@ -1343,13 +1325,8 @@ async function checkAlerts() {
                     // Обновляем интерфейс с подсветкой сработавшего алерта
                     highlightTriggeredAlert(alert.id, alert.condition);
 
-                    // Проверяем, все ли уведомления отправлены
                     if (alert.notificationCount > 0 && alert.triggeredCount >= alert.notificationCount) {
                         alert.triggered = true;
-                        // Останавливаем мерцание если все уведомления отправлены
-                        if (alert.watchlistType && alert.watchlistType !== 'none') {
-                            stopTickerBlinking(alert.symbol, alert.watchlistType);
-                        }
                         console.log(`Alert ${alert.id} reached notification limit`);
                     }
 
@@ -2113,12 +2090,6 @@ function reactivateAlert(alertId) {
     alert.triggered = false;
     alert.triggeredCount = 0;
     delete activeTriggeredAlerts[alertId];
-    
-    // Останавливаем мерцание при реактивации
-    if (alert.watchlistType && alert.watchlistType !== 'none') {
-        stopTickerBlinking(alert.symbol, alert.watchlistType);
-    }
-    
     saveAppState();
     loadUserAlerts(currentAlertFilter);
     showNotification('Успешно', 'Алерт снова активен');
@@ -2387,9 +2358,8 @@ function handleEditSubmit(alertId) {
     // Обновляем вотчлист если изменился тип
     const oldAlert = userAlerts.find(a => a.id === parseInt(alertId));
     if (oldAlert && oldAlert.watchlistType !== watchlistType) {
-        // Останавливаем мерцание в старом списке
+        // Удаляем из старого списка если был добавлен
         if (oldAlert.watchlistType && oldAlert.watchlistType !== 'none') {
-            stopTickerBlinking(symbol, oldAlert.watchlistType);
             delete tickersData[oldAlert.watchlistType][symbol];
         }
         // Добавляем в новый список если выбран
