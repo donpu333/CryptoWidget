@@ -28,15 +28,209 @@ body {
     flex-direction: column;
 }
 
+/* Стили для мерцающих тикеров в списках вотчлиста */
+.ticker-item.blinking-long {
+    animation: blinkLong 1s ease-in-out infinite;
+    border-left: 3px solid #10b981;
+}
+
+.ticker-item.blinking-short {
+    animation: blinkShort 1s ease-in-out infinite;
+    border-left: 3px solid #ef4444;
+}
+
+@keyframes blinkLong {
+    0%, 100% {
+        background-color: rgba(16, 185, 129, 0.1);
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    }
+    50% {
+        background-color: rgba(16, 185, 129, 0.3);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+    }
+}
+
+@keyframes blinkShort {
+    0%, 100% {
+        background-color: rgba(239, 68, 68, 0.1);
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    }
+    50% {
+        background-color: rgba(239, 68, 68, 0.3);
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+    }
+}
+
+/* Улучшенные стили для сработавших алертов */
+.alert-triggered-long {
+    animation: alertPulseLong 2s ease-in-out;
+    border-left: 4px solid #10b981;
+}
+
+.alert-triggered-short {
+    animation: alertPulseShort 2s ease-in-out;
+    border-left: 4px solid #ef4444;
+}
+
+@keyframes alertPulseLong {
+    0%, 100% {
+        background-color: rgba(16, 185, 129, 0.1);
+        transform: scale(1);
+    }
+    50% {
+        background-color: rgba(16, 185, 129, 0.3);
+        transform: scale(1.02);
+    }
+}
+
+@keyframes alertPulseShort {
+    0%, 100% {
+        background-color: rgba(239, 68, 68, 0.1);
+        transform: scale(1);
+    }
+    50% {
+        background-color: rgba(239, 68, 68, 0.3);
+        transform: scale(1.02);
+    }
+}
+
+/* Бейджи для типов вотчлиста в алертах */
+.watchlist-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-left: 8px;
+    text-transform: uppercase;
+}
+
+.watchlist-badge.long {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid #10b981;
+}
+
+.watchlist-badge.short {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid #ef4444;
+}
+
+.watchlist-badge.long-wait {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border: 1px solid #f59e0b;
+}
+
+.watchlist-badge.short-wait {
+    background-color: rgba(139, 92, 246, 0.2);
+    color: #8b5cf6;
+    border: 1px solid #8b5cf6;
+}
+
+/* Улучшенные стили для текущей цены в алертах */
+.current-price-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.current-price-label {
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+.current-price-value {
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.current-price-value.price-up {
+    color: #10b981;
+}
+
+.current-price-value.price-down {
+    color: #ef4444;
+}
+
+.apply-price-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+    border: 1px solid #3b82f6;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.apply-price-btn:hover {
+    background: rgba(59, 130, 246, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Улучшенные стили для кнопок действий в алертах */
+.reactivate-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid #10b981;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.reactivate-btn:hover {
+    background: rgba(16, 185, 129, 0.3);
+    transform: translateY(-1px);
+}
+
+.export-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+    border: 1px solid #3b82f6;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.export-btn:hover {
+    background: rgba(59, 130, 246, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Улучшенные стили для карточек алертов */
 .alert-card {
     transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(17, 24, 39, 0.8);
+    backdrop-filter: blur(10px);
     border-left: 4px solid var(--primary);
     background-color: #1E1E1E;
 }
 
 .alert-card:hover {
+    border-color: rgba(59, 130, 246, 0.5);
     transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(33, 150, 243, 0.2);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
 .alert-card.triggered {
@@ -51,12 +245,12 @@ body {
 
 /* Стили для мерцания алертов */
 .alert-triggered-long {
-    animation: flashLong 0.5s ease-in-out 3;
+    animation: flashLong 0.5s ease-in-out 3, alertPulseLong 2s ease-in-out;
     border-left: 4px solid var(--accent-green);
 }
 
 .alert-triggered-short {
-    animation: flashShort 0.5s ease-in-out 3;
+    animation: flashShort 0.5s ease-in-out 3, alertPulseShort 2s ease-in-out;
     border-left: 4px solid var(--accent-red);
 }
 
@@ -359,53 +553,6 @@ footer {
     pointer-events: none;
 }
 
-.current-price-container {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
-    background-color: rgba(30, 30, 30, 0.8);
-}
-
-.current-price-label {
-    color: #6B7280;
-}
-
-.current-price-value {
-    color: var(--primary);
-    font-weight: 500;
-}
-
-.current-price-value.price-up {
-    color: var(--accent-green);
-}
-
-.current-price-value.price-down {
-    color: var(--accent-red);
-}
-
-.apply-price-btn {
-    color: var(--primary);
-    cursor: pointer;
-    transition: color 0.2s;
-    font-size: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 2px 6px;
-    background-color: var(--primary);
-    color: white;
-    border-radius: 4px;
-}
-
-.apply-price-btn:hover {
-    background-color: var(--secondary);
-    color: white;
-}
-
 .validation-error {
     border-color: var(--accent-red) !important;
 }
@@ -594,64 +741,6 @@ footer {
     margin-left: 0.5rem;
 }
 
-/* Input group styles for login/register forms */
-.input-group {
-    margin-bottom: 1rem;
-}
-
-.input-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #6B7280;
-    font-size: 0.875rem;
-}
-
-.input-group input {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.375rem;
-    background-color: #2D2D2D;
-    border: 1px solid #3D3D3D;
-    color: white;
-}
-
-.input-group input:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
-}
-
-/* Export button styles */
-.export-btn {
-    background-color: var(--accent-green);
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    margin-left: 0.5rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.export-btn:hover {
-    background-color: #1B5E20;
-}
-
-.reactivate-btn {
-    background-color: var(--primary);
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    margin-left: 0.5rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.reactivate-btn:hover {
-    background-color: var(--secondary);
-}
-
 .tab-content {
     display: none;
 }
@@ -727,39 +816,40 @@ nav .nav-container {
 
 /* Copy button styles */
 .copy-btn {
-    background-color: transparent;
-    color: #6B7280;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    margin-left: 0.5rem;
-    font-size: 0.75rem;
-    transition: color 0.2s;
     position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-left: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 4px;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .copy-btn:hover {
-    color: var(--primary);
-}
-
-.copy-btn i {
-    font-size: 0.9em;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
 }
 
 .copy-tooltip {
     position: absolute;
-    background-color: #333;
-    color: white;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    top: -25px;
+    bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border-radius: 4px;
+    font-size: 0.75rem;
     white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
 }
 
 .copy-btn:hover .copy-tooltip {
@@ -1418,39 +1508,6 @@ nav .nav-container {
     text-decoration: none;
 }
 
-/* Watchlist badge styles */
-.watchlist-badge {
-    font-size: 0.7rem;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-left: 8px;
-    font-weight: 500;
-}
-
-.watchlist-badge.long {
-    background-color: rgba(16, 185, 129, 0.2);
-    color: #10B981;
-    border: 1px solid #10B981;
-}
-
-.watchlist-badge.short {
-    background-color: rgba(239, 68, 68, 0.2);
-    color: #EF4444;
-    border: 1px solid #EF4444;
-}
-
-.watchlist-badge.long-wait {
-    background-color: rgba(245, 158, 11, 0.2);
-    color: #F59E0B;
-    border: 1px solid #F59E0B;
-}
-
-.watchlist-badge.short-wait {
-    background-color: rgba(139, 92, 246, 0.2);
-    color: #8B5CF6;
-    border: 1px solid #8B5CF6;
-}
-
 /* File input styles */
 .file-input-container {
     position: relative;
@@ -1664,7 +1721,9 @@ nav .nav-container {
     .alert-triggered-long,
     .alert-triggered-short,
     .ticker-item.alert-triggered-long,
-    .ticker-item.alert-triggered-short {
+    .ticker-item.alert-triggered-short,
+    .ticker-item.blinking-long,
+    .ticker-item.blinking-short {
         animation: none;
         background-color: rgba(33, 150, 243, 0.1);
     }
