@@ -32,15 +32,37 @@
             50% { background-color: rgba(239, 68, 68, 0.2); }
         }
         
-        /* Стили для тикеров в вотчлисте */
-        .ticker-item.alert-triggered-long {
-            animation: flashLong 0.5s ease-in-out 3;
-            border-left: 4px solid #10B981;
+        /* Стили для мерцания тикеров в вотчлисте */
+        .ticker-item.blinking-long {
+            animation: blinkLong 1s ease-in-out infinite;
+            border-left: 3px solid #10B981;
         }
         
-        .ticker-item.alert-triggered-short {
-            animation: flashShort 0.5s ease-in-out 3;
-            border-left: 4px solid #EF4444;
+        .ticker-item.blinking-short {
+            animation: blinkShort 1s ease-in-out infinite;
+            border-left: 3px solid #EF4444;
+        }
+        
+        @keyframes blinkLong {
+            0%, 100% {
+                background-color: rgba(16, 185, 129, 0.1);
+                box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+            }
+            50% {
+                background-color: rgba(16, 185, 129, 0.3);
+                box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+            }
+        }
+        
+        @keyframes blinkShort {
+            0%, 100% {
+                background-color: rgba(239, 68, 68, 0.1);
+                box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+            }
+            50% {
+                background-color: rgba(239, 68, 68, 0.3);
+                box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+            }
         }
         
         /* Стили для бейджей вотчлиста */
