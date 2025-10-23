@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Tools - Alerts and Dashboard</title>
- <link rel="shortcut icon" href="favicon.ico">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -332,6 +332,83 @@
                             <ul class="ticker-list" id="short-wait-list"></ul>
                         </div>
                     </div>
+                    
+                    <!-- Новые панели -->
+                    <div class="panel breakout-long">
+                        <div class="panel-header">
+                            <div>
+                                <i class="fas fa-bullseye"></i>
+                                Пробой LONG
+                            </div>
+                            <button class="clear-all-btn" onclick="clearAllTickers('breakout-long')">Очистить все</button>
+                        </div>
+                        <div class="panel-content">
+                            <div class="input-group">
+                                <input type="text" class="ticker-input" placeholder="Введите тикер (BTCUSDT, ETHUSDT...)" id="breakout-long-input">
+                                <button class="add-btn" onclick="addTicker('breakout-long')">+</button>
+                                <div class="suggestions-dropdown" id="breakout-long-suggestions"></div>
+                            </div>
+                            <div class="error-message" id="breakout-long-error"></div>
+                            <ul class="ticker-list" id="breakout-long-list"></ul>
+                        </div>
+                    </div>
+                    
+                    <div class="panel breakout-short">
+                        <div class="panel-header">
+                            <div>
+                                <i class="fas fa-bullseye"></i>
+                                Пробой SHORT
+                            </div>
+                            <button class="clear-all-btn" onclick="clearAllTickers('breakout-short')">Очистить все</button>
+                        </div>
+                        <div class="panel-content">
+                            <div class="input-group">
+                                <input type="text" class="ticker-input" placeholder="Введите тикер (BTCUSDT, ETHUSDT...)" id="breakout-short-input">
+                                <button class="add-btn" onclick="addTicker('breakout-short')">+</button>
+                                <div class="suggestions-dropdown" id="breakout-short-suggestions"></div>
+                            </div>
+                            <div class="error-message" id="breakout-short-error"></div>
+                            <ul class="ticker-list" id="breakout-short-list"></ul>
+                        </div>
+                    </div>
+                    
+                    <div class="panel false-breakout-long">
+                        <div class="panel-header">
+                            <div>
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Ложный пробой LONG
+                            </div>
+                            <button class="clear-all-btn" onclick="clearAllTickers('false-breakout-long')">Очистить все</button>
+                        </div>
+                        <div class="panel-content">
+                            <div class="input-group">
+                                <input type="text" class="ticker-input" placeholder="Введите тикер (BTCUSDT, ETHUSDT...)" id="false-breakout-long-input">
+                                <button class="add-btn" onclick="addTicker('false-breakout-long')">+</button>
+                                <div class="suggestions-dropdown" id="false-breakout-long-suggestions"></div>
+                            </div>
+                            <div class="error-message" id="false-breakout-long-error"></div>
+                            <ul class="ticker-list" id="false-breakout-long-list"></ul>
+                        </div>
+                    </div>
+                    
+                    <div class="panel false-breakout-short">
+                        <div class="panel-header">
+                            <div>
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Ложный пробой SHORT
+                            </div>
+                            <button class="clear-all-btn" onclick="clearAllTickers('false-breakout-short')">Очистить все</button>
+                        </div>
+                        <div class="panel-content">
+                            <div class="input-group">
+                                <input type="text" class="ticker-input" placeholder="Введите тикер (BTCUSDT, ETHUSDT...)" id="false-breakout-short-input">
+                                <button class="add-btn" onclick="addTicker('false-breakout-short')">+</button>
+                                <div class="suggestions-dropdown" id="false-breakout-short-suggestions"></div>
+                            </div>
+                            <div class="error-message" id="false-breakout-short-error"></div>
+                            <ul class="ticker-list" id="false-breakout-short-list"></ul>
+                        </div>
+                    </div>
                 </div>
                 <div class="stats-bar">
                     <div class="stat-item">
@@ -353,6 +430,22 @@
                     <div class="stat-item">
                         <div class="stat-value" id="short-wait-count">0</div>
                         <div class="stat-label">SHORT Ложный пробой</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="breakout-long-count">0</div>
+                        <div class="stat-label">ПРОБОЙ LONG</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="breakout-short-count">0</div>
+                        <div class="stat-label">ПРОБОЙ SHORT</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="false-breakout-long-count">0</div>
+                        <div class="stat-label">ЛОЖНЫЙ LONG</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="false-breakout-short-count">0</div>
+                        <div class="stat-label">ЛОЖНЫЙ SHORT</div>
                     </div>
                 </div>
             </div>
