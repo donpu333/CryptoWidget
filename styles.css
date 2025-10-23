@@ -61,58 +61,37 @@ body {
     }
 }
 
-/* Стили для мерцающих алертов в списках алертов */
+/* Улучшенные стили для сработавших алертов */
 .alert-triggered-long {
-    animation: blinkLong 1s infinite;
+    animation: alertPulseLong 2s ease-in-out infinite;
     border-left: 4px solid #10b981;
-    background-color: rgba(16, 185, 129, 0.1);
 }
 
 .alert-triggered-short {
-    animation: blinkShort 1s infinite;
+    animation: alertPulseShort 2s ease-in-out infinite;
     border-left: 4px solid #ef4444;
-    background-color: rgba(239, 68, 68, 0.1);
 }
 
-@keyframes blinkLong {
-    0%, 50% {
+@keyframes alertPulseLong {
+    0%, 100% {
         background-color: rgba(16, 185, 129, 0.1);
-        box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        transform: scale(1);
     }
-    51%, 100% {
-        background-color: rgba(31, 41, 55, 0.8);
-        box-shadow: 0 0 5px rgba(16, 185, 129, 0.1);
+    50% {
+        background-color: rgba(16, 185, 129, 0.3);
+        transform: scale(1.02);
     }
 }
 
-@keyframes blinkShort {
-    0%, 50% {
+@keyframes alertPulseShort {
+    0%, 100% {
         background-color: rgba(239, 68, 68, 0.1);
-        box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+        transform: scale(1);
     }
-    51%, 100% {
-        background-color: rgba(31, 41, 55, 0.8);
-        box-shadow: 0 0 5px rgba(239, 68, 68, 0.1);
+    50% {
+        background-color: rgba(239, 68, 68, 0.3);
+        transform: scale(1.02);
     }
-}
-
-/* Улучшенные стили для сработавших алертов */
-.alert-card {
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(17, 24, 39, 0.8);
-    backdrop-filter: blur(10px);
-    border-left: 4px solid var(--primary);
-    background-color: #1E1E1E;
-    margin-bottom: 12px;
-    border-radius: 8px;
-    padding: 16px;
-}
-
-.alert-card:hover {
-    border-color: rgba(59, 130, 246, 0.5);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
 /* Бейджи для типов вотчлиста в алертах */
@@ -238,35 +217,62 @@ body {
     transform: translateY(-1px);
 }
 
-/* Стили для истории алертов */
-.history-badge {
-    display: inline-block;
-    padding: 2px 6px;
-    background-color: #6b7280;
-    color: white;
-    border-radius: 8px;
-    font-size: 0.7rem;
-    margin-left: 8px;
+/* Улучшенные стили для карточек алертов */
+.alert-card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(17, 24, 39, 0.8);
+    backdrop-filter: blur(10px);
+    border-left: 4px solid var(--primary);
+    background-color: #1E1E1E;
 }
 
-/* Улучшенные стили для заголовков алертов */
-.alert-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 8px;
-    width: 100%;
+.alert-card:hover {
+    border-color: rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
-.alert-price {
-    display: flex;
-    align-items: center;
+.alert-card.triggered {
+    animation: pulse-alert 2s infinite;
 }
 
-.alert-direction {
-    font-size: 1.8rem;
-    margin-left: 0.5rem;
-    vertical-align: middle;
+@keyframes pulse-alert {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Стили для мерцания алертов */
+.alert-triggered-long {
+    animation: flashLong 0.5s ease-in-out infinite, alertPulseLong 2s ease-in-out infinite;
+    border-left: 4px solid var(--accent-green);
+}
+
+.alert-triggered-short {
+    animation: flashShort 0.5s ease-in-out infinite, alertPulseShort 2s ease-in-out infinite;
+    border-left: 4px solid var(--accent-red);
+}
+
+@keyframes flashLong {
+    0%, 100% { background-color: transparent; }
+    50% { background-color: rgba(46, 125, 50, 0.2); }
+}
+
+@keyframes flashShort {
+    0%, 100% { background-color: transparent; }
+    50% { background-color: rgba(198, 40, 40, 0.2); }
+}
+
+/* Стили для тикеров в вотчлисте */
+.ticker-item.alert-triggered-long {
+    animation: flashLong 0.5s ease-in-out infinite;
+    border-left: 4px solid var(--accent-green);
+}
+
+.ticker-item.alert-triggered-short {
+    animation: flashShort 0.5s ease-in-out infinite;
+    border-left: 4px solid var(--accent-red);
 }
 
 .btn-primary {
@@ -494,6 +500,24 @@ footer {
     overflow-y: auto;
 }
 
+.alert-direction {
+    font-size: 1.8rem;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.alert-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.alert-price {
+    display: flex;
+    align-items: center;
+}
+
 .spot-badge {
     background-color: var(--accent-orange);
     color: white;
@@ -705,6 +729,16 @@ footer {
 .register-button:hover {
     background-color: var(--secondary);
     border-color: var(--secondary);
+}
+
+/* History badge styles */
+.history-badge {
+    background-color: #6B7280;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
 }
 
 .tab-content {
@@ -1692,5 +1726,38 @@ nav .nav-container {
     .ticker-item.blinking-short {
         animation: none;
         background-color: rgba(33, 150, 243, 0.1);
+    }
+}
+
+/* Улучшенные стили для непрерывного мерцания алертов */
+.alert-triggered-long.continuous-blink {
+    animation: continuousBlinkLong 1s ease-in-out infinite;
+    border-left: 4px solid #10b981;
+}
+
+.alert-triggered-short.continuous-blink {
+    animation: continuousBlinkShort 1s ease-in-out infinite;
+    border-left: 4px solid #ef4444;
+}
+
+@keyframes continuousBlinkLong {
+    0%, 100% {
+        background-color: rgba(16, 185, 129, 0.1);
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    }
+    50% {
+        background-color: rgba(16, 185, 129, 0.3);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+    }
+}
+
+@keyframes continuousBlinkShort {
+    0%, 100% {
+        background-color: rgba(239, 68, 68, 0.1);
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    }
+    50% {
+        background-color: rgba(239, 68, 68, 0.3);
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
     }
 }
