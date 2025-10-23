@@ -85,6 +85,9 @@ const blinkingTickers = {
     'short-wait': new Set()
 };
 
+// Добавлено: Объект для отслеживания мерцающих алертов в списках алертов
+const blinkingAlerts = new Set();
+
 class BinanceAPIManager {
     constructor() {
         this.connectionState = {
@@ -1305,33 +1308,36 @@ function stopTickerBlinking(symbol, watchlistType) {
     console.log(`Остановлено мерцание для ${symbol} в списке ${watchlistType}`);
 }
 
-// Добавлено: Функция для проверки завершения всех уведомлений
-function hasAllNotificationsSent(alert) {
-    // Если notificationCount = 0 - бесконечные уведомления, никогда не останавливаем мерцание
-    if (alert.notificationCount === 0) return false;
+// Добавлено: Функция для запуска мерцания алерта в списках алертов
+function startAlertBlinking(alertId, condition) {
+    blinkingAlerts.add(alertId);
     
-    // Если установлено ограничение, проверяем достигли ли мы его
-    return alert.triggeredCount >= alert.notificationCount;
+    const alertElement = document.getElementById(`alert-${alertId}`);
+    if (!alertElement) return;
+    
+    // Добавляем класс мерцания в зависимости от типа алерта
+    const blinkClass = condition === '>' ? 'alert-triggered-long' : 'alert-triggered-short';
+    alertElement.classList.add(blinkClass);
+    
+    console.log(`Запущено мерцание для алерта ${alertId}`);
 }
 
-// Добавлено: Функция для проверки и восстановления мерцания активных алертов
-function checkAndRestoreBlinking() {
-    const activeAlerts = userAlerts.filter(alert => 
-        !alert.triggered && 
-        alert.watchlistType && 
-        alert.watchlistType !== 'none' &&
-        activeTriggeredAlerts[alert.id] // Алерт сработал, но еще не завершил все уведомления
-    );
+// Добавлено: Функция для остановки мерцания алерта
+function stopAlertBlinking(alertId) {
+    blinkingAlerts.delete(alertId);
+    
+    const alertElement = document.getElementById(`alert-${alertId}`);
+    if (alertElement) {
+        alertElement.classList.remove('alert-triggered-long', 'alert-triggered-short');
+    }
+    
+    console.log(`Остановлено мерцание для алерта ${alertId}`);
+}
 
-    activeAlerts.forEach(alert => {
-        // Проверяем, не завершены ли все уведомления
-        if (!hasAllNotificationsSent(alert)) {
-            // Восстанавливаем мерцание если оно было потеряно
-            if (!blinkingTickers[alert.watchlistType].has(alert.symbol)) {
-                startTickerBlinking(alert.symbol, alert.watchlistType, alert.condition);
-            }
-        }
-    });
+// Добавлено: Функция для проверки завершения всех уведомлений
+function hasAllNotificationsSent(alert) {
+    if (alert.notificationCount === 0) return false; // Бесконечные уведомления - не останавливаем мерцание
+    return alert.triggeredCount >= alert.notificationCount;
 }
 
 async function checkAlerts() {
@@ -1353,31 +1359,27 @@ async function checkAlerts() {
                     // Логируем детали срабатывания для отладки
                     console.log(`Alert triggered: ${alert.symbol} ${alert.condition} ${alert.value} | Current: ${price} | Time: ${new Date().toISOString()}`);
 
-                    // Запускаем мерцание в вотчлисте если указан
+                    // Запускаем мерцание в вотчлисте если указан (постоянное)
                     if (alert.watchlistType && alert.watchlistType !== 'none') {
                         startTickerBlinking(alert.symbol, alert.watchlistType, alert.condition);
                     }
+
+                    // Запускаем мерцание в списке алертов (каждую 1 секунду)
+                    startAlertBlinking(alert.id, alert.condition);
 
                     // Отправка уведомлений и обработка срабатывания
                     await handleTriggeredAlert(alert, price);
                     alertCooldowns[cooldownKey] = now;
                     activeTriggeredAlerts[alert.id] = true;
 
-                    // Обновляем интерфейс с подсветкой сработавшего алерта
-                    highlightTriggeredAlert(alert.id, alert.condition);
-
-                    // УВЕЛИЧИВАЕМ СЧЕТЧИК СРАБАТЫВАНИЙ
-                    alert.triggeredCount = (alert.triggeredCount || 0) + 1;
-
-                    // ПРОВЕРЯЕМ, ЗАВЕРШИЛИСЬ ЛИ ВСЕ УВЕДОМЛЕНИЯ
-                    const allNotificationsSent = hasAllNotificationsSent(alert);
-                    
-                    if (allNotificationsSent) {
+                    // Проверяем, все ли уведомления отправлены
+                    if (alert.notificationCount > 0 && alert.triggeredCount >= alert.notificationCount) {
                         alert.triggered = true;
-                        // Останавливаем мерцание только если все уведомления отправлены
+                        // Останавливаем мерцание если все уведомления отправлены
                         if (alert.watchlistType && alert.watchlistType !== 'none') {
                             stopTickerBlinking(alert.symbol, alert.watchlistType);
                         }
+                        stopAlertBlinking(alert.id);
                         console.log(`Alert ${alert.id} reached notification limit`);
                     }
 
@@ -1392,31 +1394,7 @@ async function checkAlerts() {
     }
 }
 
-// Функция для подсветки сработавшего алерта
-function highlightTriggeredAlert(alertId, condition) {
-    const alertElement = document.getElementById(`alert-${alertId}`);
-    if (!alertElement) return;
-
-    // Добавляем класс для анимации в зависимости от типа алерта
-    if (condition === '>') {
-        alertElement.classList.add('alert-triggered-long');
-    } else {
-        alertElement.classList.add('alert-triggered-short');
-    }
-
-    // Перемещаем алерт в начало списка
-    const container = alertElement.parentElement;
-    if (container) {
-        container.insertBefore(alertElement, container.firstChild);
-    }
-
-    // Через 5 секунд убираем анимацию
-    setTimeout(() => {
-        alertElement.classList.remove('alert-triggered-long', 'alert-triggered-short');
-    }, 5000);
-}
-
-// Новая функция для обработки сработавшего алерта
+// Функция для обработки сработавшего алерта
 async function handleTriggeredAlert(alert, currentPrice) {
     const message = `🚨 Алерт сработал!\nСимвол: ${alert.symbol}\n` +
         `Условие: ${alert.condition} ${alert.value}\n` +
@@ -1426,7 +1404,7 @@ async function handleTriggeredAlert(alert, currentPrice) {
     if (alert.notificationMethods.includes('telegram') && alert.chatId) {
         try {
             await sendTelegramNotification(message, alert.chatId);
-            // Счетчик увеличивается в основной функции checkAlerts
+            alert.triggeredCount = (alert.triggeredCount || 0) + 1;
         } catch (error) {
             console.error('Failed to send Telegram alert:', error);
         }
@@ -1436,8 +1414,7 @@ async function handleTriggeredAlert(alert, currentPrice) {
     showNotification('Алерт сработал',
         `Символ: ${alert.symbol}\n` +
         `Условие: ${alert.condition} ${alert.value}\n` +
-        `Текущая цена: ${formatNumber(currentPrice, 8)}\n` +
-        `Уведомление ${alert.triggeredCount || 1}/${alert.notificationCount === 0 ? '∞' : alert.notificationCount}`);
+        `Текущая цена: ${formatNumber(currentPrice, 8)}`);
 }
 
 // Функция для форматирования чисел
@@ -2113,6 +2090,8 @@ function deleteAlert(alertId) {
     if (confirm('Вы уверены, что хотите удалить этот алерт?')) {
         userAlerts = userAlerts.filter(alert => alert.id !== alertId);
         delete activeTriggeredAlerts[alertId];
+        // Останавливаем мерцание при удалении
+        stopAlertBlinking(alertId);
         saveAppState();
         loadUserAlerts(currentAlertFilter);
         showNotification('Успешно', 'Алерт удален');
@@ -2123,6 +2102,8 @@ function clearAllAlerts() {
     if (confirm('Вы уверены, что хотите удалить все алерты?')) {
         userAlerts = [];
         activeTriggeredAlerts = {};
+        // Останавливаем все мерцания
+        blinkingAlerts.clear();
         saveAppState();
         loadUserAlerts(currentAlertFilter);
         showNotification('Успешно', 'Все алерты удалены');
@@ -2147,6 +2128,7 @@ function reactivateAlert(alertId) {
     if (alert.watchlistType && alert.watchlistType !== 'none') {
         stopTickerBlinking(alert.symbol, alert.watchlistType);
     }
+    stopAlertBlinking(alertId);
     
     saveAppState();
     loadUserAlerts(currentAlertFilter);
@@ -3094,9 +3076,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Добавлено: Обновление текущих цен каждые 5 секунд
         setInterval(updateCurrentPrices, 5000);
         updateCurrentPrices(); // Первоначальное обновление
-
-        // Добавлено: Проверяем и восстанавливаем мерцание каждую секунду
-        setInterval(checkAndRestoreBlinking, 1000);
 
         // Инициализация сортируемых списков
         initializeSortableLists();
