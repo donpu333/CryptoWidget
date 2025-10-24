@@ -81,12 +81,6 @@ let currentPrices = {}; // Добавлено: кэш текущих цен
 let allFutures = [];
 let allSpot = [];
 
-// Глобальные переменные для управления мерцанием
-const flashingElements = {
-    alerts: new Set(),
-    watchlist: new Set()
-};
-
 class BinanceAPIManager {
     constructor() {
         this.connectionState = {
@@ -1280,65 +1274,22 @@ function flashTickerInWatchlist(symbol, condition) {
     listTypes.forEach(listType => {
         const tickerItem = document.querySelector(`.ticker-item[data-ticker="${symbol}"][data-list-type="${listType}"]`);
         if (tickerItem) {
-            // Добавляем в множество мерцающих элементов
-            const flashId = `watchlist-${symbol}-${listType}`;
-            flashingElements.watchlist.add(flashId);
-            
             // Добавляем класс мерцания в зависимости от типа алерта
-            const flashClass = condition === '>' ? 'alert-triggered-long-flash' : 'alert-triggered-short-flash';
-            tickerItem.classList.add(flashClass);
+            if (condition === '>') {
+                tickerItem.classList.add('alert-triggered-long');
+            } else {
+                tickerItem.classList.add('alert-triggered-short');
+            }
 
             // Перемещаем тикер в начало списка
             const list = document.getElementById(`${listType}-list`);
             if (list && tickerItem.parentElement === list) {
                 list.insertBefore(tickerItem, list.firstChild);
             }
+
+            // Убираем таймер - мерцание будет постоянно
         }
     });
-}
-
-// Функция для остановки мерцания тикера в вотчлисте
-function stopFlashingTickerInWatchlist(symbol, listType) {
-    const flashId = `watchlist-${symbol}-${listType}`;
-    if (flashingElements.watchlist.has(flashId)) {
-        flashingElements.watchlist.delete(flashId);
-        
-        const tickerItem = document.querySelector(`.ticker-item[data-ticker="${symbol}"][data-list-type="${listType}"]`);
-        if (tickerItem) {
-            tickerItem.classList.remove('alert-triggered-long-flash', 'alert-triggered-short-flash');
-        }
-    }
-}
-
-// Функция для мерцания алерта
-function flashAlert(alertId, condition) {
-    // Добавляем в множество мерцающих элементов
-    flashingElements.alerts.add(alertId);
-    
-    const alertElement = document.getElementById(`alert-${alertId}`);
-    if (!alertElement) return;
-
-    // Добавляем класс для постоянного мерцания в зависимости от типа алерта
-    const flashClass = condition === '>' ? 'alert-triggered-long-flash' : 'alert-triggered-short-flash';
-    alertElement.classList.add(flashClass);
-
-    // Перемещаем алерт в начало списка
-    const container = alertElement.parentElement;
-    if (container) {
-        container.insertBefore(alertElement, container.firstChild);
-    }
-}
-
-// Функция для остановки мерцания алерта
-function stopFlashingAlert(alertId) {
-    if (flashingElements.alerts.has(alertId)) {
-        flashingElements.alerts.delete(alertId);
-        
-        const alertElement = document.getElementById(`alert-${alertId}`);
-        if (alertElement) {
-            alertElement.classList.remove('alert-triggered-long-flash', 'alert-triggered-short-flash');
-        }
-    }
 }
 
 async function checkAlerts() {
@@ -1360,14 +1311,16 @@ async function checkAlerts() {
                     // Логируем детали срабатывания для отладки
                     console.log(`Alert triggered: ${alert.symbol} ${alert.condition} ${alert.value} | Current: ${price} | Time: ${new Date().toISOString()}`);
 
-                    // Запускаем постоянное мерцание для алерта и тикера в вотчлисте
-                    flashAlert(alert.id, alert.condition);
+                    // Вызываем мерцание тикера во всех списках вотчлиста
                     flashTickerInWatchlist(alert.symbol, alert.condition);
 
                     // Отправка уведомлений и обработка срабатывания
                     await handleTriggeredAlert(alert, price);
                     alertCooldowns[cooldownKey] = now;
                     activeTriggeredAlerts[alert.id] = true;
+
+                    // Обновляем интерфейс с подсветкой сработавшего алерта
+                    highlightTriggeredAlert(alert.id, alert.condition);
 
                     if (alert.notificationCount > 0 && alert.triggeredCount >= alert.notificationCount) {
                         alert.triggered = true;
@@ -1382,6 +1335,28 @@ async function checkAlerts() {
         } catch (error) {
             console.error(`Error checking alert ${alert.id}:`, error);
         }
+    }
+}
+
+// Функция для подсветки сработавшего алерта
+function highlightTriggeredAlert(alertId, condition) {
+    const alertElement = document.getElementById(`alert-${alertId}`);
+    if (!alertElement) return;
+
+    // Добавляем класс для анимации в зависимости от типа алерта
+    if (condition === '>') {
+        alertElement.classList.add('alert-triggered-long');
+        alertElement.classList.remove('alert-triggered-short');
+    } else {
+        alertElement.classList.add('alert-triggered-short');
+        alertElement.classList.remove('alert-triggered-long');
+    }
+
+    // Убираем таймер - мерцание будет постоянно
+    // Перемещаем алерт в начало списка
+    const container = alertElement.parentElement;
+    if (container) {
+        container.insertBefore(alertElement, container.firstChild);
     }
 }
 
@@ -1965,7 +1940,7 @@ function loadUserAlerts(filter = 'active') {
         ` : '';
 
         const alertHtml = `
-            <div id="alert-${alert.id}" class="alert-card rounded-md p-4 shadow-sm ${isActiveTriggered ? (isUp ? 'alert-triggered-long-flash' : 'alert-triggered-short-flash') : ''}" data-symbol="${alert.symbol}">
+            <div id="alert-${alert.id}" class="alert-card rounded-md p-4 shadow-sm ${isActiveTriggered ? (isUp ? 'alert-triggered-long' : 'alert-triggered-short') : ''}" data-symbol="${alert.symbol}">
                 <div class="flex justify-between items-start">
                     <div class="flex items-center">
                         <div class="flex-1">
@@ -2081,8 +2056,6 @@ function deleteAlert(alertId) {
     if (confirm('Вы уверены, что хотите удалить этот алерт?')) {
         userAlerts = userAlerts.filter(alert => alert.id !== alertId);
         delete activeTriggeredAlerts[alertId];
-        // Останавливаем мерцание при удалении
-        stopFlashingAlert(alertId);
         saveAppState();
         loadUserAlerts(currentAlertFilter);
         showNotification('Успешно', 'Алерт удален');
@@ -2093,8 +2066,6 @@ function clearAllAlerts() {
     if (confirm('Вы уверены, что хотите удалить все алерты?')) {
         userAlerts = [];
         activeTriggeredAlerts = {};
-        // Останавливаем все мерцания алертов
-        flashingElements.alerts.clear();
         saveAppState();
         loadUserAlerts(currentAlertFilter);
         showNotification('Успешно', 'Все алерты удалены');
@@ -2114,13 +2085,6 @@ function reactivateAlert(alertId) {
     alert.triggered = false;
     alert.triggeredCount = 0;
     delete activeTriggeredAlerts[alertId];
-    // Останавливаем мерцание при реактивации
-    stopFlashingAlert(alertId);
-    // Останавливаем мерцание тикера в вотчлисте
-    const listTypes = ['long', 'short', 'long-wait', 'short-wait'];
-    listTypes.forEach(listType => {
-        stopFlashingTickerInWatchlist(alert.symbol, listType);
-    });
     saveAppState();
     loadUserAlerts(currentAlertFilter);
     showNotification('Успешно', 'Алерт снова активен');
