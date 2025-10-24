@@ -11,57 +11,55 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Стили для мерцания алертов */
+        /* Стили для ПОСТОЯННОГО мерцания алертов */
         .alert-triggered-long {
-            animation: flashLong 0.5s ease-in-out 3;
-            border-left: 4px solid #10B981;
+            animation: blinkLong 1s ease-in-out infinite !important;
+            border-left: 4px solid #10b981 !important;
+            background-color: rgba(16, 185, 129, 0.1) !important;
         }
         
         .alert-triggered-short {
-            animation: flashShort 0.5s ease-in-out 3;
-            border-left: 4px solid #EF4444;
+            animation: blinkShort 1s ease-in-out infinite !important;
+            border-left: 4px solid #ef4444 !important;
+            background-color: rgba(239, 68, 68, 0.1) !important;
         }
         
-        @keyframes flashLong {
-            0%, 100% { background-color: transparent; }
-            50% { background-color: rgba(16, 185, 129, 0.2); }
+        /* Стили для ПОСТОЯННОГО мерцания тикеров в вотчлисте */
+        .ticker-item.alert-triggered-long {
+            animation: blinkLong 1s ease-in-out infinite !important;
+            border-left: 3px solid #10b981 !important;
+            background-color: rgba(16, 185, 129, 0.1) !important;
         }
         
-        @keyframes flashShort {
-            0%, 100% { background-color: transparent; }
-            50% { background-color: rgba(239, 68, 68, 0.2); }
-        }
-        
-        /* Стили для мерцания тикеров в вотчлисте */
-        .ticker-item.blinking-long {
-            animation: blinkLong 1s ease-in-out infinite;
-            border-left: 3px solid #10B981;
-        }
-        
-        .ticker-item.blinking-short {
-            animation: blinkShort 1s ease-in-out infinite;
-            border-left: 3px solid #EF4444;
+        .ticker-item.alert-triggered-short {
+            animation: blinkShort 1s ease-in-out infinite !important;
+            border-left: 3px solid #ef4444 !important;
+            background-color: rgba(239, 68, 68, 0.1) !important;
         }
         
         @keyframes blinkLong {
             0%, 100% {
-                background-color: rgba(16, 185, 129, 0.1);
-                box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+                background-color: rgba(16, 185, 129, 0.15);
+                box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+                border-left-color: #10b981;
             }
             50% {
-                background-color: rgba(16, 185, 129, 0.3);
-                box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+                background-color: rgba(16, 185, 129, 0.35);
+                box-shadow: 0 0 25px rgba(16, 185, 129, 0.7);
+                border-left-color: #34d399;
             }
         }
         
         @keyframes blinkShort {
             0%, 100% {
-                background-color: rgba(239, 68, 68, 0.1);
-                box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+                background-color: rgba(239, 68, 68, 0.15);
+                box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+                border-left-color: #ef4444;
             }
             50% {
-                background-color: rgba(239, 68, 68, 0.3);
-                box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+                background-color: rgba(239, 68, 68, 0.35);
+                box-shadow: 0 0 25px rgba(239, 68, 68, 0.7);
+                border-left-color: #f87171;
             }
         }
         
