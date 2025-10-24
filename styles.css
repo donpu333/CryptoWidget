@@ -28,7 +28,7 @@ body {
     flex-direction: column;
 }
 
-/* Стили для постоянного мерцания сработавших алертов */
+/* Стили для ПОСТОЯННОГО мерцания сработавших алертов */
 .alert-triggered-long.permanent-flash {
     animation: blinkLong 1s ease-in-out infinite !important;
     border-left: 4px solid #10b981 !important;
@@ -41,7 +41,7 @@ body {
     background-color: rgba(239, 68, 68, 0.1) !important;
 }
 
-/* Стили для постоянного мерцания тикеров в вотчлисте */
+/* Стили для ПОСТОЯННОГО мерцания тикеров в вотчлисте */
 .ticker-item.alert-triggered-long.permanent-flash {
     animation: blinkLong 1s ease-in-out infinite !important;
     border-left: 3px solid #10b981 !important;
@@ -54,29 +54,34 @@ body {
     background-color: rgba(239, 68, 68, 0.1) !important;
 }
 
+/* УСИЛЕННЫЕ АНИМАЦИИ ДЛЯ ПОСТОЯННОГО МЕРЦАНИЯ */
 @keyframes blinkLong {
     0%, 100% {
-        background-color: rgba(16, 185, 129, 0.1);
-        box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        background-color: rgba(16, 185, 129, 0.2);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        border-left-color: #10b981;
     }
     50% {
-        background-color: rgba(16, 185, 129, 0.3);
-        box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+        background-color: rgba(16, 185, 129, 0.4);
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.8);
+        border-left-color: #34d399;
     }
 }
 
 @keyframes blinkShort {
     0%, 100% {
-        background-color: rgba(239, 68, 68, 0.1);
-        box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+        background-color: rgba(239, 68, 68, 0.2);
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+        border-left-color: #ef4444;
     }
     50% {
-        background-color: rgba(239, 68, 68, 0.3);
-        box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+        background-color: rgba(239, 68, 68, 0.4);
+        box-shadow: 0 0 25px rgba(239, 68, 68, 0.8);
+        border-left-color: #f87171;
     }
 }
 
-/* Стили для мерцающих алертов в списках алертов */
+/* Старые стили для временного мерцания (можно удалить если не нужны) */
 .alert-triggered-long {
     animation: blinkLong 1s infinite;
     border-left: 4px solid #10b981;
@@ -1688,7 +1693,7 @@ nav .nav-container {
     }
 }
 
-/* Специальные стили для постоянного мерцания */
+/* Специальные стили для ПОСТОЯННОГО мерцания */
 .permanent-flash {
     animation-duration: 1s !important;
     animation-iteration-count: infinite !important;
@@ -1720,29 +1725,88 @@ nav .nav-container {
     animation: blinkShort 1s ease-in-out infinite !important;
 }
 
-/* Усиленные анимации для лучшей видимости */
+/* УСИЛЕННЫЕ АНИМАЦИИ ДЛЯ ЛУЧШЕЙ ВИДИМОСТИ */
 @keyframes blinkLong {
     0%, 100% {
-        background-color: rgba(16, 185, 129, 0.15);
-        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        background-color: rgba(16, 185, 129, 0.2);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
         border-left-color: #10b981;
     }
     50% {
-        background-color: rgba(16, 185, 129, 0.35);
-        box-shadow: 0 0 25px rgba(16, 185, 129, 0.7);
+        background-color: rgba(16, 185, 129, 0.4);
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.8);
         border-left-color: #34d399;
     }
 }
 
 @keyframes blinkShort {
     0%, 100% {
-        background-color: rgba(239, 68, 68, 0.15);
-        box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        background-color: rgba(239, 68, 68, 0.2);
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
         border-left-color: #ef4444;
     }
     50% {
-        background-color: rgba(239, 68, 68, 0.35);
-        box-shadow: 0 0 25px rgba(239, 68, 68, 0.7);
+        background-color: rgba(239, 68, 68, 0.4);
+        box-shadow: 0 0 25px rgba(239, 68, 68, 0.8);
         border-left-color: #f87171;
     }
+}
+
+/* ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ ЯРКОГО МЕРЦАНИЯ */
+.alert-triggered-long.permanent-flash strong,
+.alert-triggered-short.permanent-flash strong,
+.ticker-item.alert-triggered-long.permanent-flash .ticker-symbol,
+.ticker-item.alert-triggered-short.permanent-flash .ticker-symbol {
+    animation: textPulse 1s ease-in-out infinite;
+}
+
+@keyframes textPulse {
+    0%, 100% {
+        color: inherit;
+        text-shadow: 0 0 5px currentColor;
+    }
+    50% {
+        color: #ffffff;
+        text-shadow: 0 0 15px currentColor;
+    }
+}
+
+/* ОБЕСПЕЧЕНИЕ ПРИОРИТЕТА АНИМАЦИЙ */
+.alert-card.permanent-flash,
+.ticker-item.permanent-flash {
+    z-index: 10;
+    position: relative;
+}
+
+/* ПОДСВЕТКА ВСЕГО ЭЛЕМЕНТА */
+.alert-triggered-long.permanent-flash::before,
+.alert-triggered-short.permanent-flash::before,
+.ticker-item.alert-triggered-long.permanent-flash::before,
+.ticker-item.alert-triggered-short.permanent-flash::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: inherit;
+    z-index: -1;
+    animation: borderPulse 1s ease-in-out infinite;
+}
+
+@keyframes borderPulse {
+    0%, 100% {
+        box-shadow: 0 0 10px currentColor;
+    }
+    50% {
+        box-shadow: 0 0 20px currentColor;
+    }
+}
+
+.alert-triggered-long.permanent-flash::before {
+    color: #10b981;
+}
+
+.alert-triggered-short.permanent-flash::before {
+    color: #ef4444;
 }
