@@ -28,15 +28,30 @@ body {
     flex-direction: column;
 }
 
-/* Стили для мерцающих тикеров в списках вотчлиста */
-.ticker-item.blinking-long {
-    animation: blinkLong 1s ease-in-out infinite;
-    border-left: 3px solid #10b981;
+/* Стили для постоянного мерцания сработавших алертов */
+.alert-triggered-long.permanent-flash {
+    animation: blinkLong 1s ease-in-out infinite !important;
+    border-left: 4px solid #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.1) !important;
 }
 
-.ticker-item.blinking-short {
-    animation: blinkShort 1s ease-in-out infinite;
-    border-left: 3px solid #ef4444;
+.alert-triggered-short.permanent-flash {
+    animation: blinkShort 1s ease-in-out infinite !important;
+    border-left: 4px solid #ef4444 !important;
+    background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Стили для постоянного мерцания тикеров в вотчлисте */
+.ticker-item.alert-triggered-long.permanent-flash {
+    animation: blinkLong 1s ease-in-out infinite !important;
+    border-left: 3px solid #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.1) !important;
+}
+
+.ticker-item.alert-triggered-short.permanent-flash {
+    animation: blinkShort 1s ease-in-out infinite !important;
+    border-left: 3px solid #ef4444 !important;
+    background-color: rgba(239, 68, 68, 0.1) !important;
 }
 
 @keyframes blinkLong {
@@ -72,28 +87,6 @@ body {
     animation: blinkShort 1s infinite;
     border-left: 4px solid #ef4444;
     background-color: rgba(239, 68, 68, 0.1);
-}
-
-@keyframes blinkLong {
-    0%, 50% {
-        background-color: rgba(16, 185, 129, 0.1);
-        box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
-    }
-    51%, 100% {
-        background-color: rgba(31, 41, 55, 0.8);
-        box-shadow: 0 0 5px rgba(16, 185, 129, 0.1);
-    }
-}
-
-@keyframes blinkShort {
-    0%, 50% {
-        background-color: rgba(239, 68, 68, 0.1);
-        box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
-    }
-    51%, 100% {
-        background-color: rgba(31, 41, 55, 0.8);
-        box-shadow: 0 0 5px rgba(239, 68, 68, 0.1);
-    }
 }
 
 /* Улучшенные стили для сработавших алертов */
@@ -1692,5 +1685,64 @@ nav .nav-container {
     .ticker-item.blinking-short {
         animation: none;
         background-color: rgba(33, 150, 243, 0.1);
+    }
+}
+
+/* Специальные стили для постоянного мерцания */
+.permanent-flash {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
+    animation-timing-function: ease-in-out !important;
+    animation-play-state: running !important;
+}
+
+/* Гарантия, что анимации будут работать постоянно */
+.alert-triggered-long.permanent-flash,
+.alert-triggered-short.permanent-flash,
+.ticker-item.alert-triggered-long.permanent-flash,
+.ticker-item.alert-triggered-short.permanent-flash {
+    animation: none; /* Сбрасываем предыдущие анимации */
+}
+
+.alert-triggered-long.permanent-flash {
+    animation: blinkLong 1s ease-in-out infinite !important;
+}
+
+.alert-triggered-short.permanent-flash {
+    animation: blinkShort 1s ease-in-out infinite !important;
+}
+
+.ticker-item.alert-triggered-long.permanent-flash {
+    animation: blinkLong 1s ease-in-out infinite !important;
+}
+
+.ticker-item.alert-triggered-short.permanent-flash {
+    animation: blinkShort 1s ease-in-out infinite !important;
+}
+
+/* Усиленные анимации для лучшей видимости */
+@keyframes blinkLong {
+    0%, 100% {
+        background-color: rgba(16, 185, 129, 0.15);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        border-left-color: #10b981;
+    }
+    50% {
+        background-color: rgba(16, 185, 129, 0.35);
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.7);
+        border-left-color: #34d399;
+    }
+}
+
+@keyframes blinkShort {
+    0%, 100% {
+        background-color: rgba(239, 68, 68, 0.15);
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        border-left-color: #ef4444;
+    }
+    50% {
+        background-color: rgba(239, 68, 68, 0.35);
+        box-shadow: 0 0 25px rgba(239, 68, 68, 0.7);
+        border-left-color: #f87171;
     }
 }
