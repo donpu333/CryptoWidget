@@ -1055,12 +1055,25 @@ function saveAppState() {
     try {
         localStorage.setItem('cryptoAlerts', JSON.stringify(userAlerts));
         localStorage.setItem('alertFilter', currentAlertFilter);
+        
+        // Сохраняем настройки Telegram более надежно
         const telegramCheckbox = document.getElementById('telegram');
         const tgSettings = {
             chatId: localStorage.getItem('tg_chat_id'),
-            enabled: telegramCheckbox ? telegramCheckbox.checked : false
+            enabled: telegramCheckbox ? telegramCheckbox.checked : false,
+            lastSaved: new Date().toISOString()
         };
         localStorage.setItem('tgSettings', JSON.stringify(tgSettings));
+        
+        // Дополнительное сохранение критичных настроек
+        const criticalSettings = {
+            tg_chat_id: localStorage.getItem('tg_chat_id'),
+            userEmail: localStorage.getItem('userEmail'),
+            currentUser: localStorage.getItem('currentUser'),
+            lastBackup: new Date().toISOString()
+        };
+        localStorage.setItem('criticalSettings', JSON.stringify(criticalSettings));
+        
         console.log("Состояние сохранено");
         return true;
     } catch (error) {
@@ -1072,6 +1085,18 @@ function saveAppState() {
 // Загружаем состояние приложения
 function loadAppState() {
     try {
+        // Восстанавливаем критические настройки в первую очередь
+        const criticalSettings = JSON.parse(localStorage.getItem('criticalSettings') || '{}');
+        if (criticalSettings.tg_chat_id) {
+            localStorage.setItem('tg_chat_id', criticalSettings.tg_chat_id);
+        }
+        if (criticalSettings.userEmail) {
+            localStorage.setItem('userEmail', criticalSettings.userEmail);
+        }
+        if (criticalSettings.currentUser) {
+            localStorage.setItem('currentUser', criticalSettings.currentUser);
+        }
+
         const savedAlerts = localStorage.getItem('cryptoAlerts');
         if (savedAlerts) {
             userAlerts = JSON.parse(savedAlerts);
@@ -2285,10 +2310,16 @@ async function saveTelegramSettings() {
         const chatId = chatIdInput.value.trim();
         if (chatId) {
             try {
+                // Сохраняем в несколько мест для надежности
                 localStorage.setItem('tg_chat_id', chatId);
                 localStorage.setItem('tg_enabled', 'true');
+                
+                // Обновляем глобальные настройки
                 userChatId.value = chatId;
+                
+                // Сохраняем состояние приложения
                 saveAppState();
+                
                 closeTelegramSettings();
                 closeBotConnectionHint();
                 showNotification('Успех', 'Бот успешно подключен! Теперь вы можете создавать алерты с Telegram уведомлениями.');
