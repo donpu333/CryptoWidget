@@ -11,7 +11,7 @@ const API_CONFIG = {
         ALL_TICKERS: 'https://api.binance.com/api/v3/exchangeInfo'
     },
     PRICE_COMPARISON_EPSILON: 0.00000001,
-    TREND_ANALYSIS_PERIOD: 14
+    TREND_ANALYSIS_PERIOD: 14 // Days for trend analysis
 };
 
 const TG_BOT_TOKEN = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30';
@@ -874,63 +874,49 @@ function openTradingViewChart(ticker, listType) {
 
 function loadTradingViewWidget(ticker) {
     const widgetContainer = document.getElementById('tradingview-widget');
-    if (!widgetContainer) {
-        console.error('TradingView widget container not found');
-        return;
-    }
-    
     widgetContainer.innerHTML = '';
 
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-    script.async = true;
-    
-    script.onload = () => {
-        console.log('TradingView widget loaded successfully');
-        const chartError = document.getElementById('chartError');
-        if (chartError) chartError.classList.add('hidden');
-    };
-    
-    script.onerror = (error) => {
-        console.error('Failed to load TradingView widget:', error);
-        const chartError = document.getElementById('chartError');
-        if (chartError) {
-            chartError.textContent = 'Ошибка загрузки графика. Проверьте подключение к интернету.';
-            chartError.classList.remove('hidden');
-        }
-    };
+    const widgetHTML = `
+        <!-- TradingView Widget BEGIN -->
+        <div class="tradingview-widget-container" style="height:100%;width:100%">
+            <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%"></div>
+            <div class="tradingview-widget-copyright"><a href="https://ru.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Все рынки на TradingView</span></a></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+            {
+            "allow_symbol_change": true,
+            "calendar": false,
+            "details": false,
+            "hide_side_toolbar": false,
+            "hide_top_toolbar": false,
+            "hide_legend": false,
+            "hide_volume": false,
+            "hotlist": false,
+            "interval": "D",
+            "locale": "ru",
+            "save_image": true,
+            "style": "0",
+            "symbol": "BINANCE:${ticker}",
+            "theme": "dark",
+            "timezone": "Etc/UTC",
+            "backgroundColor": "rgba(0, 0, 0, 1)",
+            "gridColor": "rgba(0, 0, 0, 0)",
+            "watchlist": [],
+            "withdateranges": false,
+            "compareSymbols": [],
+            "studies": [],
+            "autosize": true
+            }
+            </script>
+        </div>
+        <!-- TradingView Widget END -->
+    `;
 
-    const widgetConfig = {
-        "autosize": true,
-        "symbol": `BINANCE:${ticker}`,
-        "interval": "D",
-        "timezone": "Etc/UTC",
-        "theme": "dark",
-        "style": "1",
-        "locale": "ru",
-        "enable_publishing": false,
-        "allow_symbol_change": true,
-        "container_id": "tradingview-widget",
-        "studies": [
-            "RSI@tv-basicstudies",
-            "MACD@tv-basicstudies"
-        ],
-        "show_popup_button": true,
-        "popup_width": "1000",
-        "popup_height": "650"
-    };
-
-    script.innerHTML = JSON.stringify(widgetConfig);
-    widgetContainer.appendChild(script);
+    widgetContainer.innerHTML = widgetHTML;
+    document.getElementById('chartError').classList.add('hidden');
 }
 
 function closeChartModal() {
     document.getElementById('chartModal').style.display = 'none';
-    const widgetContainer = document.getElementById('tradingview-widget');
-    if (widgetContainer) {
-        widgetContainer.innerHTML = '';
-    }
 }
 
 // Функция для копирования текста
@@ -1718,8 +1704,8 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
             lastNotificationTime: 0,
             marketType,
             watchlistType: watchlistType,
-            firstTriggered: false,
-            firstTriggeredTime: null
+            firstTriggered: false, // НОВОЕ ПОЛЕ: отслеживает первое срабатывание
+            firstTriggeredTime: null // НОВОЕ ПОЛЕ: время первого срабатывания
         };
 
         userAlerts.push(newAlert);
