@@ -80,63 +80,38 @@ body {
     }
 }
 
-/* Улучшенные стили для комментариев в тикерах */
+/* УЛУЧШЕННЫЕ СТИЛИ ДЛЯ КОММЕНТАРИЕВ - ВЫХОДЯТ ЗА ГРАНИЦЫ */
 .comment-btn {
     position: relative;
 }
 
 .comment-tooltip {
     display: none;
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.95);
+    position: fixed; /* Изменено на fixed для выхода за границы */
+    bottom: auto;
+    top: 0;
+    left: 0;
+    transform: none;
+    background: rgba(0, 0, 0, 0.98);
     border: 1px solid #334155;
     border-radius: 8px;
-    padding: 12px;
+    padding: 15px;
     color: #e2e8f0;
     font-size: 14px;
     white-space: normal;
-    max-width: 300px;
+    max-width: 400px;
     width: max-content;
     word-wrap: break-word;
-    z-index: 1000;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    z-index: 9999; /* Очень высокий z-index */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(10px);
-    line-height: 1.4;
+    line-height: 1.5;
     text-align: center;
+    overflow: visible !important;
 }
 
 .comment-btn:hover .comment-tooltip {
     display: block;
-}
-
-/* Стрелка у тултипа */
-.comment-tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-top-color: rgba(0, 0, 0, 0.95);
-}
-
-/* Адаптивность для мобильных устройств */
-@media (max-width: 768px) {
-    .comment-tooltip {
-        max-width: 250px;
-        font-size: 12px;
-        padding: 8px 10px;
-    }
-}
-
-/* Убедимся, что кнопка комментария правильно позиционируется */
-.action-buttons {
-    position: relative;
-    display: flex;
-    gap: 4px;
 }
 
 /* Улучшенные стили для сработавших алертов */
