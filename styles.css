@@ -80,6 +80,65 @@ body {
     }
 }
 
+/* Улучшенные стили для комментариев в тикерах */
+.comment-btn {
+    position: relative;
+}
+
+.comment-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 12px;
+    color: #e2e8f0;
+    font-size: 14px;
+    white-space: normal;
+    max-width: 300px;
+    width: max-content;
+    word-wrap: break-word;
+    z-index: 1000;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    line-height: 1.4;
+    text-align: center;
+}
+
+.comment-btn:hover .comment-tooltip {
+    display: block;
+}
+
+/* Стрелка у тултипа */
+.comment-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.95);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .comment-tooltip {
+        max-width: 250px;
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+}
+
+/* Убедимся, что кнопка комментария правильно позиционируется */
+.action-buttons {
+    position: relative;
+    display: flex;
+    gap: 4px;
+}
+
 /* Улучшенные стили для сработавших алертов */
 .alert-card {
     transition: all 0.3s ease;
@@ -1146,30 +1205,6 @@ nav .nav-container {
 .comment-btn:hover {
     background: rgba(255, 193, 7, 0.3);
     transform: scale(1.1);
-}
-
-.comment-tooltip {
-    position: absolute;
-    top: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #2D2D2D;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    white-space: normal;
-    z-index: 100;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    display: none;
-    min-width: 150px;
-    max-width: 250px;
-    word-wrap: break-word;
-    text-align: center;
-}
-
-.comment-btn:hover .comment-tooltip {
-    display: block;
 }
 
 .star-rating {
