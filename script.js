@@ -216,7 +216,9 @@ class BinanceAPIManager {
 
             data.symbols.forEach(symbol => {
                 if (symbol.status === 'TRADING' && symbol.symbol.endsWith('USDT')) {
-                    allBinanceTickers[symbol.symbol] = {
+                    // Добавляем фьючерсы с суффиксом .P
+                    const futuresSymbol = symbol.symbol + '.P';
+                    allBinanceTickers[futuresSymbol] = {
                         name: symbol.baseAsset,
                         type: 'futures'
                     };
@@ -233,9 +235,12 @@ class BinanceAPIManager {
 
     async getCurrentPrice(symbol, marketType) {
         try {
+            // Убираем суффикс .P для запроса к API
+            const cleanSymbol = symbol.replace('.P', '');
+            
             const endpoint = marketType === 'futures'
-                ? `${API_CONFIG.ENDPOINTS.FUTURES}/fapi/v1/ticker/price?symbol=${symbol}`
-                : `${API_CONFIG.ENDPOINTS.SPOT}/api/v3/ticker/price?symbol=${symbol}`;
+                ? `${API_CONFIG.ENDPOINTS.FUTURES}/fapi/v1/ticker/price?symbol=${cleanSymbol}`
+                : `${API_CONFIG.ENDPOINTS.SPOT}/api/v3/ticker/price?symbol=${cleanSymbol}`;
             const response = await this._fetchWithTimeout(endpoint);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
@@ -252,7 +257,9 @@ class BinanceAPIManager {
     }
 
     async getPriceHistory(symbol, marketType = 'spot', days = API_CONFIG.TREND_ANALYSIS_PERIOD) {
-        const cacheKey = `${symbol}-${marketType}-${days}`;
+        // Убираем суффикс .P для запроса к API
+        const cleanSymbol = symbol.replace('.P', '');
+        const cacheKey = `${cleanSymbol}-${marketType}-${days}`;
         if (this.priceHistoryCache[cacheKey] &&
             Date.now() - this.priceHistoryCache[cacheKey].timestamp < 600000) {
             return this.priceHistoryCache[cacheKey].data;
@@ -262,8 +269,8 @@ class BinanceAPIManager {
             const limit = Math.min(days * 24, 1000);
 
             const endpoint = marketType === 'futures'
-                ? `${API_CONFIG.ENDPOINTS.FUTURES}/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
-                : `${API_CONFIG.ENDPOINTS.SPOT}/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+                ? `${API_CONFIG.ENDPOINTS.FUTURES}/fapi/v1/klines?symbol=${cleanSymbol}&interval=${interval}&limit=${limit}`
+                : `${API_CONFIG.ENDPOINTS.SPOT}/api/v3/klines?symbol=${cleanSymbol}&interval=${interval}&limit=${limit}`;
             const response = await this._fetchWithTimeout(endpoint);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
@@ -460,8 +467,9 @@ async function addTicker(listType) {
         return;
     }
     
-    if (ticker.includes('.P')) {
-        ticker = ticker.replace('.P', '');
+    // Если тикер не содержит .P и это фьючерс, добавляем суффикс
+    if (!ticker.includes('.P') && allBinanceTickers[ticker]?.type === 'futures') {
+        ticker = ticker + '.P';
     } else if (!ticker.endsWith('USDT')) {
         ticker += 'USDT';
     }
@@ -490,10 +498,12 @@ async function addTicker(listType) {
         try {
             let apiUrl;
             const marketType = tickersData[listType][ticker].marketType;
+            // Убираем .P для запроса к API
+            const cleanTicker = ticker.replace('.P', '');
             if (marketType === 'futures') {
-                apiUrl = `https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${ticker}`;
+                apiUrl = `https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${cleanTicker}`;
             } else {
-                apiUrl = `https://api.binance.com/api/v3/ticker/24hr?symbol=${ticker}`;
+                apiUrl = `https://api.binance.com/api/v3/ticker/24hr?symbol=${cleanTicker}`;
             }
             const response = await fetch(apiUrl);
             if (response.ok) {
@@ -770,10 +780,12 @@ async function updateTickerPrice(ticker, listType) {
     try {
         let apiUrl;
         const marketType = tickerData.marketType;
+        // Убираем .P для запроса к API
+        const cleanTicker = ticker.replace('.P', '');
         if (marketType === 'futures') {
-            apiUrl = `https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${ticker}`;
+            apiUrl = `https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${cleanTicker}`;
         } else {
-            apiUrl = `https://api.binance.com/api/v3/ticker/24hr?symbol=${ticker}`;
+            apiUrl = `https://api.binance.com/api/v3/ticker/24hr?symbol=${cleanTicker}`;
         }
         
         const response = await fetch(apiUrl);
@@ -861,8 +873,9 @@ function openTradingViewChart(ticker, listType) {
     const tickerData = tickersData[listType][ticker];
     let displayTicker = ticker;
     
+    // Для фьючерсов убираем .P для TradingView
     if (tickerData.marketType === 'futures') {
-        displayTicker = ticker + '.P';
+        displayTicker = ticker.replace('.P', '');
     }
 
     document.getElementById('chartModalTitle').textContent = displayTicker;
@@ -876,43 +889,43 @@ function loadTradingViewWidget(ticker) {
     const widgetContainer = document.getElementById('tradingview-widget');
     widgetContainer.innerHTML = '';
 
-    const widgetHTML = `
-        <!-- TradingView Widget BEGIN -->
-        <div class="tradingview-widget-container" style="height:100%;width:100%">
-            <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%"></div>
-            <div class="tradingview-widget-copyright"><a href="https://ru.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Все рынки на TradingView</span></a></div>
-            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-            {
-            "allow_symbol_change": true,
-            "calendar": false,
-            "details": false,
-            "hide_side_toolbar": false,
-            "hide_top_toolbar": false,
-            "hide_legend": false,
-            "hide_volume": false,
-            "hotlist": false,
-            "interval": "D",
-            "locale": "ru",
-            "save_image": true,
-            "style": "0",
-            "symbol": "BINANCE:${ticker}",
-            "theme": "dark",
-            "timezone": "Etc/UTC",
-            "backgroundColor": "rgba(0, 0, 0, 1)",
-            "gridColor": "rgba(0, 0, 0, 0)",
-            "watchlist": [],
-            "withdateranges": false,
-            "compareSymbols": [],
-            "studies": [],
-            "autosize": true
-            }
-            </script>
-        </div>
-        <!-- TradingView Widget END -->
-    `;
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+    script.async = true;
+    script.onload = () => {
+        document.getElementById('chartError').classList.add('hidden');
+    };
+    script.onerror = () => {
+        document.getElementById('chartError').classList.remove('hidden');
+    };
 
-    widgetContainer.innerHTML = widgetHTML;
-    document.getElementById('chartError').classList.add('hidden');
+    script.innerHTML = JSON.stringify({
+        "allow_symbol_change": true,
+        "calendar": false,
+        "details": false,
+        "hide_side_toolbar": false,
+        "hide_top_toolbar": false,
+        "hide_legend": false,
+        "hide_volume": false,
+        "hotlist": false,
+        "interval": "D",
+        "locale": "ru",
+        "save_image": true,
+        "style": "0",
+        "symbol": `BINANCE:${ticker}`,
+        "theme": "dark",
+        "timezone": "Etc/UTC",
+        "backgroundColor": "rgba(0, 0, 0, 1)",
+        "gridColor": "rgba(0, 0, 0, 0)",
+        "watchlist": [],
+        "withdateranges": false,
+        "compareSymbols": [],
+        "studies": [],
+        "autosize": true
+    });
+
+    widgetContainer.appendChild(script);
 }
 
 function closeChartModal() {
@@ -1401,10 +1414,13 @@ let allFutures = [];
 let allSpot = [];
 
 function getMarketTypeBySymbol(symbol) {
-    const futuresMatch = allFutures.find(c => c.symbol === symbol);
+    // Убираем .P для поиска в базе данных
+    const cleanSymbol = symbol.replace('.P', '');
+    
+    const futuresMatch = allFutures.find(c => c.symbol === cleanSymbol);
     if (futuresMatch) return 'futures';
 
-    const spotMatch = allSpot.find(c => c.symbol === symbol);
+    const spotMatch = allSpot.find(c => c.symbol === cleanSymbol);
     if (spotMatch) return 'spot';
 
     return null;
