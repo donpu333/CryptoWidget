@@ -1069,18 +1069,32 @@ function saveAppState() {
         localStorage.setItem('cryptoAlerts', JSON.stringify(userAlerts));
         localStorage.setItem('alertFilter', currentAlertFilter);
         
-        // Сохраняем настройки Telegram более надежно
+        // ИСПРАВЛЕННАЯ ЧАСТЬ: Надежное сохранение настроек Telegram
         const telegramCheckbox = document.getElementById('telegram');
+        const chatId = localStorage.getItem('tg_chat_id');
+        
+        // Получаем актуальное состояние чекбокса
+        let enabled = false;
+        if (telegramCheckbox) {
+            enabled = telegramCheckbox.checked;
+        } else {
+            // Если чекбокс не найден, используем сохраненное значение
+            const savedSettings = JSON.parse(localStorage.getItem('tgSettings') || '{}');
+            enabled = savedSettings.enabled || false;
+        }
+
+        // Сохраняем настройки Telegram в едином формате
         const tgSettings = {
-            chatId: localStorage.getItem('tg_chat_id'),
-            enabled: telegramCheckbox ? telegramCheckbox.checked : false,
+            chatId: chatId,
+            enabled: enabled,
             lastSaved: new Date().toISOString()
         };
         localStorage.setItem('tgSettings', JSON.stringify(tgSettings));
         
-        // Дополнительное сохранение критичных настроек
+        // Дублируем критичные настройки для надежности
         const criticalSettings = {
-            tg_chat_id: localStorage.getItem('tg_chat_id'),
+            tg_chat_id: chatId,
+            tg_enabled: enabled,
             userEmail: localStorage.getItem('userEmail'),
             currentUser: localStorage.getItem('currentUser'),
             lastBackup: new Date().toISOString()
@@ -1120,7 +1134,10 @@ function loadAppState() {
             currentAlertFilter = savedFilter;
         }
 
+        // ИСПРАВЛЕННАЯ ЧАСТЬ: Надежная загрузка настроек Telegram
         const tgSettings = JSON.parse(localStorage.getItem('tgSettings') || '{}');
+        
+        // Восстанавливаем chatId из tgSettings
         if (tgSettings.chatId) {
             localStorage.setItem('tg_chat_id', tgSettings.chatId);
             const userChatId = document.getElementById('userChatId');
@@ -1130,10 +1147,24 @@ function loadAppState() {
             }
         }
 
+        // Восстанавливаем состояние чекбокса из tgSettings
         if (tgSettings.enabled !== undefined) {
             const telegramCheckbox = document.getElementById('telegram');
             if (telegramCheckbox) {
                 telegramCheckbox.checked = tgSettings.enabled;
+                // Показываем поле chatId если чекбокс активен
+                const userChatId = document.getElementById('userChatId');
+                if (userChatId && tgSettings.enabled) {
+                    userChatId.classList.remove('hidden');
+                }
+            }
+        }
+
+        // Восстанавливаем из criticalSettings как fallback
+        if (criticalSettings.tg_enabled !== undefined) {
+            const telegramCheckbox = document.getElementById('telegram');
+            if (telegramCheckbox && !tgSettings.enabled) {
+                telegramCheckbox.checked = criticalSettings.tg_enabled;
             }
         }
 
