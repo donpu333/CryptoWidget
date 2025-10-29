@@ -11,7 +11,7 @@ const API_CONFIG = {
         ALL_TICKERS: 'https://api.binance.com/api/v3/exchangeInfo'
     },
     PRICE_COMPARISON_EPSILON: 0.00000001,
-    TREND_ANALYSIS_PERIOD: 14 // Days for trend analysis
+    TREND_ANALYSIS_PERIOD: 14
 };
 
 const TG_BOT_TOKEN = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30';
@@ -79,6 +79,13 @@ let alertCooldowns = {};
 let activeTriggeredAlerts = {};
 let currentPrices = {};
 let alertIntervals = {};
+
+// НОВЫЙ ОБЪЕКТ ДЛЯ НАСТРОЕК TELEGRAM
+const telegramSettings = {
+    chatId: '',
+    enabled: false,
+    lastSaved: null
+};
 
 class BinanceAPIManager {
     constructor() {
@@ -216,7 +223,6 @@ class BinanceAPIManager {
 
             data.symbols.forEach(symbol => {
                 if (symbol.status === 'TRADING' && symbol.symbol.endsWith('USDT')) {
-                    // Добавляем фьючерсы с суффиксом .P
                     const futuresSymbol = symbol.symbol + '.P';
                     allBinanceTickers[futuresSymbol] = {
                         name: symbol.baseAsset,
@@ -235,7 +241,6 @@ class BinanceAPIManager {
 
     async getCurrentPrice(symbol, marketType) {
         try {
-            // Убираем суффикс .P для запроса к API
             const cleanSymbol = symbol.replace('.P', '');
             
             const endpoint = marketType === 'futures'
@@ -257,7 +262,6 @@ class BinanceAPIManager {
     }
 
     async getPriceHistory(symbol, marketType = 'spot', days = API_CONFIG.TREND_ANALYSIS_PERIOD) {
-        // Убираем суффикс .P для запроса к API
         const cleanSymbol = symbol.replace('.P', '');
         const cacheKey = `${cleanSymbol}-${marketType}-${days}`;
         if (this.priceHistoryCache[cacheKey] &&
@@ -467,7 +471,6 @@ async function addTicker(listType) {
         return;
     }
     
-    // Если тикер не содержит .P и это фьючерс, добавляем суффикс
     if (!ticker.includes('.P') && allBinanceTickers[ticker]?.type === 'futures') {
         ticker = ticker + '.P';
     } else if (!ticker.endsWith('USDT')) {
@@ -498,7 +501,6 @@ async function addTicker(listType) {
         try {
             let apiUrl;
             const marketType = tickersData[listType][ticker].marketType;
-            // Убираем .P для запроса к API
             const cleanTicker = ticker.replace('.P', '');
             if (marketType === 'futures') {
                 apiUrl = `https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${cleanTicker}`;
@@ -780,7 +782,6 @@ async function updateTickerPrice(ticker, listType) {
     try {
         let apiUrl;
         const marketType = tickerData.marketType;
-        // Убираем .P для запроса к API
         const cleanTicker = ticker.replace('.P', '');
         if (marketType === 'futures') {
             apiUrl = `https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${cleanTicker}`;
@@ -873,7 +874,6 @@ function openTradingViewChart(ticker, listType) {
     const tickerData = tickersData[listType][ticker];
     let displayTicker = ticker;
     
-    // Для фьючерсов убираем .P для TradingView
     if (tickerData.marketType === 'futures') {
         displayTicker = ticker.replace('.P', '');
     }
@@ -1063,34 +1063,73 @@ function loadTriggeredAlerts() {
     return JSON.parse(localStorage.getItem('triggeredAlertsHistory') || '[]');
 }
 
+// НОВАЯ ПРОСТАЯ ЛОГИКА СОХРАНЕНИЯ НАСТРОЕК TELEGRAM
+function saveTelegramSettingsToStorage() {
+    try {
+        // Сохраняем только в одном месте
+        localStorage.setItem('telegramSettings', JSON.stringify(telegramSettings));
+        console.log('Telegram settings saved:', telegramSettings);
+        return true;
+    } catch (error) {
+        console.error('Error saving Telegram settings:', error);
+        return false;
+    }
+}
+
+function loadTelegramSettingsFromStorage() {
+    try {
+        const saved = localStorage.getItem('telegramSettings');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            telegramSettings.chatId = parsed.chatId || '';
+            telegramSettings.enabled = parsed.enabled || false;
+            telegramSettings.lastSaved = parsed.lastSaved || null;
+            console.log('Telegram settings loaded:', telegramSettings);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error loading Telegram settings:', error);
+        return false;
+    }
+}
+
+// Обновляем UI с настройками Telegram
+function updateTelegramUI() {
+    const telegramCheckbox = document.getElementById('telegram');
+    const userChatId = document.getElementById('userChatId');
+    const editTelegram = document.getElementById('editTelegram');
+    const editUserChatId = document.getElementById('editUserChatId');
+
+    if (telegramCheckbox) {
+        telegramCheckbox.checked = telegramSettings.enabled;
+    }
+    if (userChatId) {
+        userChatId.value = telegramSettings.chatId;
+        userChatId.style.display = telegramSettings.enabled ? 'block' : 'none';
+    }
+    if (editTelegram) {
+        editTelegram.checked = telegramSettings.enabled;
+    }
+    if (editUserChatId) {
+        editUserChatId.value = telegramSettings.chatId;
+        editUserChatId.style.display = telegramSettings.enabled ? 'block' : 'none';
+    }
+}
+
 // Сохраняем состояние приложения
 function saveAppState() {
     try {
         localStorage.setItem('cryptoAlerts', JSON.stringify(userAlerts));
         localStorage.setItem('alertFilter', currentAlertFilter);
         
-        // Сохраняем настройки Telegram более надежно
-        const telegramCheckbox = document.getElementById('telegram');
-        const tgSettings = {
-            chatId: localStorage.getItem('tg_chat_id'),
-            enabled: telegramCheckbox ? telegramCheckbox.checked : false,
-            lastSaved: new Date().toISOString()
-        };
-        localStorage.setItem('tgSettings', JSON.stringify(tgSettings));
+        // Сохраняем настройки Telegram
+        saveTelegramSettingsToStorage();
         
-        // Дополнительное сохранение критичных настроек
-        const criticalSettings = {
-            tg_chat_id: localStorage.getItem('tg_chat_id'),
-            userEmail: localStorage.getItem('userEmail'),
-            currentUser: localStorage.getItem('currentUser'),
-            lastBackup: new Date().toISOString()
-        };
-        localStorage.setItem('criticalSettings', JSON.stringify(criticalSettings));
-        
-        console.log("Состояние сохранено");
+        console.log("App state saved");
         return true;
     } catch (error) {
-        console.error("Ошибка при сохранении состояния:", error);
+        console.error("Error saving app state:", error);
         return false;
     }
 }
@@ -1098,18 +1137,6 @@ function saveAppState() {
 // Загружаем состояние приложения
 function loadAppState() {
     try {
-        // Восстанавливаем критические настройки в первую очередь
-        const criticalSettings = JSON.parse(localStorage.getItem('criticalSettings') || '{}');
-        if (criticalSettings.tg_chat_id) {
-            localStorage.setItem('tg_chat_id', criticalSettings.tg_chat_id);
-        }
-        if (criticalSettings.userEmail) {
-            localStorage.setItem('userEmail', criticalSettings.userEmail);
-        }
-        if (criticalSettings.currentUser) {
-            localStorage.setItem('currentUser', criticalSettings.currentUser);
-        }
-
         const savedAlerts = localStorage.getItem('cryptoAlerts');
         if (savedAlerts) {
             userAlerts = JSON.parse(savedAlerts);
@@ -1120,27 +1147,14 @@ function loadAppState() {
             currentAlertFilter = savedFilter;
         }
 
-        const tgSettings = JSON.parse(localStorage.getItem('tgSettings') || '{}');
-        if (tgSettings.chatId) {
-            localStorage.setItem('tg_chat_id', tgSettings.chatId);
-            const userChatId = document.getElementById('userChatId');
-            if (userChatId) {
-                userChatId.value = tgSettings.chatId;
-                userChatId.classList.remove('hidden');
-            }
-        }
+        // Загружаем настройки Telegram
+        loadTelegramSettingsFromStorage();
+        updateTelegramUI();
 
-        if (tgSettings.enabled !== undefined) {
-            const telegramCheckbox = document.getElementById('telegram');
-            if (telegramCheckbox) {
-                telegramCheckbox.checked = tgSettings.enabled;
-            }
-        }
-
-        console.log("Состояние загружено");
+        console.log("App state loaded");
         return true;
     } catch (error) {
-        console.error("Ошибка при загрузке состояния:", error);
+        console.error("Error loading app state:", error);
         return false;
     }
 }
@@ -1232,29 +1246,23 @@ async function checkAlerts() {
             const lastNotification = alertCooldowns[cooldownKey] || 0;
 
             if (conditionMet) {
-                // Если это первое срабатывание или прошло больше 60 секунд
                 if (!alert.firstTriggered || (now - lastNotification > 60000)) {
                     
                     console.log(`Alert triggered: ${alert.symbol} ${alert.condition} ${alert.value} | Current: ${price} | Time: ${new Date().toISOString()}`);
 
-                    // Помечаем что алерт хотя бы раз сработал
                     if (!alert.firstTriggered) {
                         alert.firstTriggered = true;
                         alert.firstTriggeredTime = now;
                     }
 
-                    // Вызываем мерцание тикера
                     flashTickerInWatchlist(alert.symbol, alert.condition);
 
-                    // Отправка уведомлений
                     await handleTriggeredAlert(alert, price);
                     alertCooldowns[cooldownKey] = now;
                     activeTriggeredAlerts[alert.id] = true;
 
-                    // Обновляем интерфейс
                     highlightTriggeredAlert(alert.id, alert.condition);
 
-                    // Учет количества срабатываний
                     alert.triggeredCount = (alert.triggeredCount || 0) + 1;
                     
                     if (alert.notificationCount > 0 && alert.triggeredCount >= alert.notificationCount) {
@@ -1298,16 +1306,14 @@ async function handleTriggeredAlert(alert, currentPrice) {
         `Условие: ${alert.condition} ${alert.value}\n` +
         `Текущая цена: ${formatNumber(currentPrice, 8)}`;
 
-    // Отправка в Telegram
-    if (alert.notificationMethods.includes('telegram') && alert.chatId) {
+    if (alert.notificationMethods.includes('telegram') && telegramSettings.enabled && telegramSettings.chatId) {
         try {
-            await sendTelegramNotification(message, alert.chatId);
+            await sendTelegramNotification(message, telegramSettings.chatId);
         } catch (error) {
             console.error('Failed to send Telegram alert:', error);
         }
     }
 
-    // Показываем уведомление в интерфейсе
     showNotification('Алерт сработал',
         `Символ: ${alert.symbol}\n` +
         `Условие: ${alert.condition} ${alert.value}\n` +
@@ -1348,8 +1354,7 @@ async function sendTelegramNotification(message, chatId) {
 
 // Функция для экспорта всех активных алертов в Telegram
 async function exportAllActiveAlerts() {
-    const chatId = localStorage.getItem('tg_chat_id');
-    if (!chatId) {
+    if (!telegramSettings.enabled || !telegramSettings.chatId) {
         showBotConnectionHint();
         return;
     }
@@ -1367,7 +1372,7 @@ async function exportAllActiveAlerts() {
     });
 
     try {
-        const success = await sendTelegramNotification(message, chatId);
+        const success = await sendTelegramNotification(message, telegramSettings.chatId);
         if (success) {
             showNotification('Успешно', 'Все активные алерты экспортированы в Telegram');
         } else {
@@ -1414,7 +1419,6 @@ let allFutures = [];
 let allSpot = [];
 
 function getMarketTypeBySymbol(symbol) {
-    // Убираем .P для поиска в базе данных
     const cleanSymbol = symbol.replace('.P', '');
     
     const futuresMatch = allFutures.find(c => c.symbol === cleanSymbol);
@@ -1462,8 +1466,7 @@ function validateForm() {
 
     const telegramCheckbox = document.getElementById('telegram');
     if (telegramCheckbox && telegramCheckbox.checked) {
-        const chatId = localStorage.getItem('tg_chat_id') || document.getElementById('userChatId')?.value;
-        if (!chatId) {
+        if (!telegramSettings.chatId) {
             showBotConnectionHint();
             isValid = false;
         }
@@ -1496,28 +1499,6 @@ function validateForm() {
         isValid = false;
     }
 
-    if (telegramCheckbox && telegramCheckbox.checked) {
-        const userChatId = document.getElementById('userChatId');
-        if (!userChatId || !userChatId.value.trim()) {
-            showValidationError('userChatId', 'Пожалуйста, укажите Telegram Chat ID');
-            isValid = false;
-        }
-    }
-
-    const emailCheckbox = document.getElementById('email');
-    if (emailCheckbox && emailCheckbox.checked) {
-        const userEmail = document.getElementById('userEmail');
-        if (!userEmail || !userEmail.value.trim()) {
-            showValidationError('userEmail', 'Пожалуйста, укажите email');
-            isValid = false;
-        } else if (!isValidEmail(userEmail.value)) {
-            showValidationError('userEmail', 'Неверный формат email');
-            isValid = false;
-        } else {
-            hideValidationError('userEmail');
-        }
-    }
-
     return isValid;
 }
 
@@ -1547,7 +1528,6 @@ async function loadMarketData() {
             }
         }
 
-        // Загрузка фьючерсных данных
         const futuresResponse = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
         if (!futuresResponse.ok) throw new Error(`Futures API error: ${futuresResponse.status}`);
         const futuresData = await futuresResponse.json();
@@ -1562,7 +1542,6 @@ async function loadMarketData() {
                 marketType: 'futures'
             }));
 
-        // Загрузка спотовых данных
         const spotResponse = await fetch('https://api.binance.com/api/v3/exchangeInfo');
         if (!spotResponse.ok) throw new Error(`Spot API error: ${spotResponse.status}`);
         const spotData = await spotResponse.json();
@@ -1689,14 +1668,11 @@ function addTickerToWatchlist(symbol, watchlistType) {
     }
 }
 
-async function addUserAlert(symbol, type, condition, value, notificationMethods, notificationCount, chatId, watchlistType = null) {
+async function addUserAlert(symbol, type, condition, value, notificationMethods, notificationCount, watchlistType = null) {
     try {
-        if (notificationMethods.includes('telegram')) {
-            const savedChatId = localStorage.getItem('tg_chat_id') || chatId;
-            if (!savedChatId) {
-                showBotConnectionHint();
-                return false;
-            }
+        if (notificationMethods.includes('telegram') && (!telegramSettings.enabled || !telegramSettings.chatId)) {
+            showBotConnectionHint();
+            return false;
         }
 
         if (isDuplicateAlert(symbol, condition, value)) {
@@ -1713,15 +1689,14 @@ async function addUserAlert(symbol, type, condition, value, notificationMethods,
             value: parseFloat(value),
             notificationMethods,
             notificationCount: parseInt(notificationCount),
-            chatId: notificationMethods.includes('telegram') ? (localStorage.getItem('tg_chat_id') || chatId) : null,
             triggeredCount: 0,
             createdAt: new Date().toISOString(),
             triggered: false,
             lastNotificationTime: 0,
             marketType,
             watchlistType: watchlistType,
-            firstTriggered: false, // НОВОЕ ПОЛЕ: отслеживает первое срабатывание
-            firstTriggeredTime: null // НОВОЕ ПОЛЕ: время первого срабатывания
+            firstTriggered: false,
+            firstTriggeredTime: null
         };
 
         userAlerts.push(newAlert);
@@ -1820,7 +1795,6 @@ function loadUserAlerts(filter = 'active') {
         }
     }
 
-    // Сортируем алерты: сначала сработавшие (с анимацией), затем активные
     filteredAlerts.sort((a, b) => {
         const aTriggered = activeTriggeredAlerts[a.id] || false;
         const bTriggered = activeTriggeredAlerts[b.id] || false;
@@ -2015,15 +1989,14 @@ async function exportAlertToTelegram(alertId) {
     const alert = userAlerts.find(a => a.id === alertId);
     if (!alert) return;
 
-    const chatId = localStorage.getItem('tg_chat_id');
-    if (!chatId) {
+    if (!telegramSettings.enabled || !telegramSettings.chatId) {
         showBotConnectionHint();
         return;
     }
 
     const message = `📌 Новый алерт:\nСимвол: ${alert.symbol}\nТип: ${alert.type}\nУсловие: ${alert.condition} ${alert.value}\nУведомлений: ${alert.notificationCount === 0 ? '∞' : alert.notificationCount}`;
 
-    const success = await sendTelegramNotification(message, chatId);
+    const success = await sendTelegramNotification(message, telegramSettings.chatId);
     if (success) {
         showNotification('Успешно', 'Алерт экспортирован в Telegram');
     } else {
@@ -2121,13 +2094,6 @@ function openEditModal(alert) {
                         <button onclick="openTelegramSettings()" class="ml-2 text-sm text-blue-400 hover:text-blue-300 text-xs px-2 py-1">
                             Настроить
                         </button>
-                        <input
-                            type="text"
-                            id="editUserChatId"
-                            placeholder="Ваш Chat ID"
-                            class="ml-2 px-2 py-1 text-sm rounded-md ${alert.notificationMethods.includes('telegram') ? '' : 'hidden'}"
-                            value="${alert.chatId || ''}"
-                        >
                     </div>
                     <div class="notification-method">
                         <input id="editEmail" type="checkbox" ${alert.notificationMethods.includes('email') ? 'checked' : ''} class="h-4 w-4 focus:ring-primary">
@@ -2160,27 +2126,19 @@ function openEditModal(alert) {
         }
     });
 
-    const telegramCheckbox = document.getElementById('editTelegram');
-    if (telegramCheckbox) {
-        telegramCheckbox.addEventListener('change', function() {
-            const userChatId = document.getElementById('editUserChatId');
-            if (!userChatId) return;
-
-            if (this.checked) {
-                userChatId.classList.remove('hidden');
-                userChatId.required = true;
-                const savedChatId = localStorage.getItem('tg_chat_id');
-                if (savedChatId) userChatId.value = savedChatId;
-            } else {
-                userChatId.classList.add('hidden');
-                userChatId.required = false;
+    const editTelegram = document.getElementById('editTelegram');
+    if (editTelegram) {
+        editTelegram.addEventListener('change', function() {
+            if (this.checked && (!telegramSettings.enabled || !telegramSettings.chatId)) {
+                showBotConnectionHint();
+                this.checked = false;
             }
         });
     }
 
-    const emailCheckbox = document.getElementById('editEmail');
-    if (emailCheckbox) {
-        emailCheckbox.addEventListener('change', function() {
+    const editEmail = document.getElementById('editEmail');
+    if (editEmail) {
+        editEmail.addEventListener('change', function() {
             const userEmail = document.getElementById('editUserEmail');
             if (!userEmail) return;
 
@@ -2218,7 +2176,6 @@ function handleEditSubmit(alertId) {
     const useTelegram = document.getElementById('editTelegram')?.checked;
     const useEmail = document.getElementById('editEmail')?.checked;
     const userEmail = useEmail ? document.getElementById('editUserEmail')?.value : '';
-    const userChatId = useTelegram ? document.getElementById('editUserChatId')?.value : '';
     const notificationCount = document.getElementById('editNotificationCount')?.value;
 
     if (!symbol || !type || !condition || !value || notificationCount === undefined) {
@@ -2226,8 +2183,8 @@ function handleEditSubmit(alertId) {
         return;
     }
 
-    if (useTelegram && !userChatId && !localStorage.getItem('tg_chat_id')) {
-        showNotification('Ошибка', 'Пожалуйста, укажите Telegram Chat ID');
+    if (useTelegram && (!telegramSettings.enabled || !telegramSettings.chatId)) {
+        showNotification('Ошибка', 'Telegram не настроен');
         return;
     }
 
@@ -2253,7 +2210,6 @@ function handleEditSubmit(alertId) {
         value: parseFloat(value),
         notificationMethods,
         notificationCount: parseInt(notificationCount),
-        chatId: useTelegram ? (localStorage.getItem('tg_chat_id') || userChatId) : null,
         triggeredCount: userAlerts.find(a => a.id === parseInt(alertId))?.triggeredCount || 0,
         createdAt: userAlerts.find(a => a.id === parseInt(alertId))?.createdAt || new Date().toISOString(),
         triggered: false,
@@ -2300,10 +2256,9 @@ function closeEditModal() {
 function openTelegramSettings() {
     const modal = document.getElementById('telegramSettingsModal');
     const chatIdInput = document.getElementById('telegramChatId');
-    const savedChatId = localStorage.getItem('tg_chat_id');
 
-    if (chatIdInput && savedChatId) {
-        chatIdInput.value = savedChatId;
+    if (chatIdInput) {
+        chatIdInput.value = telegramSettings.chatId || '';
     }
 
     if (modal) {
@@ -2320,21 +2275,19 @@ function closeTelegramSettings() {
 
 async function saveTelegramSettings() {
     const chatIdInput = document.getElementById('telegramChatId');
-    const userChatId = document.getElementById('userChatId');
 
-    if (chatIdInput && userChatId) {
+    if (chatIdInput) {
         const chatId = chatIdInput.value.trim();
         if (chatId) {
             try {
-                // Сохраняем в несколько мест для надежности
-                localStorage.setItem('tg_chat_id', chatId);
-                localStorage.setItem('tg_enabled', 'true');
-                
                 // Обновляем глобальные настройки
-                userChatId.value = chatId;
+                telegramSettings.chatId = chatId;
+                telegramSettings.enabled = true;
+                telegramSettings.lastSaved = new Date().toISOString();
                 
-                // Сохраняем состояние приложения
-                saveAppState();
+                // Сохраняем в хранилище
+                saveTelegramSettingsToStorage();
+                updateTelegramUI();
                 
                 closeTelegramSettings();
                 closeBotConnectionHint();
@@ -2461,7 +2414,7 @@ function resetForm() {
 
         const telegramCheckbox = document.getElementById('telegram');
         if (telegramCheckbox) {
-            telegramCheckbox.checked = true;
+            telegramCheckbox.checked = telegramSettings.enabled;
         }
 
         const emailCheckbox = document.getElementById('email');
@@ -2472,12 +2425,6 @@ function resetForm() {
         const watchlistType = document.getElementById('watchlistType');
         if (watchlistType) {
             watchlistType.value = 'none';
-        }
-
-        const userChatIdInput = document.getElementById('userChatId');
-        if (userChatIdInput) {
-            userChatIdInput.value = '';
-            userChatIdInput.classList.add('hidden');
         }
 
         const userEmailInput = document.getElementById('userEmail');
@@ -2561,21 +2508,15 @@ function setupEventListeners() {
     const telegramCheckbox = document.getElementById('telegram');
     if (telegramCheckbox) {
         telegramCheckbox.addEventListener('change', function() {
-            const userChatId = document.getElementById('userChatId');
-            if (!userChatId) return;
-
-            if (this.checked) {
-                userChatId.classList.remove('hidden');
-                userChatId.required = true;
-                const savedChatId = localStorage.getItem('tg_chat_id');
-                if (savedChatId) userChatId.value = savedChatId;
-            } else {
-                userChatId.classList.add('hidden');
-                userChatId.required = false;
+            if (this.checked && (!telegramSettings.enabled || !telegramSettings.chatId)) {
+                showBotConnectionHint();
+                this.checked = false;
+                return;
             }
-
-            localStorage.setItem('tg_enabled', this.checked);
-            saveAppState();
+            
+            telegramSettings.enabled = this.checked;
+            saveTelegramSettingsToStorage();
+            updateTelegramUI();
         });
     }
 
@@ -2603,7 +2544,7 @@ function setupEventListeners() {
             e.preventDefault();
 
             const telegramCheckbox = document.getElementById('telegram');
-            if (telegramCheckbox && telegramCheckbox.checked && !localStorage.getItem('tg_chat_id')) {
+            if (telegramCheckbox && telegramCheckbox.checked && (!telegramSettings.enabled || !telegramSettings.chatId)) {
                 showBotConnectionHint();
                 return;
             }
@@ -2618,7 +2559,6 @@ function setupEventListeners() {
             const useTelegram = document.getElementById('telegram')?.checked;
             const useEmail = document.getElementById('email')?.checked;
             const userEmail = useEmail ? document.getElementById('userEmail')?.value : '';
-            const userChatId = useTelegram ? document.getElementById('userChatId')?.value : '';
             const notificationCount = document.getElementById('notificationCount')?.value;
 
             if (!symbol || !alertType || !condition || !value || notificationCount === undefined) {
@@ -2626,8 +2566,8 @@ function setupEventListeners() {
                 return;
             }
 
-            if (useTelegram && !userChatId && !localStorage.getItem('tg_chat_id')) {
-                showNotification('Ошибка', 'Пожалуйста, укажите Telegram Chat ID');
+            if (useTelegram && (!telegramSettings.enabled || !telegramSettings.chatId)) {
+                showNotification('Ошибка', 'Telegram не настроен');
                 return;
             }
 
@@ -2656,7 +2596,6 @@ function setupEventListeners() {
                     value: parseFloat(value),
                     notificationMethods,
                     notificationCount: parseInt(notificationCount),
-                    chatId: useTelegram ? (localStorage.getItem('tg_chat_id') || userChatId) : null,
                     triggeredCount: userAlerts.find(a => a.id === parseInt(editAlertId))?.triggeredCount || 0,
                     createdAt: userAlerts.find(a => a.id === parseInt(editAlertId))?.createdAt || new Date().toISOString(),
                     triggered: false,
@@ -2678,7 +2617,7 @@ function setupEventListeners() {
                 showNotification('Успешно', `Алерт для ${symbol} обновлен`);
                 resetForm();
             } else {
-                const success = await addUserAlert(symbol, alertType, condition, value, notificationMethods, notificationCount, userChatId, watchlistType);
+                const success = await addUserAlert(symbol, alertType, condition, value, notificationMethods, notificationCount, watchlistType);
                 if (success) {
                     showNotification('Успешно', `Алерт для ${symbol} создан`);
                     resetForm();
@@ -2741,7 +2680,6 @@ function setupEventListeners() {
 
                 const useTelegram = document.getElementById('telegram')?.checked || false;
                 const useEmail = document.getElementById('email')?.checked || false;
-                const userChatId = useTelegram ? (localStorage.getItem('tg_chat_id') || document.getElementById('userChatId')?.value) : null;
                 const userEmail = useEmail ? document.getElementById('userEmail')?.value : null;
                 const notificationCount = document.getElementById('notificationCount')?.value || '5';
                 const alertType = document.getElementById('alertType')?.value || 'price';
@@ -2756,7 +2694,7 @@ function setupEventListeners() {
                     return;
                 }
 
-                if (notificationMethods.includes('telegram') && !userChatId) {
+                if (notificationMethods.includes('telegram') && (!telegramSettings.enabled || !telegramSettings.chatId)) {
                     showBotConnectionHint();
                     return;
                 }
@@ -2798,7 +2736,6 @@ function setupEventListeners() {
                         parseFloat(value),
                         notificationMethods,
                         notificationCount,
-                        userChatId,
                         watchlistType
                     );
 
@@ -2887,22 +2824,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupEventListeners();
         await loadMarketData();
         loadUserAlerts(currentAlertFilter);
-
-        const savedChatId = localStorage.getItem('tg_chat_id');
-        if (savedChatId) {
-            const userChatId = document.getElementById('userChatId');
-            if (userChatId) {
-                userChatId.value = savedChatId;
-            }
-        }
-
-        const savedEmail = localStorage.getItem('userEmail');
-        if (savedEmail) {
-            const userEmail = document.getElementById('userEmail');
-            if (userEmail) {
-                userEmail.value = savedEmail;
-            }
-        }
 
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         if (currentUser && currentUser.email) {
