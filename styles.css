@@ -16,6 +16,10 @@
     --border-radius: 12px;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'JetBrains Mono', monospace;
     background-color: var(--dark);
@@ -26,6 +30,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
 }
 
 /* Стили для постоянного мерцания сработавших алертов */
@@ -736,12 +741,6 @@ footer {
     width: 100%;
     padding: 0 1rem;
     box-sizing: border-box;
-}
-
-@media (max-width: 1024px) {
-    .alerts-layout {
-        grid-template-columns: 1fr;
-    }
 }
 
 /* Full width adjustments */
@@ -1542,41 +1541,6 @@ nav .nav-container {
     padding: 1rem;
 }
 
-/* Additional responsive adjustments */
-@media (max-width: 640px) {
-    .content-wrapper {
-        padding: 0.5rem;
-    }
-    
-    .alerts-layout {
-        gap: 1rem;
-        padding: 0 0.5rem;
-    }
-    
-    .dashboard-container {
-        padding: 10px;
-    }
-    
-    .dashboard {
-        gap: 10px;
-    }
-    
-    .panel {
-        min-height: 500px;
-    }
-    
-    .ticker-item {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .action-buttons {
-        width: 100%;
-        justify-content: flex-start;
-        margin-top: 10px;
-    }
-}
-
 /* Loading states */
 .loading {
     opacity: 0.6;
@@ -1627,8 +1591,216 @@ nav .nav-container {
     color: #F59E0B;
 }
 
-/* Responsive menu */
+/* Адаптивные стили для ватчлиста */
+@media (max-width: 1400px) {
+    .dashboard {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 12px;
+    }
+    
+    .panel {
+        min-width: 280px;
+        min-height: 550px;
+    }
+    
+    .ticker-symbol {
+        max-width: 120px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .dashboard {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    
+    .panel {
+        min-width: 260px;
+        min-height: 500px;
+    }
+    
+    .ticker-name {
+        font-size: 1rem;
+    }
+    
+    .ticker-symbol {
+        max-width: 100px;
+    }
+    
+    .price-info {
+        font-size: 0.85rem;
+    }
+    
+    .alerts-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 1024px) {
+    .dashboard {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .panel {
+        min-width: auto;
+        min-height: 480px;
+    }
+    
+    .panel-header {
+        padding: 12px;
+        font-size: 1rem;
+    }
+    
+    .panel-content {
+        padding: 12px;
+    }
+    
+    .ticker-input {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+    
+    .add-btn {
+        padding: 0 15px;
+        font-size: 1rem;
+    }
+    
+    .ticker-symbol {
+        max-width: 80px;
+    }
+}
+
 @media (max-width: 768px) {
+    .dashboard {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .panel {
+        min-height: 450px;
+        margin-bottom: 8px;
+    }
+    
+    .ticker-item {
+        padding: 12px;
+        margin-bottom: 8px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .ticker-info {
+        flex: 1 1 100%;
+        margin-bottom: 8px;
+        width: 100%;
+    }
+    
+    .action-buttons {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+        gap: 6px;
+        width: 100%;
+    }
+    
+    .ticker-symbol {
+        max-width: none;
+    }
+    
+    .ticker-name-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        width: 100%;
+    }
+    
+    .star-rating {
+        margin-left: 0;
+        margin-top: 4px;
+    }
+    
+    .ticker-name {
+        font-size: 0.95rem;
+        width: 100%;
+    }
+    
+    .price-info {
+        width: 100%;
+    }
+    
+    .content-wrapper {
+        padding: 0.5rem;
+    }
+    
+    .alerts-layout {
+        gap: 1rem;
+        padding: 0 0.5rem;
+    }
+    
+    .dashboard-container {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 640px) {
+    .dashboard-container {
+        padding: 8px;
+    }
+    
+    .panel {
+        min-height: 420px;
+        border-radius: 12px;
+    }
+    
+    .panel-header {
+        padding: 10px;
+        font-size: 0.95rem;
+    }
+    
+    .panel-content {
+        padding: 10px;
+    }
+    
+    .ticker-input {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+    
+    .add-btn {
+        padding: 0 12px;
+        font-size: 0.9rem;
+    }
+    
+    .ticker-item {
+        padding: 10px;
+    }
+    
+    .ticker-name {
+        font-size: 0.9rem;
+    }
+    
+    .price-info {
+        font-size: 0.8rem;
+    }
+    
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
+    }
+    
+    .stats-bar {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 10px;
+        gap: 8px;
+    }
+    
+    .stat-value {
+        font-size: 1.2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.7rem;
+    }
+    
     .menu-content {
         right: auto;
         left: 0;
@@ -1642,6 +1814,86 @@ nav .nav-container {
     .compact-filter-btn {
         font-size: 0.7rem;
         padding: 0.2rem 0.4rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-container {
+        padding: 5px;
+    }
+    
+    .panel {
+        min-height: 400px;
+        border-radius: 10px;
+    }
+    
+    .panel-header {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .panel-content {
+        padding: 8px;
+    }
+    
+    .ticker-input {
+        padding: 8px;
+        font-size: 0.8rem;
+    }
+    
+    .add-btn {
+        padding: 0 10px;
+        font-size: 0.85rem;
+    }
+    
+    .ticker-item {
+        padding: 8px;
+    }
+    
+    .ticker-name {
+        font-size: 0.85rem;
+    }
+    
+    .price-info {
+        font-size: 0.75rem;
+    }
+    
+    .action-buttons {
+        gap: 4px;
+    }
+    
+    .action-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 0.8rem;
+    }
+    
+    .stats-bar {
+        grid-template-columns: 1fr;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 360px) {
+    .panel {
+        min-height: 380px;
+    }
+    
+    .ticker-input {
+        font-size: 0.75rem;
+    }
+    
+    .ticker-name {
+        font-size: 0.8rem;
+    }
+    
+    .price-info {
+        font-size: 0.7rem;
+    }
+    
+    .action-btn {
+        width: 24px;
+        height: 24px;
     }
 }
 
@@ -1674,5 +1926,60 @@ nav .nav-container {
     .ticker-item.alert-triggered-short {
         animation: none;
         background-color: rgba(33, 150, 243, 0.1);
+    }
+    
+    .panel:hover {
+        transform: none;
+    }
+    
+    .ticker-item:hover {
+        transform: none;
+    }
+}
+
+/* Mobile-first responsive improvements */
+.ticker-symbol {
+    word-break: break-all;
+    hyphens: auto;
+}
+
+.ticker-name-container {
+    flex-wrap: wrap;
+}
+
+.price-value {
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+/* Ensure text doesn't overflow on small screens */
+.ticker-item * {
+    max-width: 100%;
+}
+
+/* Improve touch targets on mobile */
+@media (max-width: 768px) {
+    .action-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    
+    .add-btn {
+        min-height: 44px;
+    }
+    
+    .ticker-input {
+        min-height: 44px;
+    }
+}
+
+/* Orientation-specific styles */
+@media (max-width: 768px) and (orientation: landscape) {
+    .panel {
+        min-height: 300px;
+    }
+    
+    .ticker-list {
+        max-height: 400px;
     }
 }
