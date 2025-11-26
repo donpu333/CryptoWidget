@@ -590,6 +590,27 @@
         .upload-box-two {
             min-height: 300px;
         }
+        /* Стили для нового календаря */
+        .investing-calendar {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .investing-calendar iframe {
+            border: none;
+            border-radius: 8px;
+        }
+        .powered-by {
+            margin-top: 10px;
+            font-size: 11px;
+            color: #333333;
+            text-align: center;
+        }
+        .powered-by a {
+            color: #06529D;
+            font-weight: bold;
+        }
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
@@ -621,6 +642,10 @@
             }
             .upload-top {
                 flex-direction: column;
+            }
+            .investing-calendar iframe {
+                width: 100%;
+                height: 400px;
             }
         }
     </style>
@@ -863,7 +888,7 @@
             </div>
             <!-- Секция для объединения двух коллажей -->
             <div class="combine-collage-section">
-                <h3 class="combine-collage-title">Объединить два коллажа</h3>
+                <h3 class="combine-collage-title">Объединить два коллажей</h3>
                 <div class="upload-bottom" style="margin-top: 20px;">
                     <div class="upload-box">
                         <h3>Первый коллаж</h3>
@@ -979,23 +1004,13 @@
                 </div>
             </div>
         </div>
-        <!-- Экономический календарь -->
+        <!-- Экономический календарь Investing.com -->
         <div class="widget-box economic-calendar-container">
-            <div id="economic-calendar-867663" style="flex-grow: 1;">
-                <script type="text/javascript" src="https://www.rebatekingfx.com/Content/remote/remote-calendar-widget.js"></script>
-                <script type="text/javascript">
-                    RemoteCalendar({
-                        "Lang": "ru",
-                        "DefaultTime": "today",
-                        "DefaultTheme": "dark",
-                        "Url": "https://www.rebatekingfx.com",
-                        "SubPath": "economic-calendar",
-                        "IsShowEmbedButton": true,
-                        "DefaultCountries": "EU,RU,US,UK,EMU",
-                        "DefaultImpacts": "HIGH,MEDIUM",
-                        "ContainerId": "economic-calendar-867663"
-                    });
-                </script>
+            <div class="investing-calendar">
+                <iframe src="https://sslecal2.investing.com?columns=exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous&importance=2,3&features=datepicker,timezone&countries=56,5,12&calType=day&timeZone=18&lang=7" width="650" height="467" frameborder="0" allowtransparency="true" marginwidth="0" marginheight="0"></iframe>
+                <div class="powered-by">
+                    <span>Экономический онлайн-календарь от <a href="https://ru.investing.com/" rel="nofollow" target="_blank">Investing.com Россия</a>, ведущего финансового портала</span>
+                </div>
             </div>
         </div>
     </div>
