@@ -757,6 +757,102 @@
             </div>
         </div>
     </nav>
+    .menu-container {
+    position: relative;
+    display: inline-block;
+}
+
+.menu-button {
+    background-color: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.menu-button:hover {
+    color: #2196F3;
+}
+
+.menu-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #1E1E1E;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 4px;
+    border: 1px solid #3D3D3D;
+}
+
+.menu-content.show {
+    display: block;
+}
+
+.menu-item {
+    color: white;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    transition: background-color 0.3s;
+}
+
+.menu-item:hover {
+    background-color: #2D2D2D;
+    color: #2196F3;
+}
+
+.menu-divider {
+    height: 1px;
+    background-color: #3D3D3D;
+    margin: 4px 0;
+}
+
+nav {
+    background-color: #1E1E1E;
+    border-bottom: 1px solid #2D2D2D;
+    height: 64px;
+}
+// Функция для открытия/закрытия меню
+function toggleMenu() {
+    const menuContent = document.getElementById('menuContent');
+    if (menuContent) {
+        menuContent.classList.toggle('show');
+    }
+}
+
+// Функции для форм входа и регистрации
+function showLoginForm() {
+    alert('Функция входа в разработке');
+}
+
+function showRegisterForm() {
+    alert('Функция регистрации в разработке');
+}
+
+// Инициализация меню
+const menuButton = document.getElementById('menuButton');
+if (menuButton) {
+    menuButton.addEventListener('click', toggleMenu);
+}
+
+// Закрываем меню при клике вне его
+window.addEventListener('click', function(event) {
+    const menuContent = document.getElementById('menuContent');
+    const menuButton = document.getElementById('menuButton');
+    
+    if (menuContent && menuButton &&
+        !menuContent.contains(event.target) &&
+        !menuButton.contains(event.target)) {
+        menuContent.classList.remove('show');
+    }
+});
+    
     <!-- Уведомление -->
     <div class="notification" id="notification"></div>
 
