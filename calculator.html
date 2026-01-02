@@ -709,6 +709,54 @@
     </style>
 </head>
 <body class="bg-dark">
+     </style>
+</head>
+<body>
+    <!-- Навигация с меню как в прикрепленном файле -->
+    <nav class="shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <i class="fas fa-chart-line text-blue-400 text-xl mr-2"></i>
+                    <span class="text-xl font-bold text-light">Crypto Tools</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="menu-container">
+                        <button class="menu-button" id="menuButton">
+                            <i class="fas fa-bars mr-2"></i>Меню
+                        </button>
+                        <div class="menu-content" id="menuContent">
+                            <a href="index.html" class="menu-item">
+                                 <i class="fas fa-bell mr-2"></i>Алерт
+                            </a>
+                            <a href="Chart.html" class="menu-item">
+                                <i class="fas fa-chart-line mr-2"></i>График
+                            </a>
+                            <a href="calculator.html" class="menu-item">
+                                <i class="fas fa-calculator mr-2"></i>Калькулятор
+                            </a>
+                            <a href="widget.html" class="menu-item">
+                            <i class="fas fa-th-large mr-2"></i>Виджет
+                            </a>
+                            <a href="Slide show.html" class="menu-item">
+                                <i class="fas fa-images mr-2"></i>Слайд-шоу
+                            <div class="menu-divider"></div>
+                            <a href="#" class="menu-item" onclick="showLoginForm()">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Вход
+                            </a>
+                            <a href="#" class="menu-item" onclick="showRegisterForm()">
+                                <i class="fas fa-user-plus mr-2"></i>Регистрация
+                            </a>
+                        </div>
+                    </div>
+                    <div id="connectionStatus" class="connection-status">
+                        <div class="status-dot status-connecting"></div>
+                        <span>Подключение к Binance...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
     <!-- Уведомление -->
     <div class="notification" id="notification"></div>
 
