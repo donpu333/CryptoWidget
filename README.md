@@ -1,1 +1,1 @@
-# CryptoWidget
+Widget
