@@ -1,0 +1,2832 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Tools - Risk Calculator & Premises</title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2196F3;
+            --secondary: #1976D2;
+            --accent-red: #C62828;
+            --accent-green: #2E7D32;
+            --accent-orange: #FF6D00;
+            --dark: #121212;
+            --light: #ffffff;
+            --success-color: #03DAC6;
+            --warning-color: #FFA000;
+            --teal-accent: #4CAF50;
+            --green-gradient-start: #4CAF50;
+            --green-gradient-end: #2E7D32;
+            --red-gradient-start: #F44336;
+            --red-gradient-end: #C62828;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: var(--dark);
+            color: var(--light);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Навигационное меню */
+        nav {
+            background-color: #1E1E1E;
+            border-bottom: 1px solid #2D2D2D;
+            height: 64px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            position: relative;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: #4A90E2;
+            font-size: 24px;
+        }
+
+        .logo span {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .menu-container {
+            position: relative;
+        }
+
+        .menu-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px 16px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .menu-btn:hover {
+            background: rgba(74, 144, 226, 0.1);
+            color: #4A90E2;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #1E1E1E;
+            min-width: 220px;
+            border: 1px solid #3D3D3D;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 1000;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-bottom: 1px solid #2D2D2D;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:hover {
+            background: #2D2D2D;
+            color: #4A90E2;
+        }
+
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .menu-divider {
+            height: 1px;
+            background: #3D3D3D;
+            margin: 4px 0;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #b0b0b0;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fbbf24;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Основной контейнер */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 64px);
+            width: 100%;
+            padding: 20px;
+            background-color: var(--dark);
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* Контейнер для калькулятора и предпосылок */
+        .content-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 1800px;
+            height: 100%;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        /* Стили калькулятора */
+        .calculator-side {
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+            max-width: 900px;
+        }
+
+        .calculator-container {
+            background-color: #1E1E1E;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(33, 150, 243, 0.2);
+            height: 100%;
+            width: 100%;
+            overflow-y: auto;
+        }
+
+        /* Стили для правой части (Предпосылки) */
+        .premises-side {
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+            max-width: 900px;
+        }
+
+        .premises-container {
+            background-color: #1E1E1E;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(33, 150, 243, 0.2);
+            height: 100%;
+            width: 100%;
+            overflow-y: auto;
+        }
+
+        /* Общие стили калькулятора */
+        .section {
+            margin-bottom: 15px;
+            padding: 12px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--primary);
+            font-size: 1rem;
+        }
+        .input-group {
+            margin-bottom: 12px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #9CA3AF;
+        }
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background-color: #2D2D2D;
+            border: 1px solid #3D3D3D;
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .input-group input[type="number"],
+        .input-group input[type="text"] {
+            -moz-appearance: textfield;
+        }
+        .input-group input[type="number"]::-webkit-outer-spin-button,
+        .input-group input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        /* Улучшенные стили для ползунков */
+        .input-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: linear-gradient(to right, #3D3D3D, var(--primary) var(--fill-percent, 50%), #3D3D3D);
+            border-radius: 3px;
+            outline: none;
+            margin: 10px 0;
+            transition: background 0.3s ease;
+        }
+
+        .input-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .input-group input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .input-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .input-group input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Для Firefox */
+        .input-group input[type="range"]::-moz-range-progress {
+            background: var(--primary);
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        /* Для IE */
+        .input-group input[type="range"]::-ms-fill-lower {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+        
+        .direction-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            background: #2A2A2A;
+            padding: 5px;
+            border-radius: 10px;
+        }
+        .direction-btn {
+            flex: 1;
+            padding: 10px 0;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .long {
+            background: transparent;
+            color: #A5D6A7;
+        }
+        .short {
+            background: transparent;
+            color: #EF9A9A;
+        }
+        .direction-btn.active {
+            color: white;
+        }
+        .long.active {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        }
+        .short.active {
+            background: linear-gradient(135deg, #F44336 0%, #C62828 100%);
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 8px;
+            background-color: rgba(255, 255, 255, 0.03);
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .result-value {
+            font-weight: 500;
+        }
+        .profit {
+            color: var(--success-color);
+        }
+        .loss {
+            color: var(--accent-red);
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .slider-value {
+            min-width: 30px;
+            text-align: right;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .preview-value {
+            color: var(--warning-color);
+            font-size: 0.8rem;
+            margin-top: 5px;
+            padding: 4px;
+            background-color: rgba(255, 160, 0, 0.1);
+            border-radius: 4px;
+        }
+        .leverage-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .leverage-value {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--primary);
+            background-color: rgba(33, 150, 243, 0.1);
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .leverage-warning {
+            color: var(--accent-red);
+            font-size: 0.75rem;
+            margin-top: 5px;
+            padding: 4px;
+            background-color: rgba(207, 102, 121, 0.1);
+            border-radius: 4px;
+            display: none;
+        }
+        .export-btn {
+            width: 100%;
+            padding: 10px 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .export-btn:hover {
+            background: var(--secondary);
+        }
+        .take-profit-levels {
+            margin-top: 10px;
+        }
+        .take-profit-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            padding: 5px;
+            background-color: rgba(0, 255, 0, 0.05);
+            border-radius: 3px;
+        }
+        .take-profit-ratio {
+            color: var(--success-color);
+            font-weight: 500;
+        }
+        .take-profit-price {
+            color: var(--success-color);
+        }
+        .take-profit-value {
+            color: var(--success-color);
+        }
+        .stop-method-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            background: #2A2A2A;
+            padding: 5px;
+            border-radius: 10px;
+        }
+        .stop-method-btn {
+            flex: 1;
+            padding: 8px 0;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            cursor: pointer;
+            background-color: transparent;
+            color: #9CA3AF;
+        }
+        .stop-method-btn.active {
+            background-color: rgba(33, 150, 243, 0.2);
+            color: var(--primary);
+        }
+        .stop-input-group {
+            display: none;
+        }
+        .stop-input-group.active {
+            display: block;
+        }
+        .trade-type-selector {
+            display: none;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .trade-type-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #9CA3AF;
+            transition: all 0.3s;
+        }
+        .trade-type-btn.active {
+            color: white;
+        }
+        .trade-type-btn.long-breakout.active {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        }
+        .trade-type-btn.long-fakeout.active {
+            background: linear-gradient(135deg, #8BC34A 0%, #689F38 100%);
+        }
+        .trade-type-btn.short-breakout.active {
+            background: linear-gradient(135deg, #F44336 0%, #C62828 100%);
+        }
+        .trade-type-btn.short-fakeout.active {
+            background: linear-gradient(135deg, #FF7043 0%, #E64A19 100%);
+        }
+        .percentage-value {
+            font-size: 0.8rem;
+            color: #9CA3AF;
+            margin-left: 5px;
+        }
+        .fee-value {
+            color: var(--warning-color);
+            font-weight: 500;
+        }
+        .loss-usdt {
+            color: var(--accent-red);
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+        .decimals-info {
+            font-size: 0.8rem;
+            color: var(--primary);
+            margin-top: 5px;
+            padding: 4px;
+            background-color: rgba(33, 150, 243, 0.1);
+            border-radius: 4px;
+            display: none;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 15px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1100;
+            display: none;
+            animation: fadeInOut 3s ease-in-out;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-container button {
+            flex: 1;
+        }
+        .ticks-info {
+            font-size: 0.8rem;
+            color: var(--success-color);
+            margin-top: 5px;
+            padding: 4px;
+            background-color: rgba(0, 255, 0, 0.1);
+            border-radius: 4px;
+        }
+        .usdt-value {
+            font-size: 0.8rem;
+            color: var(--warning-color);
+            margin-left: 5px;
+        }
+        .distance-input {
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .copy-price-btn {
+            background: rgba(33, 150, 243, 0.1);
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            color: var(--primary);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            margin-left: 5px;
+            transition: all 0.2s;
+            font-family: 'JetBrains Mono', monospace;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .copy-price-btn:hover {
+            background: rgba(33, 150, 243, 0.2);
+            border-color: rgba(33, 150, 243, 0.5);
+        }
+        
+        .copy-price-btn-loss {
+            background: rgba(198, 40, 40, 0.1);
+            border: 1px solid rgba(198, 40, 40, 0.3);
+            color: var(--accent-red);
+        }
+        
+        .copy-price-btn-loss:hover {
+            background: rgba(198, 40, 40, 0.2);
+            border-color: rgba(198, 40, 40, 0.5);
+        }
+        
+        .copy-price-btn-profit {
+            background: rgba(46, 125, 50, 0.1);
+            border: 1px solid rgba(46, 125, 50, 0.3);
+            color: var(--accent-green);
+        }
+        
+        .copy-price-btn-profit:hover {
+            background: rgba(46, 125, 50, 0.2);
+            border-color: rgba(46, 125, 50, 0.5);
+        }
+        
+        .price-value-with-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .price-text {
+            font-weight: 500;
+        }
+
+        /* Стили для стрелок ввода */
+        .number-input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        
+        .number-input-wrapper input {
+            width: 100%;
+            padding-right: 30px;
+        }
+        
+        .number-input-arrows {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .number-input-arrow {
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            width: 16px;
+            height: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: color 0.2s;
+        }
+        
+        .number-input-arrow:hover {
+            color: var(--primary);
+        }
+        
+        .number-input-arrow.up {
+            margin-bottom: 1px;
+        }
+        
+        .number-input-arrow.down {
+            margin-top: 1px;
+        }
+
+        /* Стили для предпосылок */
+        .premises-container .button-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .premises-container .button-container button {
+            background-color: #1E88E5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .premises-container .button-container button:hover {
+            background-color: #1565C0;
+        }
+
+        .text-display {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            white-space: pre-line;
+            display: none;
+            margin-top: 15px;
+            border: 1px solid #3D3D3D;
+            max-height: none;
+            overflow-y: visible;
+        }
+
+        .action-btn {
+            background-color: #4CAF50;
+            padding: 8px 15px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .action-btn:hover {
+            background-color: #45a049;
+        }
+
+        .export-btn-premises {
+            background-color: #2196F3;
+        }
+
+        .export-btn-premises:hover {
+            background-color: #0b7dda;
+        }
+
+        .reset-btn {
+            background-color: #FF9800;
+        }
+
+        .reset-btn:hover {
+            background-color: #F57C00;
+        }
+
+        .action-buttons-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .checkbox-item input {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .success {
+            background-color: #2E7D32;
+            color: white;
+        }
+
+        .error {
+            background-color: #C62828;
+            color: white;
+        }
+
+        .item-text {
+            margin-left: 5px;
+        }
+
+        .daily-buttons,
+        .minute-buttons,
+        .tvh-sub-buttons,
+        .algorithm-sub-buttons {
+            display: none;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .tvh-sub-buttons button,
+        .algorithm-sub-buttons button,
+        .daily-buttons button,
+        .minute-buttons button {
+            background-color: #757575;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .tvh-sub-buttons button:hover,
+        .algorithm-sub-buttons button:hover,
+        .daily-buttons button:hover,
+        .minute-buttons button:hover {
+            background-color: #616161;
+        }
+
+        .back-button {
+            background-color: #FF9800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-button:hover {
+            background-color: #F57C00;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            display: none;
+        }
+
+        .tvh-text-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(30, 30, 30, 0.95);
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 80%;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 1000;
+            border: 1px solid #3D3D3D;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        .tvh-text-content h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .tvh-text-content p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+
+        .tvh-text-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #9CA3AF;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .tvh-copy-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .tvh-copy-btn:hover {
+            background-color: var(--secondary);
+        }
+
+        .photo-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .photo-section-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary);
+            font-size: 1rem;
+        }
+
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .photo-gallery-item {
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            aspect-ratio: 4/3;
+        }
+
+        .photo-gallery-item:hover {
+            transform: scale(1.05);
+        }
+
+        .photo-gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-gallery-caption {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px;
+            font-size: 0.7rem;
+            text-align: center;
+        }
+
+        .photo-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .photo-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .photo-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 2001;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-container {
+            max-width: 90vw;
+            max-height: 80vh;
+            position: relative;
+        }
+        
+        .photo-image-container {
+            overflow: hidden;
+            border-radius: 8px;
+            background: #000;
+        }
+        
+        .photo-image-fit {
+            max-width: 100%;
+            max-height: 70vh;
+            display: block;
+            margin: 0 auto;
+            transition: transform 0.3s ease;
+            cursor: grab;
+        }
+        
+        .photo-image-fit:active {
+            cursor: grabbing;
+        }
+        
+        .photo-thumbnails {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .thumbnail {
+            width: 60px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .thumbnail:hover {
+            opacity: 0.8;
+        }
+        
+        .thumbnail.active {
+            opacity: 1;
+            border-color: #4A90E2;
+        }
+        
+        .photo-navigation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .nav-btn {
+            background: #4A90E2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background: #3a7bc8;
+        }
+        
+        .nav-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .photo-counter {
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 2002;
+        }
+        
+        .zoom-btn {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+        
+        .zoom-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+        
+        .zoom-reset-btn {
+            font-size: 14px;
+        }
+        
+        /* Стили для скроллбара */
+        .calculator-container::-webkit-scrollbar,
+        .premises-container::-webkit-scrollbar,
+        .tvh-text-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .calculator-container::-webkit-scrollbar-track,
+        .premises-container::-webkit-scrollbar-track,
+        .tvh-text-content::-webkit-scrollbar-track {
+            background: #1E1E1E;
+            border-radius: 4px;
+        }
+        
+        .calculator-container::-webkit-scrollbar-thumb,
+        .premises-container::-webkit-scrollbar-thumb,
+        .tvh-text-content::-webkit-scrollbar-thumb {
+            background: #3D3D3D;
+            border-radius: 4px;
+        }
+        
+        .calculator-container::-webkit-scrollbar-thumb:hover,
+        .premises-container::-webkit-scrollbar-thumb:hover,
+        .tvh-text-content::-webkit-scrollbar-thumb:hover {
+            background: #4A4A4A;
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигационное меню -->
+    <nav>
+        <div class="logo">
+            <i class="fas fa-chart-line"></i>
+            <span>Crypto Tools</span>
+        </div>
+        
+        <div class="nav-right">
+            <div class="menu-container">
+                <button class="menu-btn" id="menuBtn">
+                    <i class="fas fa-bars"></i>
+                    Меню
+                </button>
+                
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="index.html" class="menu-item">
+                        <i class="fas fa-bell"></i>
+                        Алерт
+                    </a>
+                    <a href="Chart.html" class="menu-item">
+                        <i class="fas fa-chart-bar"></i>
+                        График
+                    </a>
+                    <a href="calculator.html" class="menu-item">
+                        <i class="fas fa-calculator"></i>
+                        Калькулятор
+                    </a>
+                    <a href="widget.html" class="menu-item">
+                        <i class="fas fa-th-large"></i>
+                        Виджет
+                    </a>
+                    <a href="Lider.html" class="menu-item">
+                        <i class="fas fa-chart-line"></i>
+                        Лидер роста и падения
+                    </a>
+                    <a href="Slide show.html" class="menu-item">
+                        <i class="fas fa-images"></i>
+                        Слайд-шоу
+                    </a>
+                    
+                    
+                    <div class="menu-divider"></div>
+                    
+                    <a href="#" class="menu-item" onclick="showLoginForm()">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Вход
+                    </a>
+                    <a href="#" class="menu-item" onclick="showRegisterForm()">
+                        <i class="fas fa-user-plus"></i>
+                        Регистрация
+                    </a>
+                </div>
+            </div>
+            
+            <div class="connection-status">
+                <div class="status-dot"></div>
+                <span>Подключение к Binance...</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="notification" id="notification"></div>
+
+    <!-- Основной контент -->
+    <div class="main-container">
+        <div class="content-wrapper">
+            <!-- Левая часть - Калькулятор -->
+            <div class="calculator-side">
+                <div class="calculator-container risk-calculator">
+                    <h1 class="text-xl font-bold mb-4 text-center">Калькулятор рисков</h1>
+                    <div class="section">
+                        <div class="section-title">Параметры сделки</div>
+                        <div class="direction-buttons">
+                            <button id="longBtn" class="direction-btn long active">Лонг</button>
+                            <button id="shortBtn" class="direction-btn short">Шорт</button>
+                        </div>
+                        <div class="trade-type-selector" id="tradeTypeSelector">
+                            <button class="trade-type-btn long-breakout active" data-type="long-breakout">Лонг Пробой</button>
+                            <button class="trade-type-btn long-fakeout" data-type="long-fakeout">Лонг Ложный пробой</button>
+                            <button class="trade-type-btn short-breakout" data-type="short-breakout">Шорт Пробой</button>
+                            <button class="trade-type-btn short-fakeout" data-type="short-fakeout">Шорт Ложный пробой</button>
+                        </div>
+                        <div class="input-group">
+                            <label for="assetType">Точность цены (знаков после запятой)</label>
+                            <select id="assetType">
+                                <option value="1">1 знак (0.1)</option>
+                                <option value="2">2 знака (0.01)</option>
+                                <option value="3">3 знака (0.001)</option>
+                                <option value="4" selected>4 знака (0.0001)</option>
+                                <option value="5">5 знаков (0.00001)</option>
+                                <option value="6">6 знаков (0.000001)</option>
+                                <option value="7">7 знаков (0.0000001)</option>
+                                <option value="8">8 знаков (0.00000001)</option>
+                                <option value="custom">Указать вручную</option>
+                            </select>
+                        </div>
+                        <div id="customDecimalsGroup" class="input-group" style="display: none;">
+                            <label for="customDecimals">Количество знаков после запятой (1-8)</label>
+                            <div class="number-input-wrapper">
+                                <input type="number" id="customDecimals" min="1" max="8" value="4">
+                                <div class="number-input-arrows">
+                                    <button class="number-input-arrow up" data-target="customDecimals" data-step="1">▲</button>
+                                    <button class="number-input-arrow down" data-target="customDecimals" data-step="-1">▼</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="entryPrice">Цена входа (USDT)</label>
+                            <div class="number-input-wrapper">
+                                <input type="number" id="entryPrice" inputmode="decimal" placeholder="Введите цену входа" step="any">
+                                <div class="number-input-arrows">
+                                    <button class="number-input-arrow up" data-target="entryPrice" data-step="auto">▲</button>
+                                    <button class="number-input-arrow down" data-target="entryPrice" data-step="-auto">▼</button>
+                                </div>
+                            </div>
+                            <div class="decimals-info" id="decimalsInfo">Автоматически определено: 4 знака после запятой</div>
+                        </div>
+                        <div class="input-group">
+                            <label for="leverage">Кредитное плечо</label>
+                            <div class="leverage-container">
+                                <input type="range" id="leverage" min="1" max="100" value="10">
+                                <span class="leverage-value" id="leverageValue">10x</span>
+                            </div>
+                            <div class="leverage-warning" id="leverageWarning">
+                                Высокое плечо увеличивает риск ликвидации!
+                            </div>
+                        </div>
+                        <div class="stop-method-selector">
+                            <button class="stop-method-btn active" data-method="atr">По ATR</button>
+                            <button class="stop-method-btn" data-method="price">По цене</button>
+                            <button class="stop-method-btn" data-method="percent">По проценту</button>
+                            <button class="stop-method-btn" data-method="distance">По расстоянию</button>
+                        </div>
+                        <div class="stop-input-group active" id="atr-group">
+                            <div class="input-group">
+                                <label for="atr">ATR (USDT)</label>
+                                <div class="number-input-wrapper">
+                                    <input type="number" id="atr" min="0" step="any" placeholder="Введите значение ATR">
+                                    <div class="number-input-arrows">
+                                        <button class="number-input-arrow up" data-target="atr" data-step="auto">▲</button>
+                                        <button class="number-input-arrow down" data-target="atr" data-step="-auto">▼</button>
+                                    </div>
+                                </div>
+                                <div class="preview-value">
+                                    Размер ATR: <span id="atrValue">0.0000 USDT</span>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="riskPercent">Риск стоп-лосс (% от ATR)</label>
+                                <div class="slider-container">
+                                    <input type="range" id="riskPercent" min="1" max="100" value="10">
+                                    <span class="slider-value" id="riskPercentValue">10</span>%
+                                </div>
+                                <div class="preview-value">
+                                    Стоп-лосс: минус <span id="previewAtrPercent">0.0000 USDT</span> (<span id="previewAtrPercentValue">10%</span> от ATR)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stop-input-group" id="price-group">
+                            <div class="input-group">
+                                <label for="stopLossPrice">Цена стоп-лосса (USDT)</label>
+                                <div class="number-input-wrapper">
+                                    <input type="number" id="stopLossPrice" min="0" step="any" placeholder="Введите цену стоп-лосса">
+                                    <div class="number-input-arrows">
+                                        <button class="number-input-arrow up" data-target="stopLossPrice" data-step="auto">▲</button>
+                                        <button class="number-input-arrow down" data-target="stopLossPrice" data-step="-auto">▼</button>
+                                    </div>
+                                </div>
+                                <div class="preview-value">
+                                    Разница: <span id="priceDifference">0.0000 USDT</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stop-input-group" id="percent-group">
+                            <div class="input-group">
+                                <label for="stopLossPercentInput">Процент стоп-лосса (%)</label>
+                                <div class="slider-container">
+                                    <input type="range" id="stopLossPercentInput" min="0.1" max="20" step="0.1" value="2">
+                                    <span class="slider-value" id="stopLossPercentValue">2</span>%
+                                </div>
+                                <div class="preview-value">
+                                    Стоп-лосс: <span id="previewPercentValue">0.0000 USDT</span> (<span id="previewPercent">2%</span> от цены входа)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stop-input-group" id="distance-group">
+                            <div class="input-group">
+                                <label for="stopDistance">Расстояние до стоп-лосса (USDT)</label>
+                                <div class="number-input-wrapper">
+                                    <input type="number" id="stopDistance" class="distance-input" min="0" step="any" placeholder="Введите расстояние">
+                                    <div class="number-input-arrows">
+                                        <button class="number-input-arrow up" data-target="stopDistance" data-step="auto">▲</button>
+                                        <button class="number-input-arrow down" data-target="stopDistance" data-step="-auto">▼</button>
+                                    </div>
+                                </div>
+                                <div class="preview-value">
+                                    Просто укажите разницу в цене между входом и стоп-лоссом
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="riskAmount">Риск на сделку (USDT)</label>
+                            <div class="number-input-wrapper">
+                                <input type="number" id="riskAmount" min="0" step="0.1" value="10.0">
+                                <div class="number-input-arrows">
+                                    <button class="number-input-arrow up" data-target="riskAmount" data-step="1">▲</button>
+                                    <button class="number-input-arrow down" data-target="riskAmount" data-step="-1">▼</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="rewardRatio1">Соотношение тейк-профита (1:X)</label>
+                            <div class="slider-container">
+                                <input type="range" id="rewardRatio1" min="1" max="20" value="3">
+                                <span class="slider-value" id="rewardRatio1Value">3</span>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="rewardRatio2">Дополнительный тейк-профит (1:X)</label>
+                            <div class="slider-container">
+                                <input type="range" id="rewardRatio2" min="1" max="20" value="5">
+                                <span class="slider-value" id="rewardRatio2Value">5</span>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="exchangeFee">Комиссия биржи (%)</label>
+                            <div class="number-input-wrapper">
+                                <input type="number" id="exchangeFee" min="0" max="1" step="0.0001" value="0.0500">
+                                <div class="number-input-arrows">
+                                    <button class="number-input-arrow up" data-target="exchangeFee" data-step="0.001">▲</button>
+                                    <button class="number-input-arrow down" data-target="exchangeFee" data-step="-0.001">▼</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="section-title">Результаты</div>
+                        <div class="result-item">
+                            <span>Цена входа:</span>
+                            <span class="result-value" id="entryPriceResult">0.0000 USDT</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Размер позиции:</span>
+                            <span class="result-value" id="positionSize">0.0 монет</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Размер позиции в USDT:</span>
+                            <span class="result-value" id="positionSizeUsdt">0.00 USDT</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Стоп-лосс:</span>
+                            <span class="result-value loss" id="stopLoss">
+                                <span class="price-value-with-btn">
+                                    <span class="price-text" id="stopLossPriceText">0.0000 USDT</span>
+                                    <button class="copy-price-btn copy-price-btn-loss" onclick="copyPrice('stopLossPriceText')" title="Копировать цену">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </span>
+                                <span class="percentage-value" id="stopLossPercentText"></span>
+                                <span class="loss-usdt" id="stopLossUsdt"></span>
+                            </span>
+                        </div>
+                        <div class="result-item">
+                            <span>Расстояние до стоп-лосса:</span>
+                            <span class="result-value" id="stopDistanceResult">0.0000 USDT <span class="usdt-value" id="stopDistanceUsdt">(0.00 USDT)</span></span>
+                        </div>
+                        <div class="result-item">
+                            <span>ATR:</span>
+                            <span class="result-value" id="atrResult">0.0000 USDT</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Комиссия биржи:</span>
+                            <span class="result-value fee-value" id="exchangeFeeResult">0.0500%</span>
+                        </div>
+                        <div class="take-profit-levels" id="takeProfitLevels">
+                        </div>
+                        <div class="result-item">
+                            <span>Цена ликвидации:</span>
+                            <span class="result-value loss" id="liquidationPrice">
+                                <span class="price-value-with-btn">
+                                    <span class="price-text" id="liquidationPriceText">0.0000 USDT</span>
+                                    <button class="copy-price-btn copy-price-btn-loss" onclick="copyPrice('liquidationPriceText')" title="Копировать цену">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </span>
+                                <span class="percentage-value" id="liquidationPricePercent"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="btn-container">
+                        <button class="export-btn" id="exportTextBtn">
+                            <i class="fas fa-file-alt mr-2"></i>Экспорт в текст
+                        </button>
+                        <button class="export-btn" id="exportTelegramBtn">
+                            <i class="fab fa-telegram mr-2"></i>Отправить в Telegram
+                        </button>
+                        <button class="export-btn" id="copyCalculationBtn">
+                            <i class="fas fa-copy mr-2"></i>Копировать расчет
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Правая часть - Предпосылки -->
+            <div class="premises-side">
+                <div class="premises-container">
+                    <h1 class="text-2xl font-bold mb-6">Предпосылки и ТВХ</h1>
+                    
+                    <!-- Основные кнопки Дневка и Минутка -->
+                    <div class="button-container">
+                        <button style="background-color: #0b977e;" onclick="toggleSection('daily')">Дневка</button>
+                        <button onclick="toggleSection('minute')">Минутка</button>
+                    </div>
+                    
+                    <!-- Кнопки для Дневки -->
+                    <div id="dailyButtons" class="daily-buttons">
+                        <button style="background-color: #067d0a;" onclick="toggleText('dailyBreakthrough')">Пробой</button>
+                        <button style="background-color: #06717d;"onclick="toggleText('dailyFalseBreakthrough')">Ложный пробой</button>
+                        <button style="background-color: #790710;" onclick="toggleText('dailyBreakthroughMinuses')">Пробой минусы ⛔️</button>
+                        <button style="background-color: #C62828;" onclick="toggleText('dailyFalseBreakthroughMinuses')">Ложный пробой минусы ⛔️</button>
+                        <button style="background-color: #2962ff;" onclick="toggleTvhButtons('tvhDailyBreakthrough')">ТВХ пробой</button>
+                        <button style="background-color: #757575;" onclick="toggleTvhButtons('tvhDailyFalseBreakthrough')">ТВХ ложный пробой</button>
+                        <button style="background-color: #7b48d7;" onclick="toggleAlgorithmButtons()">Алгоритм</button>
+                    </div>
+                    
+                    <!-- Кнопки для Минутки -->
+                    <div id="minuteButtons" class="minute-buttons">
+                        <button style="background-color: #067d0a;" onclick="toggleText('minuteBreakthrough')">Пробой</button>
+                        <button style="background-color: #06717d;" onclick="toggleText('minuteFalseBreakthrough')">Ложный пробой</button>
+                        <button style="background-color: #790710;" onclick="toggleText('minuteBreakthroughMinuses')">Пробой минусы ⛔️</button>
+                        <button style="background-color: #C62828;" onclick="toggleText('minuteFalseBreakthroughMinuses')">Ложный пробой минусы ⛔️</button>
+                        <button style="background-color: #2962ff;" onclick="toggleTvhButtons('tvhMinuteBreakthrough')">ТВХ пробой</button>
+                        <button style="background-color: #757575;" onclick="toggleTvhButtons('tvhMinuteFalseBreakthrough')">ТВХ ложный пробой</button>
+                        <button style="background-color: #7b48d7;" onclick="toggleAlgorithmButtons()">Алгоритм</button>
+                    </div>
+                    
+                    <!-- ТВХ подкнопки для дневного пробоя -->
+                    <div id="tvhDailyBreakthroughButtons" class="tvh-sub-buttons">
+                        <button style="background-color: #2962ff;"onclick="showTvhText('tvhDailyPrimaryMovement')">ТВХ №1 Первичное движение</button>
+                        <button onclick="showTvhText('tvhDailyTradingAbove')">ТВХ №2 После проторговки возле уровня</button>
+                        <button onclick="showTvhText('tvhDailyTradingBelow')">ТВХ №3 Проторговка после пробоя</button>
+                        <button onclick="showTvhText('tvhDailySecondaryMovement')">ТВХ №4 во вторичное движение</button>
+                        <button onclick="showTvhText('tvhDailyEntry')">ТВХ №5 После ретеста</button>
+                    </div>
+                    
+                    <!-- ТВХ подкнопки для дневного ложного пробоя -->
+                    <div id="tvhDailyFalseBreakthroughButtons" class="tvh-sub-buttons">
+                        <button style="background-color: #2962ff;"onclick="showTvhText('tvhDailyFalsePrimaryMovement')">ТВХ первичное движение</button>
+                        <button onclick="showTvhText('tvhDailyFalseTradingAbove')">ТВХ проторговки над уровнем</button>
+                        <button onclick="showTvhText('tvhDailyFalseTradingBelow')">ТВХ проторговки под уровнем</button>
+                        <button onclick="showTvhText('tvhDailyFalseSecondaryMovement')">ТВХ во вторичное движение</button>
+                        <button onclick="showTvhText('tvhDailyFalseEntry')">ТВХ вход</button>
+                    </div>
+                    
+                    <!-- ТВХ подкнопки для минутного пробоя -->
+                    <div id="tvhMinuteBreakthroughButtons" class="tvh-sub-buttons">
+                        <button style="background-color: #2962ff;"onclick="showTvhText('tvhMinutePrimaryMovement')">ТВХ №1 Первичное движение</button>
+                        <button onclick="showTvhText('tvhMinuteTradingAbove')">ТВХ №2 После проторговки возле уровня</button>
+                        <button onclick="showTvhText('tvhMinuteTradingBelow')">ТВХ №3 Проторговка после пробоя</button>
+                        <button onclick="showTvhText('tvhMinuteSecondaryMovement')">ТВХ №4 во вторичное движение</button>
+                        <button onclick="showTvhText('tvhMinuteEntry')">ТВХ №5 После ретеста</button>
+                    </div>
+                    
+                    <!-- ТВХ подкнопки для минутного ложного пробоя -->
+                    <div id="tvhMinuteFalseBreakthroughButtons" class="tvh-sub-buttons">
+                        <button style="background-color: #2962ff;"onclick="showTvhText('tvhMinuteFalsePrimaryMovement')">ТВХ первичное движение</button>
+                        <button onclick="showTvhText('tvhMinuteFalseTradingAbove')">ТВХ проторговки над уровнем</button>
+                        <button onclick="showTvhText('tvhMinuteFalseTradingBelow')">ТВХ проторговки под уровнем</button>
+                        <button onclick="showTvhText('tvhMinuteFalseSecondaryMovement')">ТВХ во вторичное движение</button>
+                        <button onclick="showTvhText('tvhMinuteFalseEntry')">ТВХ вход</button>
+                    </div>
+                    
+                    <!-- Основные алгоритмы -->
+                    <div id="algorithmButtons" class="algorithm-sub-buttons">
+                        <button onclick="showTvhText('algorithmPremises')">Отбор по дневки</button>
+                        <button onclick="toggleAlgorithmSubButtons('falseBreakthroughAlgorithm')">Ложный пробой</button>
+                        <button onclick="toggleAlgorithmSubButtons('breakthroughAlgorithm')">Пробой</button>
+                        <button onclick="showTvhText('algorithmUFormation')">U-Формация</button>
+                        <button onclick="showTvhText('algorithmVFormation')">V-Формация</button>
+                        <button onclick="showTvhText('algorithmChannel')">Каннал</button>
+                        <button onclick="showTvhText('algorithmTailedBar')">Бар с хвостами</button>
+                        <button onclick="showTvhText('algorithmBarClosing')">Закрытие баров</button>
+                    </div>
+                    
+                    <!-- Алгоритмы для ложного пробоя -->
+                    <div id="falseBreakthroughAlgorithmButtons" class="algorithm-sub-buttons" style="display: none;">
+                        <button class="back-button" onclick="backToAlgorithmMain()">
+                            <i class="fas fa-arrow-left"></i> Назад к алгоритму
+                        </button>
+                        <button onclick="showTvhText('algorithmNoRetracement')">Безоткатное движение</button>
+                        <button onclick="showTvhText('algorithmParanormalBars')">Подход на паранормальных барах</button>
+                        <button onclick="showTvhText('algorithmDistribution')">Дистрибуция</button>
+                        <button onclick="showTvhText('algorithmFarClosing')">Дальнее закрытие от уровня</button>
+                        <button onclick="showTvhText('algorithmFarRetest')">Дальный ретест</button>
+                        <button onclick="showTvhText('algorithmInfectedZone')">Зона зараженности</button>
+                        <button onclick="showTvhText('algorithmExtremum')">Экстремум</button>
+                        <button onclick="showTvhText('algorithmATRHalf')">День открывается с АТР более половины до уровня</button>
+                    </div>
+                    
+                    <!-- Алгоритмы для пробоя -->
+                    <div id="breakthroughAlgorithmButtons" class="algorithm-sub-buttons" style="display: none;">
+                        <button class="back-button" onclick="backToAlgorithmMain()">
+                            <i class="fas fa-arrow-left"></i> Назад к алгоритму
+                        </button>
+                        <button onclick="showTvhText('algorithmBreakthroughModels')">Пробойные модели</button>
+                        <button onclick="showTvhText('algorithmSqueeze')">Поджатие</button>
+                        <button onclick="showTvhText('algorithmNoImpulse')">Отсутствие импульса где он должен быть</button>
+                        <button onclick="showTvhText('algorithmNarrowTrading')">Узкая проторговка</button>
+                        <button onclick="showTvhText('algorithmConsolidation')">Консолидация вдоль уровня с поджатием</button>
+                        <button onclick="showTvhText('algorithmRange')">Рендж</button>
+                        <button onclick="showTvhText('algorithmCloseToLevel')">Закрытие в близи уровня</button>
+                        <button onclick="showTvhText('algorithmNearRetest')">Ближний ретест</button>
+                        <button onclick="showTvhText('algorithmNoReactionToLP')">Нет реакции на ЛП</button>
+                        <button onclick="showTvhText('algorithmDailyClose')">Закрытие дневки под хай /лоу После паронормального бара нет отката</button>
+                        <button onclick="showTvhText('algorithmParanormalNoRetracement')">После паранормального бара нет отката</button>
+                    </div>
+                    
+                    <!-- Содержимое для Дневного Пробоя -->
+                    <div id="dailyBreakthroughText" class="text-display">
+                        <h3>Пробой (Дневной таймфрейм)</h3>
+                        <p>📊Предпосылки для ДНЕВНОГО пробоя</p>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Глобальный тренд лонг на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Закрытие недели вблизи уровня</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Накопление 3+ дня на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Выкупные бары на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Продажные бары на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text"> V-Формация на недельном графике</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text"> U-Формация на недельном графике</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Проторговка вблизи уровня на D1 7+ дней</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Поджатие с затуханием волатильности на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Понижающие хаи и лои на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Повышающие хаи и лои на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Затухание волатильности на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Уровень находится на круглом числе</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Задерг против тренда на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Слабея рынка относительно индекса</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Сильнее рынка относительно индекса</span></div>
+                    </div>
+                    
+                    <!-- Содержимое для Дневного Ложного пробоя -->
+                    <div id="dailyFalseBreakthroughText" class="text-display">
+                        <h3>Ложный пробой (Дневной таймфрейм)</h3>
+                        <p>📊Предпосылки для ДНЕВНОГО ложного пробоя</p>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Дальний ретест (от 10 дней)</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Подход на больших дневных барах</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Резкий подход на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Выход повышенные объемы перед уровням на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Экстремум на недельном графике</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Впереди зараженная зона на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Длинное безоткатное движение к уровню</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Закрытие вдали от уровня мин от 10%</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Нет накопления на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Сильный уровень впереди на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text"> V подход к уровню (без накопления)</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Дистрибуция на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Повышенная волатильность на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Нет импульса после пробоя на D1</span></div>
+                    </div>
+                    
+                    <!-- Содержимое для Дневного Пробой минусы -->
+                    <div id="dailyBreakthroughMinusesText" class="text-display">
+                        <h3>Пробой минусы (Дневной таймфрейм)</h3>
+                        <p>⛔️ Минусы для ДНЕВНОГО пробоя</p>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Глобальный и локальный тренд не совпадают</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Повышенная волатильность на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Зараженная зона на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Глубокий ЛП на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Резкий подход на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Далеко закрылись от уровня</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Пройдено больше половина ATR на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Накопление далеко от уровня на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Выравнивание баров на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Выход повышенного объёма на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Слабое накопление на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Уровень часто прошивается на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Длиное безоткатное движение к уровню</span></div>
+                    </div>
+                    
+                    <!-- Содержимое для Дневного Ложный пробой минусы -->
+                    <div id="dailyFalseBreakthroughMinusesText" class="text-display">
+                        <h3>Ложный пробой минусы (Дневной таймфрейм)</h3>
+                        <p>⛔️ Минусы для ДНЕВНОГО ложного пробоя</p>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Накопление на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">В переди свободная зона на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Глубокий пробой на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Закрытие вблизи уровня на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Поджатие с затуханиям волатильности на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Поступательное движения к уровню на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Накопление в близи уровня на D1</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Большой запас ATR на D1</span></div>
+                    </div>
+                    
+                    <!-- Содержимое для Минутного Пробоя -->
+                    <div id="minuteBreakthroughText" class="text-display">
+                        <h3>Пробой (Минутный таймфрейм)</h3>
+                        <p>📊Предпосылки для МИНУТНОГО пробоя</p>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Локальный тренд лонг на 15M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Локальный тренд шорт на 15M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Локальный тренд Рендж на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Ближний ретест на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Нет реакции на ЛП на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Накопление на 15M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Закрытие вблизи уровня на 5M (до 2%)</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">После сильного движения нет отката на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Впереди свободная зона на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Выкупной бар на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Продажный бар на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text"> V-Формация на 15M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text"> U-Формация на 15M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Проторговка вблизи уровня на 1ч</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Проторговка вблизи уровня на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Поджатие на 15M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Поджатие на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Понижающие хаи и лои на 15M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Повышающие хаи и лои на 15M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Затухание волатильности на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Уровень находится на круглом числе</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Задерг против тренда на 5M</span></div>
+                    </div>
+                    
+                    <!-- Содержимое для Минутного Ложного пробоя -->
+                    <div id="minuteFalseBreakthroughText" class="text-display">
+                        <h3>Ложный пробой (Минутный таймфрейм)</h3>
+                        <p>📊Предпосылки для МИНУТНОГО ложного пробоя</p>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Дальний ретест (от 5 дней)</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Подход на больших барах на 15M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Резкий подход на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Выход повышенные объемы перед уровням на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Экстремум на 1H</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Впереди зараженная зона на 15M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Длинное безоткатное движение на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Закрытие вдали от уровня на 5M (больше половины от ATR)</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Нет накопления на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Сильный уровень впереди на 15M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text"> V подход к уровню на 5M (без накопления)</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Дистрибуция на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Повышенная волатильность на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Нет импульса после пробоя на 5M</span></div>
+                    </div>
+                    
+                    <!-- Содержимое для Минутного Пробой минусы -->
+                    <div id="minuteBreakthroughMinusesText" class="text-display">
+                        <h3>Пробой минусы (Минутный таймфрейм)</h3>
+                        <p>⛔️ Минусы для МИНУТНОГО пробоя</p>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Глобальный и локальный тренд не совпадают</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Повышенная волатильность на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Зараженная зона на 15M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Зараженная зона на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Глубокий ЛП на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Резкий подход на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Далеко закрылись от уровня на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Пройдено больше половина ATR на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Накопление на 5M далеко от уровня</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Выравнивание баров на 15M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Выравнивание баров на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Выход повышенного объёма на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Слабое накопление на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Уровень часто прошивается на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Длиное безоткатное движение к уровню на 5M</span></div>
+                    </div>
+                    
+                    <!-- Содержимое для Минутного Ложный пробой минусы -->
+                    <div id="minuteFalseBreakthroughMinusesText" class="text-display">
+                        <h3>Ложный пробой минусы (Минутный таймфрейм)</h3>
+                        <p>⛔️ Минусы для МИНУТНОГО ложного пробоя</p>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Накопление на 15M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Накопление на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">В переди свободная зона на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Глубокий пробой на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Закрытие вблизи уровня на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Поджатие с затуханиям волатильности на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Поступательное движения к уровню на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Накопление в близи уровня на 5M</span></div>
+                        <div class="checkbox-item"><input type="checkbox"><span class="item-text">Большой запас ATR на 5M</span></div>
+                    </div>
+                    
+                    <!-- Кнопки действий -->
+                    <div id="actionButtons" class="action-buttons-container">
+                        <button id="copyBtn" class="action-btn" onclick="copySelectedText()">Копировать текст</button>
+                        <button id="exportBtn" class="action-btn export-btn-premises" onclick="exportSelectedToTelegram()">Отправить в Telegram</button>
+                        <button id="resetBtn" class="action-btn reset-btn" onclick="resetCheckboxes()">Сбросить все</button>
+                    </div>
+                    
+                    <div id="statusMessage" class="status-message"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="tvhOverlay"></div>
+    <div class="tvh-text-content" id="tvhTextContent">
+        <button class="tvh-text-close" onclick="closeTvhText()">&times;</button>
+        <div class="tvh-content" id="tvhTextInner"></div>
+        <button class="tvh-copy-btn" onclick="copyTvhText()">
+            <i class="fas fa-copy"></i> Копировать
+        </button>
+    </div>
+
+    <div class="photo-modal" id="photoModal">
+        <button class="photo-close" onclick="closePhotoModal()">&times;</button>
+        <div class="zoom-controls">
+            <button class="zoom-btn" onclick="zoomOut()">-</button>
+            <button class="zoom-btn zoom-reset-btn" onclick="resetZoom()">1:1</button>
+            <button class="zoom-btn" onclick="zoomIn()">+</button>
+        </div>
+        <div class="photo-container" id="photoContainer">
+            <div class="photo-image-container">
+                <img class="photo-image-fit" id="photoImage" src="" alt="ТВХ изображение">
+            </div>
+        </div>
+        <div class="photo-thumbnails" id="photoThumbnails"></div>
+        <div class="photo-navigation">
+            <button class="nav-btn" id="prevPhotoBtn" onclick="changePhoto(-1)">
+                <i class="fas fa-chevron-left"></i> Предыдущее
+            </button>
+            <div class="photo-counter" id="photoCounter">1 / 1</div>
+            <button class="nav-btn" id="nextPhotoBtn" onclick="changePhoto(1)">
+                Следующее <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript для навигационного меню -->
+    <script>
+        const menuBtn = document.getElementById('menuBtn');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('show');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!menuBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.classList.remove('show');
+            }
+        });
+
+        const menuItems = dropdownMenu.querySelectorAll('.menu-item');
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                dropdownMenu.classList.remove('show');
+            });
+        });
+
+        function showLoginForm() {
+            alert('Форма входа будет реализована позже');
+        }
+
+        function showRegisterForm() {
+            alert('Форма регистрации будет реализована позже');
+        }
+    </script>
+
+    <!-- JavaScript калькулятора -->
+    <script>
+        let isLong = true;
+        let stopMethod = 'atr';
+        let tradeType = 'long-breakout';
+        const botToken = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30';
+        const chatId = '1720793889';
+        let isTradeTypeSelectorVisible = false;
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.backgroundColor = type === 'success' ? '#4CAF50' : '#C62828';
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function countDecimals(value) {
+            if (!value || value === '' || isNaN(parseFloat(value.replace(',', '.')))) return 0;
+            const normalizedValue = value.replace(',', '.');
+            const str = normalizedValue.toString();
+            if (str.indexOf('.') === -1) return 0;
+            return str.split('.')[1].length;
+        }
+
+        function autoDetectPrecision(price) {
+            const decimals = countDecimals(price);
+            return Math.min(Math.max(decimals, 1), 8);
+        }
+
+        function getPriceStep(inputId) {
+            const assetType = document.getElementById('assetType').value;
+            let decimalPlaces = 4;
+            
+            if (assetType === 'custom') {
+                decimalPlaces = parseInt(document.getElementById('customDecimals').value) || 4;
+            } else {
+                decimalPlaces = parseInt(assetType) || 4;
+            }
+            
+            return Math.pow(10, -decimalPlaces);
+        }
+
+        function formatNumber(num, decimals = 8, assetType = null) {
+            if (isNaN(num)) return '0';
+            if (assetType === 'custom') {
+                const customDecimals = parseInt(document.getElementById('customDecimals').value) || 4;
+                const factor = Math.pow(10, customDecimals);
+                const rounded = Math.round(num * factor) / factor;
+                return rounded.toFixed(customDecimals);
+            }
+            if (!assetType) {
+                const factor = Math.pow(10, decimals);
+                const rounded = Math.round(num * factor) / factor;
+                return rounded.toString().replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.$/, '');
+            }
+            const decimalPlaces = parseInt(assetType);
+            const factor = Math.pow(10, decimalPlaces);
+            const rounded = Math.round(num * factor) / factor;
+            if (decimals === 1) {
+                return rounded.toFixed(1);
+            }
+            if ([4,5,6,7,8].includes(decimals)) {
+                return rounded.toFixed(decimalPlaces);
+            }
+            return rounded.toString().replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.$/, '');
+        }
+
+        function normalizeNumber(value) {
+            if (typeof value === 'string') {
+                return value.replace(',', '.');
+            }
+            return value;
+        }
+
+        function calculatePercentageChange(entryPrice, targetPrice) {
+            return Math.abs((targetPrice - entryPrice) / entryPrice * 100).toFixed(2);
+        }
+
+        function generateCalculationText() {
+            const entryPrice = parseFloat(normalizeNumber(document.getElementById('entryPrice').value)) || 0;
+            const leverage = parseFloat(document.getElementById('leverage').value) || 1;
+            const atr = parseFloat(document.getElementById('atr').value) || 0;
+            const riskPercent = parseFloat(document.getElementById('riskPercent').value);
+            const riskAmount = parseFloat(document.getElementById('riskAmount').value) || 0;
+            const rewardRatio1 = parseFloat(document.getElementById('rewardRatio1').value) || 3;
+            const rewardRatio2 = parseFloat(document.getElementById('rewardRatio2').value) || 5;
+            const stopLossPriceDirect = parseFloat(normalizeNumber(document.getElementById('stopLossPrice').value)) || 0;
+            const stopLossPercent = parseFloat(document.getElementById('stopLossPercentInput').value) || 0;
+            const stopDistance = parseFloat(normalizeNumber(document.getElementById('stopDistance').value)) || 0;
+            const exchangeFee = parseFloat(document.getElementById('exchangeFee').value) || 0.0500;
+            const assetType = document.getElementById('assetType').value;
+            let tradeTypeName = '';
+            switch(tradeType) {
+                case 'long-breakout': tradeTypeName = 'Лонг Пробой'; break;
+                case 'long-fakeout': tradeTypeName = 'Лонг Ложный пробой'; break;
+                case 'short-breakout': tradeTypeName = 'Шорт Пробой'; break;
+                case 'short-fakeout': tradeTypeName = 'Шорт Ложный пробой'; break;
+            }
+            let stopMethodName = '';
+            switch(stopMethod) {
+                case 'atr': stopMethodName = 'По ATR'; break;
+                case 'price': stopMethodName = 'По цене'; break;
+                case 'percent': stopMethodName = 'По проценту'; break;
+                case 'distance': stopMethodName = 'По расстоянию'; break;
+            }
+            let stopLossPrice, priceDifference;
+            if (stopMethod === 'atr') {
+                priceDifference = atr * (riskPercent / 100);
+                stopLossPrice = isLong ? entryPrice - priceDifference : entryPrice + priceDifference;
+            } else if (stopMethod === 'price') {
+                priceDifference = Math.abs(entryPrice - stopLossPriceDirect);
+                stopLossPrice = stopLossPriceDirect;
+            } else if (stopMethod === 'percent') {
+                priceDifference = entryPrice * (stopLossPercent / 100);
+                stopLossPrice = isLong ? entryPrice - priceDifference : entryPrice + priceDifference;
+            } else if (stopMethod === 'distance') {
+                priceDifference = stopDistance;
+                stopLossPrice = isLong ? entryPrice - priceDifference : entryPrice + priceDifference;
+            }
+            const positionSize = priceDifference > 0 ? riskAmount / priceDifference : 0;
+            const positionSizeUsdt = entryPrice * positionSize;
+            const entryFee = entryPrice * positionSize * (exchangeFee / 100);
+            const takeProfit1 = isLong ?
+                entryPrice + (riskAmount * rewardRatio1 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize :
+                entryPrice - (riskAmount * rewardRatio1 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize;
+            const takeProfit2 = isLong ?
+                entryPrice + (riskAmount * rewardRatio2 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize :
+                entryPrice - (riskAmount * rewardRatio2 + entryFee + (entryPrice * positionSize * (exchangeFee / 100))) / positionSize;
+            const stopLossPercentValue = calculatePercentageChange(entryPrice, stopLossPrice);
+            const takeProfit1Percent = calculatePercentageChange(entryPrice, takeProfit1);
+            const takeProfit2Percent = calculatePercentageChange(entryPrice, takeProfit2);
+            const exitFee = takeProfit2 * positionSize * (exchangeFee / 100);
+            const totalFee = entryFee + exitFee;
+            const text = `Дата: ${new Date().toLocaleString()}
+===============================
+Тип сделки: ${tradeTypeName}
+Метод расчета стоп-лосса: ${stopMethodName}
+Параметры сделки:
+===============================
+${stopMethod === 'atr' ? `ATR: ${formatNumber(atr, 8)} USDT
+Риск стоп-лосс: ${riskPercent}% от ATR` : ''}
+${stopMethod === 'percent' ? `Процент стоп-лосса: ${stopLossPercent}%` : ''}
+${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${formatNumber(stopDistance, 8)} USDT` : ''}
+Риск на сделку: ${formatNumber(riskAmount, 1)} USDT
+Соотношение тейк-профита: 1:${rewardRatio1} и 1:${rewardRatio2}
+Комиссия биржи: ${exchangeFee}%
+Результаты:
+===============================
+Цена входа: ${formatNumber(entryPrice, assetType)} USDT
+Размер позиции: ${formatNumber(positionSize, 1)} монет (${formatNumber(positionSizeUsdt, 2)} USDT)
+Стоп-лосс: ${formatNumber(stopLossPrice, assetType)} USDT (${stopLossPercentValue}%)
+Расстояние до стоп-лосса: ${formatNumber(priceDifference, 8)} USDT
+Тейк-профит 1к${rewardRatio1}: ${formatNumber(takeProfit1, assetType)} USDT (${takeProfit1Percent}%)
+Тейк-профит 1к${rewardRatio2}: ${formatNumber(takeProfit2, assetType)} USDT (${takeProfit2Percent}%)
+Комиссии: ${formatNumber(totalFee, 8)} USDT (вход: ${formatNumber(entryFee, 8)}, выход: ${formatNumber(exitFee, 8)})`;
+            return text;
+        }
+
+        function copyCalculationToClipboard() {
+            const calculationText = generateCalculationText();
+            navigator.clipboard.writeText(calculationText).then(() => {
+                showNotification('Расчет скопирован в буфер обмена!', 'success');
+            }).catch(err => {
+                showNotification('Не удалось скопировать расчет: ' + err, 'error');
+            });
+        }
+
+        function exportToText() {
+            const content = generateCalculationText();
+            const blob = new Blob([content], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'расчет_рисков.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification('Расчет экспортирован в файл!', 'success');
+        }
+
+        async function sendToTelegram() {
+            const calculationText = generateCalculationText();
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({chat_id: chatId, text: calculationText, parse_mode: 'Markdown'})
+                });
+                const data = await response.json();
+                if (data.ok) {
+                    showNotification('Расчет успешно отправлен в Telegram!', 'success');
+                } else {
+                    showNotification('Ошибка при отправке: ' + (data.description || 'неизвестная ошибка'), 'error');
+                }
+            } catch (error) {
+                showNotification('Ошибка соединения: ' + error.message, 'error');
+            }
+        }
+
+        function copyPrice(elementId) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            const text = element.textContent.trim();
+            const priceMatch = text.match(/[\d,.]+/);
+            const priceToCopy = priceMatch ? priceMatch[0] : text;
+            
+            navigator.clipboard.writeText(priceToCopy).then(() => {
+                showNotification(`Цена ${priceToCopy} скопирована!`, 'success');
+            }).catch(err => {
+                showNotification('Не удалось скопировать цену: ' + err, 'error');
+            });
+        }
+
+        function copyPriceFromTakeProfit(button) {
+            const priceText = button.previousElementSibling.textContent;
+            const priceMatch = priceText.match(/[\d,.]+/);
+            const priceToCopy = priceMatch ? priceMatch[0] : priceText;
+            
+            navigator.clipboard.writeText(priceToCopy).then(() => {
+                showNotification(`Цена ${priceToCopy} скопирована!`, 'success');
+            }).catch(err => {
+                showNotification('Не удалось скопировать цену: ' + err, 'error');
+            });
+        }
+
+        function setupArrowButtons() {
+            document.querySelectorAll('.number-input-arrow').forEach(arrow => {
+                arrow.addEventListener('click', function() {
+                    const targetId = this.dataset.target;
+                    const step = this.dataset.step;
+                    const input = document.getElementById(targetId);
+                    
+                    if (!input) return;
+                    
+                    let currentValue = parseFloat(normalizeNumber(input.value)) || 0;
+                    let stepValue;
+                    
+                    if (step === 'auto' || step === '-auto') {
+                        stepValue = getPriceStep(targetId);
+                    } else {
+                        stepValue = Math.abs(parseFloat(step));
+                    }
+                    
+                    if (step.startsWith('-')) {
+                        currentValue -= stepValue;
+                    } else {
+                        currentValue += stepValue;
+                    }
+                    
+                    if (targetId === 'customDecimals') {
+                        currentValue = Math.min(Math.max(currentValue, 1), 8);
+                    }
+                    
+                    if (targetId === 'exchangeFee') {
+                        currentValue = Math.min(Math.max(currentValue, 0), 1);
+                    }
+                    
+                    if (targetId === 'riskAmount') {
+                        currentValue = Math.max(currentValue, 0);
+                    }
+                    
+                    if (targetId === 'stopDistance') {
+                        currentValue = Math.max(currentValue, 0);
+                    }
+                    
+                    if (['customDecimals', 'exchangeFee', 'riskAmount'].includes(targetId)) {
+                        input.value = formatNumber(currentValue, 8);
+                    } else {
+                        const assetType = document.getElementById('assetType').value;
+                        let decimalPlaces = 4;
+                        if (assetType === 'custom') {
+                            decimalPlaces = parseInt(document.getElementById('customDecimals').value) || 4;
+                        } else {
+                            decimalPlaces = parseInt(assetType) || 4;
+                        }
+                        input.value = formatNumber(currentValue, decimalPlaces, assetType);
+                    }
+                    
+                    const event = new Event('input', { bubbles: true });
+                    input.dispatchEvent(event);
+                });
+            });
+        }
+
+        function setupRangeSliders() {
+            document.querySelectorAll('input[type="range"]').forEach(slider => {
+                slider.addEventListener('input', function() {
+                    const value = (this.value - this.min) / (this.max - this.min) * 100;
+                    this.style.setProperty('--fill-percent', `${value}%`);
+                });
+                
+                const value = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+                slider.style.setProperty('--fill-percent', `${value}%`);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            function updateSliderValues() {
+                document.getElementById('riskPercentValue').textContent = document.getElementById('riskPercent').value;
+                document.getElementById('rewardRatio1Value').textContent = document.getElementById('rewardRatio1').value;
+                document.getElementById('rewardRatio2Value').textContent = document.getElementById('rewardRatio2').value;
+                document.getElementById('stopLossPercentValue').textContent = document.getElementById('stopLossPercentInput').value;
+            }
+
+            const longBtn = document.getElementById('longBtn');
+            const shortBtn = document.getElementById('shortBtn');
+
+            longBtn.addEventListener('click', () => {
+                isLong = true;
+                longBtn.classList.add('active'); shortBtn.classList.remove('active');
+                if (isTradeTypeSelectorVisible && isLong) {
+                    document.getElementById('tradeTypeSelector').style.display = 'none';
+                    isTradeTypeSelectorVisible = false;
+                } else {
+                    document.getElementById('tradeTypeSelector').style.display = 'flex';
+                    isTradeTypeSelectorVisible = true;
+                    updateTradeTypeButtons();
+                }
+                calculateRisk();
+            });
+
+            shortBtn.addEventListener('click', () => {
+                isLong = false;
+                shortBtn.classList.add('active'); longBtn.classList.remove('active');
+                if (isTradeTypeSelectorVisible && !isLong) {
+                    document.getElementById('tradeTypeSelector').style.display = 'none';
+                    isTradeTypeSelectorVisible = false;
+                } else {
+                    document.getElementById('tradeTypeSelector').style.display = 'flex';
+                    isTradeTypeSelectorVisible = true;
+                    updateTradeTypeButtons();
+                }
+                calculateRisk();
+            });
+
+            function updateTradeTypeButtons() {
+                const longBreakoutBtn = document.querySelector('.trade-type-btn.long-breakout');
+                const longFakeoutBtn = document.querySelector('.trade-type-btn.long-fakeout');
+                const shortBreakoutBtn = document.querySelector('.trade-type-btn.short-breakout');
+                const shortFakeoutBtn = document.querySelector('.trade-type-btn.short-fakeout');
+                
+                longBreakoutBtn.style.display = '';
+                longFakeoutBtn.style.display = '';
+                shortBreakoutBtn.style.display = '';
+                shortFakeoutBtn.style.display = '';
+                
+                document.querySelectorAll('.trade-type-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                if (isLong) {
+                    shortBreakoutBtn.style.display = 'none';
+                    shortFakeoutBtn.style.display = 'none';
+                    if (!document.querySelector('.trade-type-btn.active')) {
+                        longBreakoutBtn.classList.add('active');
+                        tradeType = 'long-breakout';
+                    }
+                } else {
+                    longBreakoutBtn.style.display = 'none';
+                    longFakeoutBtn.style.display = 'none';
+                    if (!document.querySelector('.trade-type-btn.active')) {
+                        shortBreakoutBtn.classList.add('active');
+                        tradeType = 'short-breakout';
+                    }
+                }
+            }
+
+            document.querySelectorAll('.trade-type-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.trade-type-btn').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    btn.classList.add('active');
+                    tradeType = btn.dataset.type;
+                    calculateRisk();
+                });
+            });
+
+            function calculateRisk() {
+                const entryPrice = parseFloat(normalizeNumber(document.getElementById('entryPrice').value)) || 0;
+                const leverage = parseFloat(document.getElementById('leverage').value) || 1;
+                const atr = parseFloat(document.getElementById('atr').value) || 0;
+                const riskPercent = parseFloat(document.getElementById('riskPercent').value) / 100;
+                const riskAmount = parseFloat(document.getElementById('riskAmount').value) || 0;
+                const rewardRatio1 = parseFloat(document.getElementById('rewardRatio1').value) || 3;
+                const rewardRatio2 = parseFloat(document.getElementById('rewardRatio2').value) || 5;
+                const stopLossPriceDirect = parseFloat(normalizeNumber(document.getElementById('stopLossPrice').value)) || 0;
+                const stopLossPercent = parseFloat(document.getElementById('stopLossPercentInput').value) / 100 || 0.02;
+                const stopDistance = parseFloat(normalizeNumber(document.getElementById('stopDistance').value)) || 0;
+                const exchangeFee = parseFloat(document.getElementById('exchangeFee').value) / 100 || 0.0005;
+                const assetType = document.getElementById('assetType').value;
+                const decimalPlaces = assetType === 'custom' ?
+                    parseInt(document.getElementById('customDecimals').value) || 4 :
+                    parseInt(assetType);
+
+                let priceDifference;
+                if (stopMethod === 'atr') {
+                    priceDifference = atr * riskPercent;
+                } else if (stopMethod === 'price') {
+                    priceDifference = Math.abs(entryPrice - stopLossPriceDirect);
+                } else if (stopMethod === 'percent') {
+                    priceDifference = entryPrice * stopLossPercent;
+                } else if (stopMethod === 'distance') {
+                    priceDifference = stopDistance;
+                }
+
+                let stopLossPrice;
+                if (stopMethod === 'atr') {
+                    stopLossPrice = isLong ? entryPrice - priceDifference : entryPrice + priceDifference;
+                } else if (stopMethod === 'price') {
+                    stopLossPrice = stopLossPriceDirect;
+                } else if (stopMethod === 'percent') {
+                    stopLossPrice = isLong ? entryPrice - priceDifference : entryPrice + priceDifference;
+                } else if (stopMethod === 'distance') {
+                    stopLossPrice = isLong ? entryPrice - priceDifference : entryPrice + priceDifference;
+                }
+
+                const positionSize = priceDifference > 0 ? riskAmount / priceDifference : 0;
+                const positionSizeUsdt = entryPrice * positionSize;
+                const entryFee = entryPrice * positionSize * exchangeFee;
+                const takeProfit1 = isLong ?
+                    entryPrice + (riskAmount * rewardRatio1 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize :
+                    entryPrice - (riskAmount * rewardRatio1 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
+                const takeProfit2 = isLong ?
+                    entryPrice + (riskAmount * rewardRatio2 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize :
+                    entryPrice - (riskAmount * rewardRatio2 + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
+                const liquidationPrice = isLong ?
+                    entryPrice * (1 - 1/leverage) :
+                    entryPrice * (1 + 1/leverage);
+                const stopLossPercentValue = calculatePercentageChange(entryPrice, stopLossPrice);
+                const takeProfit1Percent = calculatePercentageChange(entryPrice, takeProfit1);
+                const takeProfit2Percent = calculatePercentageChange(entryPrice, takeProfit2);
+                const liquidationPricePercent = calculatePercentageChange(entryPrice, liquidationPrice);
+                const stopLossUsdt = priceDifference * positionSize;
+
+                document.getElementById('entryPriceResult').textContent = `${formatNumber(entryPrice, decimalPlaces, assetType)} USDT`;
+                document.getElementById('positionSize').textContent = `${formatNumber(positionSize, 1)} монет`;
+                document.getElementById('positionSizeUsdt').textContent = `${formatNumber(positionSizeUsdt, 2)} USDT`;
+                
+                document.getElementById('stopLossPriceText').textContent = `${formatNumber(stopLossPrice, decimalPlaces, assetType)} USDT`;
+                document.getElementById('stopLossPercentText').textContent = `(${stopLossPercentValue}%)`;
+                document.getElementById('stopLossUsdt').textContent = `-${formatNumber(stopLossUsdt, 2)} USDT`;
+                
+                document.getElementById('liquidationPriceText').textContent = `${formatNumber(liquidationPrice, decimalPlaces, assetType)} USDT`;
+                document.getElementById('liquidationPricePercent').textContent = `(${liquidationPricePercent}%)`;
+                
+                document.getElementById('stopDistanceResult').innerHTML = `${formatNumber(priceDifference, 8)} USDT <span class="usdt-value">(${formatNumber(stopLossUsdt, 2)} USDT)</span>`;
+                document.getElementById('exchangeFeeResult').textContent = `${formatNumber(exchangeFee * 100, 4)}%`;
+                document.getElementById('atrResult').textContent = `${formatNumber(atr, 8)} USDT`;
+                generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, rewardRatio1, rewardRatio2, riskAmount, positionSize, exchangeFee, decimalPlaces, assetType);
+            }
+
+            function generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, ratio1, ratio2, riskAmount, positionSize, exchangeFee, decimalPlaces, assetType) {
+                const levelsDiv = document.getElementById('takeProfitLevels');
+                levelsDiv.innerHTML = '';
+                const priceDifference = Math.abs(entryPrice - stopLossPrice);
+                const entryFee = entryPrice * positionSize * exchangeFee;
+                [ratio1, ratio2].forEach(ratio => {
+                    let targetProfit = riskAmount * ratio;
+                    let takeProfitPrice = isLong ?
+                        entryPrice + (targetProfit + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize :
+                        entryPrice - (targetProfit + entryFee + (entryPrice * positionSize * exchangeFee)) / positionSize;
+                    const profitPercent = calculatePercentageChange(entryPrice, takeProfitPrice);
+                    const exitFee = takeProfitPrice * positionSize * exchangeFee;
+                    const div = document.createElement('div');
+                    div.className = 'take-profit-item';
+                    div.innerHTML = `
+                        <span class="take-profit-ratio">Тейк-профит 1к${ratio}</span>
+                        <span class="take-profit-price">
+                            <span class="price-value-with-btn">
+                                <span class="price-text">${formatNumber(takeProfitPrice, decimalPlaces, assetType)} USDT</span>
+                                <button class="copy-price-btn copy-price-btn-profit" onclick="copyPriceFromTakeProfit(this)" title="Копировать цену">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </span>
+                            <span class="percentage-value">(${profitPercent}%)</span>
+                        </span>
+                        <span class="take-profit-value">+${formatNumber(targetProfit, 1)} USDT (чистая прибыль, комиссия: ${formatNumber(exitFee, 8)} USDT)</span>
+                    `;
+                    levelsDiv.appendChild(div);
+                });
+            }
+
+            document.getElementById('entryPrice').addEventListener('input', function() {
+                const price = this.value;
+                if (price && !isNaN(parseFloat(normalizeNumber(price)))) {
+                    const decimals = autoDetectPrecision(price);
+                    const info = document.getElementById('decimalsInfo');
+                    if (decimals > 0) {
+                        info.textContent = `Автоматически определено: ${decimals} знака после запятой`;
+                        info.style.display = 'block';
+                        document.getElementById('assetType').value = decimals.toString();
+                        if (decimals === 8) document.getElementById('assetType').value = '8';
+                        if (document.getElementById('assetType').value === 'custom') {
+                            document.getElementById('customDecimals').value = decimals;
+                            document.getElementById('customDecimalsGroup').style.display = 'block';
+                        } else {
+                            document.getElementById('customDecimalsGroup').style.display = 'none';
+                        }
+                    } else {
+                        document.getElementById('decimalsInfo').style.display = 'none';
+                    }
+                } else {
+                    document.getElementById('decimalsInfo').style.display = 'none';
+                }
+                calculateRisk();
+            });
+
+            document.getElementById('leverage').addEventListener('input', () => {
+                document.getElementById('leverageValue').textContent = document.getElementById('leverage').value + 'x';
+                if (document.getElementById('leverage').value > 10) {
+                    document.getElementById('leverageWarning').style.display = 'block';
+                } else {
+                    document.getElementById('leverageWarning').style.display = 'none';
+                }
+                calculateRisk();
+            });
+
+            document.getElementById('atr').addEventListener('input', () => {
+                document.getElementById('atrValue').textContent = formatNumber(parseFloat(document.getElementById('atr').value) || 0, 8) + ' USDT';
+                document.getElementById('previewAtrPercent').textContent = formatNumber((parseFloat(document.getElementById('atr').value) || 0) * (parseFloat(document.getElementById('riskPercent').value) / 100), 8) + ' USDT';
+                document.getElementById('atrResult').textContent = formatNumber(parseFloat(document.getElementById('atr').value) || 0, 8) + ' USDT';
+                calculateRisk();
+            });
+
+            document.getElementById('riskPercent').addEventListener('input', () => {
+                updateSliderValues();
+                document.getElementById('previewAtrPercentValue').textContent = document.getElementById('riskPercent').value + '%';
+                document.getElementById('previewAtrPercent').textContent = formatNumber((parseFloat(document.getElementById('atr').value) || 0) * (parseFloat(document.getElementById('riskPercent').value) / 100), 8) + ' USDT';
+                calculateRisk();
+            });
+
+            document.getElementById('riskAmount').addEventListener('input', calculateRisk);
+            document.getElementById('rewardRatio1').addEventListener('input', () => { updateSliderValues(); calculateRisk(); });
+            document.getElementById('rewardRatio2').addEventListener('input', () => { updateSliderValues(); calculateRisk(); });
+            document.getElementById('exchangeFee').addEventListener('input', () => {
+                document.getElementById('exchangeFeeResult').textContent = formatNumber(parseFloat(document.getElementById('exchangeFee').value) || 0.0500, 4) + '%';
+                calculateRisk();
+            });
+            document.getElementById('assetType').addEventListener('change', () => {
+                if (document.getElementById('assetType').value === 'custom') {
+                    document.getElementById('customDecimalsGroup').style.display = 'block';
+                } else {
+                    document.getElementById('customDecimalsGroup').style.display = 'none';
+                }
+                calculateRisk();
+            });
+            document.getElementById('customDecimals').addEventListener('input', calculateRisk);
+
+            document.querySelectorAll('.stop-method-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    stopMethod = btn.dataset.method;
+                    document.querySelectorAll('.stop-method-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.querySelectorAll('.stop-input-group').forEach(g => g.classList.remove('active'));
+                    if (stopMethod === 'atr') document.getElementById('atr-group').classList.add('active');
+                    else if (stopMethod === 'price') document.getElementById('price-group').classList.add('active');
+                    else if (stopMethod === 'percent') document.getElementById('percent-group').classList.add('active');
+                    else if (stopMethod === 'distance') document.getElementById('distance-group').classList.add('active');
+                    calculateRisk();
+                });
+            });
+
+            document.getElementById('stopLossPrice').addEventListener('input', () => {
+                const entry = parseFloat(normalizeNumber(document.getElementById('entryPrice').value)) || 0;
+                const stop = parseFloat(normalizeNumber(document.getElementById('stopLossPrice').value)) || 0;
+                if (entry > 0 && stop > 0) {
+                    document.getElementById('priceDifference').textContent = formatNumber(Math.abs(entry - stop), 8) + ' USDT';
+                } else {
+                    document.getElementById('priceDifference').textContent = '0.0000 USDT';
+                }
+                calculateRisk();
+            });
+
+            document.getElementById('stopLossPercentInput').addEventListener('input', () => {
+                updateSliderValues();
+                const entry = parseFloat(normalizeNumber(document.getElementById('entryPrice').value)) || 0;
+                const percent = parseFloat(document.getElementById('stopLossPercentInput').value) / 100;
+                if (entry > 0) {
+                    document.getElementById('previewPercentValue').textContent = formatNumber(entry * percent, 8) + ' USDT';
+                    document.getElementById('previewPercent').textContent = document.getElementById('stopLossPercentInput').value + '%';
+                } else {
+                    document.getElementById('previewPercentValue').textContent = '0.0000 USDT';
+                    document.getElementById('previewPercent').textContent = document.getElementById('stopLossPercentInput').value + '%';
+                }
+                calculateRisk();
+            });
+
+            document.getElementById('stopDistance').addEventListener('input', calculateRisk);
+
+            document.getElementById('exportTextBtn').addEventListener('click', exportToText);
+            document.getElementById('exportTelegramBtn').addEventListener('click', sendToTelegram);
+            document.getElementById('copyCalculationBtn').addEventListener('click', copyCalculationToClipboard);
+
+            setupArrowButtons();
+            setupRangeSliders();
+
+            updateSliderValues();
+            document.getElementById('previewAtrPercent').textContent = '0.0000 USDT';
+            document.getElementById('previewAtrPercentValue').textContent = '10%';
+            document.getElementById('priceDifference').textContent = '0.0000 USDT';
+            document.getElementById('previewPercentValue').textContent = '0.0000 USDT';
+            document.getElementById('previewPercent').textContent = '2%';
+            document.getElementById('exchangeFeeResult').textContent = '0.0500%';
+
+            calculateRisk();
+        });
+    </script>
+
+    <!-- JavaScript предпосылок -->
+    <script>
+        const tvhTexts = {
+            tvhDailyPrimaryMovement: { text: `<h3>ТВХ №1 Первичное движение (Дневной таймфрейм)</h3><p>Первичное движение-Часовые бары при подходе к уровню должны быть не большимими  одного цвета хотябы 3-4 последних бара перед уровнем закрытие должно быть в близи уровня .\n   5 минут бары должны  поодходить поджатием и не высокая волатильность.\n   Также подход на часовеке и на 5м должен быть плавным на низкой волатильности (все предпосылки к пробою.)\n   Также усиливыющие факторы закрытие дневки прям перед уровнем.\n   В переди свободная зона, нет заколов.\n   Если все условия соблюдены можно ставить стоп 5% от ATR.</p><p style="color: red;">Если начинается запил жду когда уйдет цена под уровень в случае шорта(и над если лонг)и образуется проторговка.</p><p>Условия перезахода<br>1) Картинка не поломалась.<br>2) Уровень не пилится.<br>3) Нет глубокого отката.<br>4) Пониженная волатильность.<br>Больше 2-х раза не перезахожу.</p><div class="photo-section"><div class="photo-section-title">Примеры лонг</div><div class="photo-gallery"><div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/QNT%201H%20102.44%20proboy%20long.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/QNT%201H%20102.44%20proboy%20long.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/ETH%201H%20%20long%20proboy%202610.72.png?raw=true'])"><img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/QNT%201H%20102.44%20proboy%20long.png?raw=true" alt="Формация 1"><div class="photo-gallery-caption">Первичное движение1</div></div><div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/ETH%201H%20%20long%20proboy%202610.72.png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/QNT%201H%20102.44%20proboy%20long.png?raw=true', 'https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/ETH%201H%20%20long%20proboy%202610.72.png?raw=true'])"><img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/ETH%201H%20%20long%20proboy%202610.72.png?raw=true" alt="Формация 2"><div class="photo-gallery-caption">Первичное движение 2</div></div></div></div><div class="photo-section"><div class="photo-section-title">Примеры Шорт</div><div class="photo-gallery"><div class="photo-gallery-item" onclick="openPhotoModal('https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/1000000BOBUSDT%20%200.04944%201h%20proboy%20short%20(1).png?raw=true', ['https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/1000000BOBUSDT%20%200.04944%201h%20proboy%20short%20(1).png?raw=true'])"><img src="https://github.com/donpu333/CryptoWidget/blob/main/images/%D0%9F%D0%B5%D1%80%D0%B2%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B4%D0%B2%D0%B8%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/1000000BOBUSDT%20%200.04944%201h%20proboy%20short%20(1).png?raw=true" alt="BOBUSDT 1H"><div class="photo-gallery-caption">BOBUSDT 1H</div></div></div></div>` },</p>` },
+            tvhDailyTradingAbove: { text: `<h3>ТВХ №2 После проторговки возле уровня (Дневной таймфрейм)</h3><p>На дневном таймфрейме...</p>` },
+            tvhDailyTradingBelow: { text: `<h3>ТВХ №3 Проторговка после пробоя (Дневной таймфрейм)</h3><p>На дневном таймфрейме...</p>` },
+            tvhDailySecondaryMovement: { text: `<h3>ТВХ №4 во вторичное движение (Дневной таймфрейм)</h3><p>На дневном таймфрейме...</p>` },
+            tvhDailyEntry: { text: `<h3>ТВХ №5 После ретеста (Дневной таймфрейм)</h3><p>На дневном таймфрейме...</p>` },
+            tvhDailyFalsePrimaryMovement: { text: `<h3>ТВХ первичное движение (Дневной ложный пробой)</h3><p>На дневном таймфрейме...</p>` },
+            tvhDailyFalseTradingAbove: { text: `<h3>ТВХ проторговки над уровнем (Дневной ложный пробой)</h3><p>На дневном таймфрейме...</p>` },
+            tvhDailyFalseTradingBelow: { text: `<h3>ТВХ проторговки под уровнем (Дневной ложный пробой)</h3><p>На дневном таймфрейме...</p>` },
+            tvhDailyFalseSecondaryMovement: { text: `<h3>ТВХ во вторичное движение (Дневной ложный пробой)</h3><p>На дневном таймфрейме...</p>` },
+            tvhDailyFalseEntry: { text: `<h3>ТВХ вход (Дневной ложный пробой)</h3><p>На дневном таймфрейме...</p>` },
+            tvhMinutePrimaryMovement: { text: `<h3>ТВХ №1 Первичное движение (Минутный таймфрейм)</h3><p>Первичное движение на минутном таймфрейме...</p>` },
+            tvhMinuteTradingAbove: { text: `<h3>ТВХ №2 После проторговки возле уровня (Минутный таймфрейм)</h3><p>На минутном таймфрейме...</p>` },
+            tvhMinuteTradingBelow: { text: `<h3>ТВХ №3 Проторговка после пробоя (Минутный таймфрейм)</h3><p>На минутном таймфрейме...</p>` },
+            tvhMinuteSecondaryMovement: { text: `<h3>ТВХ №4 во вторичное движение (Минутный таймфрейм)</h3><p>На минутном таймфрейме...</p>` },
+            tvhMinuteEntry: { text: `<h3>ТВХ №5 После ретеста (Минутный таймфрейм)</h3><p>На минутном таймфрейме...</p>` },
+            tvhMinuteFalsePrimaryMovement: { text: `<h3>ТВХ первичное движение (Минутный ложный пробой)</h3><p>На минутном таймфрейме...</p>` },
+            tvhMinuteFalseTradingAbove: { text: `<h3>ТВХ проторговки над уровнем (Минутный ложный пробой)</h3><p>На минутном таймфрейме...</p>` },
+            tvhMinuteFalseTradingBelow: { text: `<h3>ТВХ проторговки под уровнем (Минутный ложный пробой)</h3><p>На минутном таймфрейме...</p>` },
+            tvhMinuteFalseSecondaryMovement: { text: `<h3>ТВХ во вторичное движение (Минутный ложный пробой)</h3><p>На минутном таймфрейме...</p>` },
+            tvhMinuteFalseEntry: { text: `<h3>ТВХ вход (Минутный ложный пробой)</h3><p>На минутном таймфрейме...</p>` },
+            algorithmPremises: { text: `<h3>Алгоритм - для отбора инструментов по дневки</h3><p>Контент алгоритма...</p>` },
+            algorithmUFormation: { text: `<h3>U-Формация</h3><p>Контент U-Формации...</p>` },
+            algorithmVFormation: { text: `<h3>V-Формация</h3><p>Контент V-Формации...</p>` },
+            algorithmChannel: { text: `<h3>Каннал</h3><p>Контент канала...</p>` },
+            algorithmTailedBar: { text: `<h3>Бар с хвостами</h3><p>Контент баров с хвостами...</p>` },
+            algorithmBarClosing: { text: `<h3>Закрытие баров</h3><p>Контент закрытия баров...</p>` },
+            algorithmNoRetracement: { text: `<h3>Безоткатное движение</h3><p>Контент безоткатного движения...</p>` },
+            algorithmParanormalBars: { text: `<h3>Подход на паранормальных барах</h3><p>Контент паранормальных баров...</p>` },
+            algorithmDistribution: { text: `<h3>Дистрибуция</h3><p>Контент дистрибуции...</p>` },
+            algorithmFarClosing: { text: `<h3>Дальнее закрытие от уровня</h3><p>Контент дальнего закрытия...</p>` },
+            algorithmFarRetest: { text: `<h3>Дальный ретест</h3><p>Контент дальнего ретеста...</p>` },
+            algorithmInfectedZone: { text: `<h3>Зона зараженности</h3><p>Контент зоны зараженности...</p>` },
+            algorithmExtremum: { text: `<h3>Экстремум</h3><p>Контент экстремума...</p>` },
+            algorithmATRHalf: { text: `<h3>День открывается с АТР более половины до уровня</h3><p>Контент ATR...</p>` },
+            algorithmBreakthroughModels: { text: `<h3>Пробойные модели</h3><p>Контент пробойных моделей...</p>` },
+            algorithmSqueeze: { text: `<h3>Поджатие</h3><p>Контент поджатия...</p>` },
+            algorithmNoImpulse: { text: `<h3>Отсутствие импульса где он должен быть</h3><p>Контент отсутствия импульса...</p>` },
+            algorithmNarrowTrading: { text: `<h3>Узкая проторговка</h3><p>Контент узкой проторговки...</p>` },
+            algorithmConsolidation: { text: `<h3>Консолидация вдоль уровня с поджатием</h3><p>Контент консолидации...</p>` },
+            algorithmRange: { text: `<h3>Рендж</h3><p>Контент ренджа...</p>` },
+            algorithmCloseToLevel: { text: `<h3>Закрытие в близи уровня</h3><p>Контент закрытия вблизи уровня...</p>` },
+            algorithmNearRetest: { text: `<h3>Ближний ретест</h3><p>Контент ближнего ретеста...</p>` },
+            algorithmNoReactionToLP: { text: `<h3>Нет реакции на ЛП</h3><p>Контент реакции на ЛП...</p>` },
+            algorithmDailyClose: { text: `<h3>Закрытие дневки под хай /лоу После паронормального бара нет отката</h3><p>Контент закрытия дневки...</p>` },
+            algorithmParanormalNoRetracement: { text: `<h3>После паранормального бара нет отката</h3><p>Контент паранормального бара...</p>` }
+        };
+
+        let currentPhotoIndex = 0;
+        let currentPhotos = [];
+        let currentScale = 1;
+        let translateX = 0, translateY = 0;
+        let currentAlgorithmType = null;
+        let currentlyActiveText = null;
+
+        function toggleSection(section) {
+            const dailyButtons = document.getElementById('dailyButtons');
+            const minuteButtons = document.getElementById('minuteButtons');
+            
+            document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tvh-sub-buttons, .algorithm-sub-buttons').forEach(el => {
+                el.style.display = 'none';
+            });
+            document.getElementById('actionButtons').style.display = 'none';
+            
+            if (section === 'daily') {
+                if (dailyButtons.style.display === 'flex') {
+                    dailyButtons.style.display = 'none';
+                } else {
+                    dailyButtons.style.display = 'flex';
+                    minuteButtons.style.display = 'none';
+                }
+            } else if (section === 'minute') {
+                if (minuteButtons.style.display === 'flex') {
+                    minuteButtons.style.display = 'none';
+                } else {
+                    minuteButtons.style.display = 'flex';
+                    dailyButtons.style.display = 'none';
+                }
+            }
+            
+            currentlyActiveText = null;
+        }
+
+        function toggleText(textId) {
+            const textElement = document.getElementById(textId + 'Text');
+            
+            if (currentlyActiveText === textId && textElement.style.display === 'block') {
+                textElement.style.display = 'none';
+                document.getElementById('actionButtons').style.display = 'none';
+                currentlyActiveText = null;
+                return;
+            }
+            
+            document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tvh-sub-buttons, .algorithm-sub-buttons').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            if (textElement) {
+                textElement.style.display = 'block';
+                document.getElementById('actionButtons').style.display = 'flex';
+                currentlyActiveText = textId;
+            }
+        }
+
+        function toggleTvhButtons(tvhType) {
+            const tvhDailyBreakthroughButtons = document.getElementById('tvhDailyBreakthroughButtons');
+            const tvhDailyFalseBreakthroughButtons = document.getElementById('tvhDailyFalseBreakthroughButtons');
+            const tvhMinuteBreakthroughButtons = document.getElementById('tvhMinuteBreakthroughButtons');
+            const tvhMinuteFalseBreakthroughButtons = document.getElementById('tvhMinuteFalseBreakthroughButtons');
+            
+            document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.algorithm-sub-buttons').forEach(el => {
+                el.style.display = 'none';
+            });
+            document.getElementById('actionButtons').style.display = 'none';
+            
+            if (tvhType === 'tvhDailyBreakthrough') {
+                if (tvhDailyBreakthroughButtons.style.display === 'flex') {
+                    tvhDailyBreakthroughButtons.style.display = 'none';
+                } else {
+                    tvhDailyBreakthroughButtons.style.display = 'flex';
+                    tvhDailyFalseBreakthroughButtons.style.display = 'none';
+                    tvhMinuteBreakthroughButtons.style.display = 'none';
+                    tvhMinuteFalseBreakthroughButtons.style.display = 'none';
+                }
+            } else if (tvhType === 'tvhDailyFalseBreakthrough') {
+                if (tvhDailyFalseBreakthroughButtons.style.display === 'flex') {
+                    tvhDailyFalseBreakthroughButtons.style.display = 'none';
+                } else {
+                    tvhDailyFalseBreakthroughButtons.style.display = 'flex';
+                    tvhDailyBreakthroughButtons.style.display = 'none';
+                    tvhMinuteBreakthroughButtons.style.display = 'none';
+                    tvhMinuteFalseBreakthroughButtons.style.display = 'none';
+                }
+            } else if (tvhType === 'tvhMinuteBreakthrough') {
+                if (tvhMinuteBreakthroughButtons.style.display === 'flex') {
+                    tvhMinuteBreakthroughButtons.style.display = 'none';
+                } else {
+                    tvhMinuteBreakthroughButtons.style.display = 'flex';
+                    tvhDailyBreakthroughButtons.style.display = 'none';
+                    tvhDailyFalseBreakthroughButtons.style.display = 'none';
+                    tvhMinuteFalseBreakthroughButtons.style.display = 'none';
+                }
+            } else if (tvhType === 'tvhMinuteFalseBreakthrough') {
+                if (tvhMinuteFalseBreakthroughButtons.style.display === 'flex') {
+                    tvhMinuteFalseBreakthroughButtons.style.display = 'none';
+                } else {
+                    tvhMinuteFalseBreakthroughButtons.style.display = 'flex';
+                    tvhDailyBreakthroughButtons.style.display = 'none';
+                    tvhDailyFalseBreakthroughButtons.style.display = 'none';
+                    tvhMinuteBreakthroughButtons.style.display = 'none';
+                }
+            }
+            
+            currentlyActiveText = null;
+        }
+
+        function toggleAlgorithmButtons() {
+            const algorithmButtons = document.getElementById('algorithmButtons');
+            
+            document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tvh-sub-buttons').forEach(el => el.style.display = 'none');
+            document.getElementById('breakthroughAlgorithmButtons').style.display = 'none';
+            document.getElementById('falseBreakthroughAlgorithmButtons').style.display = 'none';
+            document.getElementById('actionButtons').style.display = 'none';
+            
+            if (algorithmButtons.style.display === 'flex') {
+                algorithmButtons.style.display = 'none';
+            } else {
+                algorithmButtons.style.display = 'flex';
+            }
+            
+            currentlyActiveText = null;
+            currentAlgorithmType = null;
+        }
+
+        function toggleAlgorithmSubButtons(algorithmType) {
+            const breakthroughAlgorithmButtons = document.getElementById('breakthroughAlgorithmButtons');
+            const falseBreakthroughAlgorithmButtons = document.getElementById('falseBreakthroughAlgorithmButtons');
+            
+            document.querySelectorAll('.text-display').forEach(el => el.style.display = 'none');
+            document.getElementById('actionButtons').style.display = 'none';
+            
+            if (algorithmType === 'breakthroughAlgorithm') {
+                if (breakthroughAlgorithmButtons.style.display === 'flex') {
+                    breakthroughAlgorithmButtons.style.display = 'none';
+                    currentAlgorithmType = null;
+                } else {
+                    breakthroughAlgorithmButtons.style.display = 'flex';
+                    falseBreakthroughAlgorithmButtons.style.display = 'none';
+                    currentAlgorithmType = algorithmType;
+                }
+            } else if (algorithmType === 'falseBreakthroughAlgorithm') {
+                if (falseBreakthroughAlgorithmButtons.style.display === 'flex') {
+                    falseBreakthroughAlgorithmButtons.style.display = 'none';
+                    currentAlgorithmType = null;
+                } else {
+                    falseBreakthroughAlgorithmButtons.style.display = 'flex';
+                    breakthroughAlgorithmButtons.style.display = 'none';
+                    currentAlgorithmType = algorithmType;
+                }
+            }
+            
+            document.getElementById('algorithmButtons').style.display = 'none';
+            
+            currentlyActiveText = null;
+        }
+
+        function backToAlgorithmMain() {
+            document.getElementById('breakthroughAlgorithmButtons').style.display = 'none';
+            document.getElementById('falseBreakthroughAlgorithmButtons').style.display = 'none';
+            document.getElementById('algorithmButtons').style.display = 'flex';
+            currentAlgorithmType = null;
+            currentlyActiveText = null;
+        }
+
+        function showTvhText(tvhKey) {
+            const tvhData = tvhTexts[tvhKey];
+            if (!tvhData) {
+                showNotification('Текст не найден', 'error');
+                return;
+            }
+            document.getElementById('tvhTextInner').innerHTML = tvhData.text;
+            document.getElementById('tvhOverlay').style.display = 'block';
+            document.getElementById('tvhTextContent').style.display = 'block';
+        }
+
+        function closeTvhText() {
+            document.getElementById('tvhOverlay').style.display = 'none';
+            document.getElementById('tvhTextContent').style.display = 'none';
+            document.getElementById('tvhTextInner').innerHTML = '';
+        }
+
+        function copyTvhText() {
+            const textElement = document.getElementById('tvhTextInner');
+            const textToCopy = textElement.innerText || textElement.textContent;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showNotification('Текст скопирован', 'success');
+            }).catch(err => {
+                showNotification('Ошибка копирования', 'error');
+            });
+        }
+
+        function copySelectedText() {
+            const active = document.querySelector('.text-display[style*="display: block"]');
+            if (!active) {
+                showNotification('Нет активного текста', 'error');
+                return;
+            }
+            const checked = active.querySelectorAll('input[type="checkbox"]:checked');
+            if (checked.length === 0) {
+                showNotification('Не выбрано ни одного пункта', 'error');
+                return;
+            }
+            const items = Array.from(checked).map(cb => `☑ ${cb.nextElementSibling.textContent}`);
+            navigator.clipboard.writeText(items.join('\n')).then(() => {
+                showNotification('Выбранное скопировано', 'success');
+            }).catch(err => {
+                showNotification('Ошибка копирования', 'error');
+            });
+        }
+
+        function exportSelectedToTelegram() {
+            const active = document.querySelector('.text-display[style*="display: block"]');
+            if (!active) {
+                showNotification('Нет активного текста', 'error');
+                return;
+            }
+            const checked = active.querySelectorAll('input[type="checkbox"]:checked');
+            if (checked.length === 0) {
+                showNotification('Не выбрано ни одного пункта', 'error');
+                return;
+            }
+            const items = Array.from(checked).map(cb => `☑ ${cb.nextElementSibling.textContent}`);
+            const message = encodeURIComponent(items.join('\n'));
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${message}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.ok) {
+                        showNotification('Отправлено в Telegram', 'success');
+                    } else {
+                        showNotification('Ошибка отправки', 'error');
+                    }
+                })
+                .catch(() => showNotification('Ошибка соединения', 'error'));
+        }
+
+        function resetCheckboxes() {
+            const active = document.querySelector('.text-display[style*="display: block"]');
+            if (!active) {
+                showNotification('Нет активного текста', 'error');
+                return;
+            }
+            active.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            showNotification('Сброшено', 'success');
+        }
+
+        function openPhotoModal(photoUrl, photoArray) {
+            currentPhotos = photoArray || [photoUrl];
+            currentPhotoIndex = currentPhotos.indexOf(photoUrl);
+            if (currentPhotoIndex === -1) currentPhotoIndex = 0;
+            const modal = document.getElementById('photoModal');
+            const image = document.getElementById('photoImage');
+            const thumbnails = document.getElementById('photoThumbnails');
+            image.src = currentPhotos[currentPhotoIndex];
+            modal.classList.add('active');
+            currentScale = 1;
+            translateX = 0;
+            translateY = 0;
+            updateImageTransform();
+            thumbnails.innerHTML = '';
+            currentPhotos.forEach((photo, index) => {
+                const thumbnail = document.createElement('img');
+                thumbnail.src = photo;
+                thumbnail.classList.add('thumbnail');
+                if (index === currentPhotoIndex) thumbnail.classList.add('active');
+                thumbnail.onclick = () => {
+                    currentPhotoIndex = index;
+                    image.src = currentPhotos[currentPhotoIndex];
+                    updateThumbnails();
+                    updateNavigation();
+                    currentScale = 1;
+                    translateX = 0;
+                    translateY = 0;
+                    updateImageTransform();
+                };
+                thumbnails.appendChild(thumbnail);
+            });
+            updateNavigation();
+            updateThumbnails();
+        }
+
+        function closePhotoModal() {
+            const modal = document.getElementById('photoModal');
+            modal.classList.remove('active');
+            currentPhotos = [];
+            currentPhotoIndex = 0;
+        }
+
+        function changePhoto(direction) {
+            currentPhotoIndex += direction;
+            if (currentPhotoIndex < 0) currentPhotoIndex = currentPhotos.length - 1;
+            if (currentPhotoIndex >= currentPhotos.length) currentPhotoIndex = 0;
+            const image = document.getElementById('photoImage');
+            image.src = currentPhotos[currentPhotoIndex];
+            currentScale = 1;
+            translateX = 0;
+            translateY = 0;
+            updateImageTransform();
+            updateNavigation();
+            updateThumbnails();
+        }
+
+        function updateNavigation() {
+            const counter = document.getElementById('photoCounter');
+            const prevBtn = document.getElementById('prevPhotoBtn');
+            const nextBtn = document.getElementById('nextPhotoBtn');
+            counter.textContent = `${currentPhotoIndex + 1} / ${currentPhotos.length}`;
+            prevBtn.disabled = currentPhotos.length <= 1;
+            nextBtn.disabled = currentPhotos.length <= 1;
+        }
+
+        function updateThumbnails() {
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            thumbnails.forEach((thumb, index) => {
+                thumb.classList.remove('active');
+                if (index === currentPhotoIndex) thumb.classList.add('active');
+            });
+        }
+
+        function zoomIn() {
+            currentScale = Math.min(currentScale + 0.25, 5);
+            updateImageTransform();
+        }
+
+        function zoomOut() {
+            currentScale = Math.max(currentScale - 0.25, 1);
+            updateImageTransform();
+        }
+
+        function resetZoom() {
+            currentScale = 1;
+            translateX = 0;
+            translateY = 0;
+            updateImageTransform();
+        }
+
+        function updateImageTransform() {
+            const image = document.getElementById('photoImage');
+            image.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
+        }
+    </script>
+</body>
+</html>
