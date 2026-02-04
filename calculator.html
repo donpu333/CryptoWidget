@@ -2878,7 +2878,7 @@ algorithmBreakthroughModels: {
             });
         }
 
-       function copySelectedText() {
+     function copySelectedText() {
     const active = document.querySelector('.text-display[style*="display: block"]');
     if (!active) {
         showNotification('Нет активного текста', 'error');
@@ -2902,17 +2902,18 @@ algorithmBreakthroughModels: {
         textToCopy = `${headerText}\n\n`;
     }
     
-    const items = Array.from(checked).map(cb => `☑ ${cb.nextElementSibling.textContent}`);
+    // Добавляем нумерацию к пунктам
+    const items = Array.from(checked).map((cb, index) => `${index + 1}. ☑ ${cb.nextElementSibling.textContent}`);
     textToCopy += items.join('\n');
     
     navigator.clipboard.writeText(textToCopy).then(() => {
-        showNotification('Выбранное скопировано с заголовком', 'success');
+        showNotification('Выбранное скопировано с нумерацией', 'success');
     }).catch(err => {
         showNotification('Ошибка копирования', 'error');
     });
 }
 
-       function exportSelectedToTelegram() {
+      function exportSelectedToTelegram() {
     const active = document.querySelector('.text-display[style*="display: block"]');
     if (!active) {
         showNotification('Нет активного текста', 'error');
@@ -2936,7 +2937,8 @@ algorithmBreakthroughModels: {
         messageText = `${headerText}\n\n`;
     }
     
-    const items = Array.from(checked).map(cb => `☑ ${cb.nextElementSibling.textContent}`);
+    // Добавляем нумерацию к пунктам
+    const items = Array.from(checked).map((cb, index) => `${index + 1}. ☑ ${cb.nextElementSibling.textContent}`);
     messageText += items.join('\n');
     
     const message = encodeURIComponent(messageText);
