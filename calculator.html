@@ -2878,49 +2878,80 @@ algorithmBreakthroughModels: {
             });
         }
 
-        function copySelectedText() {
-            const active = document.querySelector('.text-display[style*="display: block"]');
-            if (!active) {
-                showNotification('Нет активного текста', 'error');
-                return;
-            }
-            const checked = active.querySelectorAll('input[type="checkbox"]:checked');
-            if (checked.length === 0) {
-                showNotification('Не выбрано ни одного пункта', 'error');
-                return;
-            }
-            const items = Array.from(checked).map(cb => `☑ ${cb.nextElementSibling.textContent}`);
-            navigator.clipboard.writeText(items.join('\n')).then(() => {
-                showNotification('Выбранное скопировано', 'success');
-            }).catch(err => {
-                showNotification('Ошибка копирования', 'error');
-            });
-        }
+       function copySelectedText() {
+    const active = document.querySelector('.text-display[style*="display: block"]');
+    if (!active) {
+        showNotification('Нет активного текста', 'error');
+        return;
+    }
+    
+    const checked = active.querySelectorAll('input[type="checkbox"]:checked');
+    if (checked.length === 0) {
+        showNotification('Не выбрано ни одного пункта', 'error');
+        return;
+    }
+    
+    // Получаем заголовок из активного блока
+    const headerElement = active.querySelector('h3');
+    const headerText = headerElement ? headerElement.textContent.trim() : '';
+    
+    // Формируем текст для копирования
+    let textToCopy = '';
+    
+    if (headerText) {
+        textToCopy = `${headerText}\n\n`;
+    }
+    
+    const items = Array.from(checked).map(cb => `☑ ${cb.nextElementSibling.textContent}`);
+    textToCopy += items.join('\n');
+    
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        showNotification('Выбранное скопировано с заголовком', 'success');
+    }).catch(err => {
+        showNotification('Ошибка копирования', 'error');
+    });
+}
 
-        function exportSelectedToTelegram() {
-            const active = document.querySelector('.text-display[style*="display: block"]');
-            if (!active) {
-                showNotification('Нет активного текста', 'error');
-                return;
+       function exportSelectedToTelegram() {
+    const active = document.querySelector('.text-display[style*="display: block"]');
+    if (!active) {
+        showNotification('Нет активного текста', 'error');
+        return;
+    }
+    
+    const checked = active.querySelectorAll('input[type="checkbox"]:checked');
+    if (checked.length === 0) {
+        showNotification('Не выбрано ни одного пункта', 'error');
+        return;
+    }
+    
+    // Получаем заголовок из активного блока
+    const headerElement = active.querySelector('h3');
+    const headerText = headerElement ? headerElement.textContent.trim() : '';
+    
+    // Формируем текст для отправки
+    let messageText = '';
+    
+    if (headerText) {
+        messageText = `${headerText}\n\n`;
+    }
+    
+    const items = Array.from(checked).map(cb => `☑ ${cb.nextElementSibling.textContent}`);
+    messageText += items.join('\n');
+    
+    const message = encodeURIComponent(messageText);
+    
+    fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${message}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.ok) {
+                showNotification('Отправлено в Telegram', 'success');
+            } else {
+                showNotification('Ошибка отправки', 'error');
             }
-            const checked = active.querySelectorAll('input[type="checkbox"]:checked');
-            if (checked.length === 0) {
-                showNotification('Не выбрано ни одного пункта', 'error');
-                return;
-            }
-            const items = Array.from(checked).map(cb => `☑ ${cb.nextElementSibling.textContent}`);
-            const message = encodeURIComponent(items.join('\n'));
-            fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${message}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.ok) {
-                        showNotification('Отправлено в Telegram', 'success');
-                    } else {
-                        showNotification('Ошибка отправки', 'error');
-                    }
-                })
-                .catch(() => showNotification('Ошибка соединения', 'error'));
-        }
+        })
+        .catch(() => showNotification('Ошибка соединения', 'error'));
+}
 
         function resetCheckboxes() {
             const active = document.querySelector('.text-display[style*="display: block"]');
