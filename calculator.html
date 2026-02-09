@@ -2111,19 +2111,21 @@ ${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${
                     if (targetId === 'stopDistance') {
                         currentValue = Math.max(currentValue, 0);
                     }
-                    
-                    if (['customDecimals', 'exchangeFee', 'riskAmount'].includes(targetId)) {
-                        input.value = formatNumber(currentValue, 8);
-                    } else {
-                        const assetType = document.getElementById('assetType').value;
-                        let decimalPlaces = 4;
-                        if (assetType === 'custom') {
-                            decimalPlaces = parseInt(document.getElementById('customDecimals').value) || 4;
-                        } else {
-                            decimalPlaces = parseInt(assetType) || 4;
-                        }
-                        input.value = formatNumber(currentValue, decimalPlaces, assetType);
-                    }
+                  if (['entryPrice', 'atr', 'stopLossPrice', 'stopDistance'].includes(targetId)) {
+    // Для ценовых полей - сохраняем точность без форматирования
+    input.value = currentValue;
+} else if (['customDecimals', 'exchangeFee', 'riskAmount'].includes(targetId)) {
+    input.value = formatNumber(currentValue, 8);
+} else {
+    const assetType = document.getElementById('assetType').value;
+    let decimalPlaces = 4;
+    if (assetType === 'custom') {
+        decimalPlaces = parseInt(document.getElementById('customDecimals').value) || 4;
+    } else {
+        decimalPlaces = parseInt(assetType) || 4;
+    }
+    input.value = formatNumber(currentValue, decimalPlaces, assetType);
+}
                     
                     const event = new Event('input', { bubbles: true });
                     input.dispatchEvent(event);
@@ -2282,21 +2284,23 @@ ${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${
                 const liquidationPricePercent = calculatePercentageChange(entryPrice, liquidationPrice);
                 const stopLossUsdt = priceDifference * positionSize;
 
-                document.getElementById('entryPriceResult').textContent = `${formatNumber(entryPrice, decimalPlaces, assetType)} USDT`;
-                document.getElementById('positionSize').textContent = `${formatNumber(positionSize, 1)} монет`;
-                document.getElementById('positionSizeUsdt').textContent = `${formatNumber(positionSizeUsdt, 2)} USDT`;
-                
-                document.getElementById('stopLossPriceText').textContent = `${formatNumber(stopLossPrice, decimalPlaces, assetType)} USDT`;
-                document.getElementById('stopLossPercentText').textContent = `(${stopLossPercentValue}%)`;
-                document.getElementById('stopLossUsdt').textContent = `-${formatNumber(stopLossUsdt, 2)} USDT`;
-                
-                document.getElementById('liquidationPriceText').textContent = `${formatNumber(liquidationPrice, decimalPlaces, assetType)} USDT`;
-                document.getElementById('liquidationPricePercent').textContent = `(${liquidationPricePercent}%)`;
-                
-                document.getElementById('stopDistanceResult').innerHTML = `${formatNumber(priceDifference, 8)} USDT <span class="usdt-value">(${formatNumber(stopLossUsdt, 2)} USDT)</span>`;
-                document.getElementById('exchangeFeeResult').textContent = `${formatNumber(exchangeFee * 100, 4)}%`;
-                document.getElementById('atrResult').textContent = `${formatNumber(atr, 8)} USDT`;
-                generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, rewardRatio1, rewardRatio2, riskAmount, positionSize, exchangeFee, decimalPlaces, assetType);
+               document.getElementById('entryPriceResult').textContent = `${formatNumber(entryPrice, decimalPlaces, assetType)} USDT`;
+document.getElementById('positionSize').textContent = `${formatNumber(positionSize, 1)} монет`;
+document.getElementById('positionSizeUsdt').textContent = `${formatNumber(positionSizeUsdt, 2)} USDT`;
+
+document.getElementById('stopLossPriceText').textContent = `${formatNumber(stopLossPrice, decimalPlaces, assetType)} USDT`;
+document.getElementById('stopLossPercentText').textContent = `(${stopLossPercentValue}%)`;
+document.getElementById('stopLossUsdt').textContent = `-${formatNumber(stopLossUsdt, 2)} USDT`;
+
+document.getElementById('liquidationPriceText').textContent = `${formatNumber(liquidationPrice, decimalPlaces, assetType)} USDT`;
+document.getElementById('liquidationPricePercent').textContent = `(${liquidationPricePercent}%)`;
+
+document.getElementById('stopDistanceResult').innerHTML = `${formatNumber(priceDifference, 8)} USDT <span class="usdt-value">(${formatNumber(stopLossUsdt, 2)} USDT)</span>`;
+document.getElementById('exchangeFeeResult').textContent = `${formatNumber(exchangeFee * 100, 4)}%`;
+// ИЗМЕНИТЕ ЭТУ СТРОКУ ↓
+document.getElementById('atrResult').textContent = `${atr} USDT`; // Было: `${formatNumber(atr, 8)} USDT`
+
+generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, rewardRatio1, rewardRatio2, riskAmount, positionSize, exchangeFee, decimalPlaces, assetType);
             }
 
             function generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, ratio1, ratio2, riskAmount, positionSize, exchangeFee, decimalPlaces, assetType) {
@@ -2365,12 +2369,13 @@ ${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${
                 calculateRisk();
             });
 
-            document.getElementById('atr').addEventListener('input', () => {
-                document.getElementById('atrValue').textContent = formatNumber(parseFloat(document.getElementById('atr').value) || 0, 8) + ' USDT';
-                document.getElementById('previewAtrPercent').textContent = formatNumber((parseFloat(document.getElementById('atr').value) || 0) * (parseFloat(document.getElementById('riskPercent').value) / 100), 8) + ' USDT';
-                document.getElementById('atrResult').textContent = formatNumber(parseFloat(document.getElementById('atr').value) || 0, 8) + ' USDT';
-                calculateRisk();
-            });
+           document.getElementById('atr').addEventListener('input', () => {
+    const atrValue = parseFloat(normalizeNumber(document.getElementById('atr').value)) || 0;
+    document.getElementById('atrValue').textContent = atrValue + ' USDT';
+    document.getElementById('previewAtrPercent').textContent = formatNumber(atrValue * (parseFloat(document.getElementById('riskPercent').value) / 100), 8) + ' USDT';
+    document.getElementById('atrResult').textContent = atrValue + ' USDT';
+    calculateRisk();
+});
 
             document.getElementById('riskPercent').addEventListener('input', () => {
                 updateSliderValues();
