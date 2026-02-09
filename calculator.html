@@ -1852,7 +1852,41 @@
         const botToken = '8044055704:AAGk8cQFayPqYCscLlEB3qGRj0Uw_NTpe30';
         const chatId = '1720793889';
         let isTradeTypeSelectorVisible = false;
-
+        
+// Форматирование числа без лишних нулей
+function formatDisplayNumber(num, maxDecimals = 8) {
+    if (isNaN(num) || num === 0) return '0';
+    
+    // Преобразуем в число
+    const number = parseFloat(num);
+    
+    // Определяем, сколько знаков нужно отображать
+    // Убираем лишние нули в конце
+    const str = number.toString();
+    
+    // Если число целое
+    if (!str.includes('.')) return str;
+    
+    // Разделяем целую и дробную части
+    const parts = str.split('.');
+    let integerPart = parts[0];
+    let decimalPart = parts[1];
+    
+    // Обрезаем до maxDecimals знаков
+    if (decimalPart.length > maxDecimals) {
+        decimalPart = decimalPart.substring(0, maxDecimals);
+    }
+    
+    // Убираем лишние нули в конце
+    decimalPart = decimalPart.replace(/0+$/, '');
+    
+    // Если дробная часть пустая, возвращаем только целую часть
+    if (decimalPart === '') {
+        return integerPart;
+    }
+    
+    return integerPart + '.' + decimalPart;
+}
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
