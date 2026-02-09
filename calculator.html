@@ -2303,7 +2303,7 @@ ${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${
                 document.getElementById('liquidationPriceText').textContent = `${formatNumber(liquidationPrice, decimalPlaces, assetType)} USDT`;
                 document.getElementById('liquidationPricePercent').textContent = `(${liquidationPricePercent}%)`;
                 
-                document.getElementById('stopDistanceResult').innerHTML = `${formatNumber(priceDifference, 8)} USDT <span class="usdt-value">(${formatNumber(stopLossUsdt, 2)} USDT)</span>`;
+                document.getElementById('stopDistanceResult').innerHTML = `${formatDisplayNumber(priceDifference, 8)} USDT <span class="usdt-value">(${formatNumber(stopLossUsdt, 2)} USDT)</span>`;
                 document.getElementById('exchangeFeeResult').textContent = `${formatNumber(exchangeFee * 100, 4)}%`;
                 document.getElementById('atrResult').textContent = `${formatNumber(atr, 8)} USDT`;
                 generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, rewardRatio1, rewardRatio2, riskAmount, positionSize, exchangeFee, decimalPlaces, assetType);
