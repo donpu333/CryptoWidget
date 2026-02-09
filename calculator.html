@@ -1876,43 +1876,37 @@
             return Math.min(Math.max(decimals, 1), 8);
         }
 
-        function getPriceStep(inputId) {
-            const assetType = document.getElementById('assetType').value;
-            let decimalPlaces = 4;
-            
-            if (assetType === 'custom') {
-                decimalPlaces = parseInt(document.getElementById('customDecimals').value) || 4;
-            } else {
-                decimalPlaces = parseInt(assetType) || 4;
-            }
-            
-            return Math.pow(10, -decimalPlaces);
-        }
-
-        function formatNumber(num, decimals = 8, assetType = null) {
-            if (isNaN(num)) return '0';
-            if (assetType === 'custom') {
-                const customDecimals = parseInt(document.getElementById('customDecimals').value) || 4;
-                const factor = Math.pow(10, customDecimals);
-                const rounded = Math.round(num * factor) / factor;
-                return rounded.toFixed(customDecimals);
-            }
-            if (!assetType) {
-                const factor = Math.pow(10, decimals);
-                const rounded = Math.round(num * factor) / factor;
-                return rounded.toString().replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.$/, '');
-            }
-            const decimalPlaces = parseInt(assetType);
-            const factor = Math.pow(10, decimalPlaces);
-            const rounded = Math.round(num * factor) / factor;
-            if (decimals === 1) {
-                return rounded.toFixed(1);
-            }
-            if ([4,5,6,7,8].includes(decimals)) {
-                return rounded.toFixed(decimalPlaces);
-            }
-            return rounded.toString().replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.$/, '');
-        }
+       function getPriceStep(inputId) {
+    const assetType = document.getElementById('assetType').value;
+    let decimalPlaces = 4;
+    
+    if (assetType === 'custom') {
+        decimalPlaces = parseInt(document.getElementById('customDecimals').value) || 4;
+    } else {
+        decimalPlaces = parseInt(assetType) || 4;
+    }
+    
+    return Math.pow(10, -decimalPlaces);
+}
+function formatNumber(num, decimals = 8, assetType = null) {
+    if (isNaN(num)) return '0';
+    
+    let decimalPlaces;
+    
+    if (assetType === 'custom') {
+        decimalPlaces = parseInt(document.getElementById('customDecimals').value) || 4;
+    } else if (assetType) {
+        decimalPlaces = parseInt(assetType);
+    } else {
+        decimalPlaces = decimals;
+    }
+    
+    const factor = Math.pow(10, decimalPlaces);
+    const rounded = Math.round(num * factor) / factor;
+    
+    // Всегда возвращаем фиксированное количество знаков после запятой
+    return rounded.toFixed(decimalPlaces);
+}
 
         function normalizeNumber(value) {
             if (typeof value === 'string') {
@@ -2073,64 +2067,46 @@ ${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${
         }
 
         function setupArrowButtons() {
-            document.querySelectorAll('.number-input-arrow').forEach(arrow => {
-                arrow.addEventListener('click', function() {
-                    const targetId = this.dataset.target;
-                    const step = this.dataset.step;
-                    const input = document.getElementById(targetId);
-                    
-                    if (!input) return;
-                    
-                    let currentValue = parseFloat(normalizeNumber(input.value)) || 0;
-                    let stepValue;
-                    
-                    if (step === 'auto' || step === '-auto') {
-                        stepValue = getPriceStep(targetId);
-                    } else {
-                        stepValue = Math.abs(parseFloat(step));
-                    }
-                    
-                    if (step.startsWith('-')) {
-                        currentValue -= stepValue;
-                    } else {
-                        currentValue += stepValue;
-                    }
-                    
-                    if (targetId === 'customDecimals') {
-                        currentValue = Math.min(Math.max(currentValue, 1), 8);
-                    }
-                    
-                    if (targetId === 'exchangeFee') {
-                        currentValue = Math.min(Math.max(currentValue, 0), 1);
-                    }
-                    
-                    if (targetId === 'riskAmount') {
-                        currentValue = Math.max(currentValue, 0);
-                    }
-                    
-                    if (targetId === 'stopDistance') {
-                        currentValue = Math.max(currentValue, 0);
-                    }
-                    
-                    if (['customDecimals', 'exchangeFee', 'riskAmount'].includes(targetId)) {
-                        input.value = formatNumber(currentValue, 8);
-                    } else {
-                        const assetType = document.getElementById('assetType').value;
-                        let decimalPlaces = 4;
-                        if (assetType === 'custom') {
-                            decimalPlaces = parseInt(document.getElementById('customDecimals').value) || 4;
-                        } else {
-                            decimalPlaces = parseInt(assetType) || 4;
-                        }
-                        input.value = formatNumber(currentValue, decimalPlaces, assetType);
-                    }
-                    
-                    const event = new Event('input', { bubbles: true });
-                    input.dispatchEvent(event);
-                });
-            });
-        }
-
+    document.querySelectorAll('.number-input-arrow').forEach(arrow => {
+        arrow.addEventListener('click', function() {
+            const targetId = this.dataset.target;
+            const step = this.dataset.step;
+            const input = document.getElementById(targetId);
+            
+            if (!input) return;
+            
+            let currentValue = parseFloat(normalizeNumber(input.value)) || 0;
+            let stepValue;
+            
+            if (step === 'auto' || step === '-auto') {
+                stepValue = getPriceStep(targetId);
+            } else {
+                stepValue = Math.abs(parseFloat(step));
+            }
+            
+            if (step.startsWith('-')) {
+                currentValue -= stepValue;
+            } else {
+                currentValue += stepValue;
+            }
+            
+            // Получаем точность из выбранного типа актива
+            const assetType = document.getElementById('assetType').value;
+            let decimalPlaces = 4;
+            if (assetType === 'custom') {
+                decimalPlaces = parseInt(document.getElementById('customDecimals').value) || 4;
+            } else {
+                decimalPlaces = parseInt(assetType) || 4;
+            }
+            
+            // Форматируем с фиксированным количеством знаков
+            input.value = currentValue.toFixed(decimalPlaces);
+            
+            const event = new Event('input', { bubbles: true });
+            input.dispatchEvent(event);
+        });
+    });
+}
         function setupRangeSliders() {
             document.querySelectorAll('input[type="range"]').forEach(slider => {
                 slider.addEventListener('input', function() {
