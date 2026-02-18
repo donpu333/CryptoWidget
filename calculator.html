@@ -1419,7 +1419,7 @@
                             <span>Размер позиции:</span>
                             <span class="result-value" id="positionSize">0.0 монет</span>
                         </div>
-                                               <div class="result-item">
+                                                                      <div class="result-item">
                             <span>Размер позиции в USDT:</span>
                             <span class="result-value" id="positionSizeUsdt">
                                 <span class="price-value-with-btn">
@@ -2126,14 +2126,17 @@ ${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${
             });
         }
         
-  function copyText(elementId) {
+   function copyText(elementId) {
             const element = document.getElementById(elementId);
             if (!element) return;
             
             const text = element.textContent.trim();
+            // Ищем только цифры, точку и минус
+            const numberMatch = text.match(/-?[\d,.]+/);
+            const numberToCopy = numberMatch ? numberMatch[0] : text;
             
-            navigator.clipboard.writeText(text).then(() => {
-                showNotification(`Скопировано: ${text}`, 'success');
+            navigator.clipboard.writeText(numberToCopy).then(() => {
+                showNotification(`Скопировано: ${numberToCopy}`, 'success');
             }).catch(err => {
                 showNotification('Ошибка копирования: ' + err, 'error');
             });
@@ -2387,7 +2390,7 @@ ${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${
 
                 document.getElementById('entryPriceResult').textContent = `${formatNumber(entryPrice, decimalPlaces, assetType)} USDT`;
                 document.getElementById('positionSize').textContent = `${formatNumber(positionSize, 1)} монет`;
-                document.getElementById('positionSizeUsdt').textContent = `${formatNumber(positionSizeUsdt, 2)} USDT`;
+                                document.getElementById('positionSizeUsdtText').textContent = `${formatNumber(positionSizeUsdt, 2)} USDT`;
                 
                 document.getElementById('stopLossPriceText').textContent = `${formatNumber(stopLossPrice, decimalPlaces, assetType)} USDT`;
                 document.getElementById('stopLossPercentText').textContent = `(${stopLossPercentValue}%)`;
