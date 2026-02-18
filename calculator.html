@@ -2226,7 +2226,7 @@ ${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${
                     
                     // Показываем только одну сумму с пояснением
                     partsDisplay.textContent = partsCount;
-                    partsBreakdown.innerHTML = `по ${formattedPartSize} USDT`;
+                                       partsBreakdown.innerHTML = `<span class="price-value-with-btn"><span class="price-text" id="partsBreakdownText">по ${formattedPartSize} USDT</span><button class="copy-price-btn copy-price-btn-profit" onclick="copyText('partsBreakdownText')" title="Копировать информацию о частях"><i class="fas fa-copy"></i></button></span>`;
                     partsContainer.style.display = 'flex';
                 } else {
                     partsContainer.style.display = 'none';
