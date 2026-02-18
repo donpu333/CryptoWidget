@@ -1419,15 +1419,19 @@
                             <span>Размер позиции:</span>
                             <span class="result-value" id="positionSize">0.0 монет</span>
                         </div>
-                        <div class="result-item">
-                            <span>Размер позиции в USDT:</span>
-                            <span class="result-value" id="positionSizeUsdt">0.00 USDT</span>
-                        </div>
-                        <div class="result-item">
-                            <span>Стоп-лосс:</span>
-                            <span class="result-value loss" id="stopLoss">
-                                <span class="price-value-with-btn">
-                                    <span class="price-text" id="stopLossPriceText">0.0000 USDT</span>
+                         <div class="result-item">
+        <span>Размер позиции в USDT:</span>
+        <span class="result-value" id="positionSizeUsdt">
+            0.00 USDT
+            <button class="copy-price-btn copy-price-btn-profit" onclick="copyPositionParts()" title="Копировать позицию и части">
+                <i class="fas fa-copy"></i>
+            </button>
+        </span>
+    </div>
+    <div class="result-item" id="partsBreakdownContainer" style="display: none;">
+        <span>Части (<span id="partsCountDisplay">1</span>):</span>
+        <span class="result-value" id="partsBreakdown">0.00 USDT</span>
+    </div>
                                     <button class="copy-price-btn copy-price-btn-loss" onclick="copyPrice('stopLossPriceText')" title="Копировать цену">
                                         <i class="fas fa-copy"></i>
                                     </button>
@@ -1444,6 +1448,13 @@
                             <span>ATR:</span>
                             <span class="result-value" id="atrResult">0.0000 USDT</span>
                         </div>
+                        <div class="input-group">
+         <label for="partsCount">Разбить позицию на части (1-10)</label>
+         <div class="slider-container">
+         <input type="range" id="partsCount" min="1" max="10" value="1" class="w-full">
+         <span class="slider-value" id="partsCountValue">1</span>
+     </div>
+     </div>
                         <div class="result-item">
                             <span>Комиссия биржи:</span>
                             <span class="result-value fee-value" id="exchangeFeeResult">0.0500%</span>
@@ -2160,6 +2171,68 @@ ${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${
                 document.getElementById('rewardRatio2Value').textContent = document.getElementById('rewardRatio2').value;
                 document.getElementById('stopLossPercentValue').textContent = document.getElementById('stopLossPercentInput').value;
             }
+            document.getElementById('partsCount').addEventListener('input', function() {
+                const val = this.value;
+                document.getElementById('partsCountValue').textContent = val;
+                calculateRisk();
+            });
+
+            // Функция для расчета и отображения разбивки на части
+            function updatePartsBreakdown() {
+                const partsContainer = document.getElementById('partsBreakdownContainer');
+                const partsDisplay = document.getElementById('partsCountDisplay');
+                const partsBreakdown = document.getElementById('partsBreakdown');
+                
+                const positionSizeUsdtElem = document.getElementById('positionSizeUsdt');
+                let positionSizeText = positionSizeUsdtElem.childNodes[0]?.nodeValue?.trim() || positionSizeUsdtElem.innerText;
+                const positionSize = parseFloat(positionSizeText.replace(' USDT', '')) || 0;
+                
+                const partsCount = parseInt(document.getElementById('partsCount').value) || 1;
+                
+                if (partsCount > 1 && positionSize > 0) {
+                    const partSize = positionSize / partsCount;
+                    const parts = [];
+                    let total = 0;
+                    
+                    for (let i = 0; i < partsCount; i++) {
+                        if (i === partsCount - 1) {
+                            const lastPart = positionSize - total;
+                            parts.push(lastPart.toFixed(2));
+                        } else {
+                            const val = parseFloat(partSize.toFixed(2));
+                            parts.push(val.toFixed(2));
+                            total += val;
+                        }
+                    }
+                    
+                    partsDisplay.textContent = partsCount;
+                    partsBreakdown.innerHTML = parts.map(p => `${p} USDT`).join(', ');
+                    partsContainer.style.display = 'flex';
+                } else {
+                    partsContainer.style.display = 'none';
+                }
+            }
+
+            // Функция для копирования информации о позиции и частях
+            function copyPositionParts() {
+                const positionSizeUsdtElem = document.getElementById('positionSizeUsdt');
+                let positionSizeText = positionSizeUsdtElem.childNodes[0]?.nodeValue?.trim() || positionSizeUsdtElem.innerText;
+                const positionSize = positionSizeText.replace(' USDT', '');
+                
+                const partsCount = parseInt(document.getElementById('partsCount').value) || 1;
+                let copyText = `Размер позиции: ${positionSize} USDT`;
+                
+                if (partsCount > 1) {
+                    const partsBreakdown = document.getElementById('partsBreakdown').innerText;
+                    copyText += `\nРазбивка на ${partsCount} части: ${partsBreakdown}`;
+                }
+                
+                navigator.clipboard.writeText(copyText).then(() => {
+                    showNotification('Информация о позиции скопирована!', 'success');
+                }).catch(err => {
+                    showNotification('Ошибка копирования: ' + err, 'error');
+                });
+            }
 
             const longBtn = document.getElementById('longBtn');
             const shortBtn = document.getElementById('shortBtn');
@@ -2307,6 +2380,7 @@ ${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${
                 document.getElementById('exchangeFeeResult').textContent = `${formatNumber(exchangeFee * 100, 4)}%`;
                 document.getElementById('atrResult').textContent = `${formatNumber(atr, 8)} USDT`;
                 generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, rewardRatio1, rewardRatio2, riskAmount, positionSize, exchangeFee, decimalPlaces, assetType);
+                updatePartsBreakdown();
             }
 
             function generateTakeProfitLevels(entryPrice, stopLossPrice, isLong, ratio1, ratio2, riskAmount, positionSize, exchangeFee, decimalPlaces, assetType) {
