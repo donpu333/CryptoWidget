@@ -2183,6 +2183,7 @@ ${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${
             });
 
             // Функция для расчета и отображения разбивки на части
+                        // Функция для расчета и отображения разбивки на части
             function updatePartsBreakdown() {
                 const partsContainer = document.getElementById('partsBreakdownContainer');
                 const partsDisplay = document.getElementById('partsCountDisplay');
@@ -2195,23 +2196,15 @@ ${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${
                 const partsCount = parseInt(document.getElementById('partsCount').value) || 1;
                 
                 if (partsCount > 1 && positionSize > 0) {
+                    // Рассчитываем размер каждой части
                     const partSize = positionSize / partsCount;
-                    const parts = [];
-                    let total = 0;
                     
-                    for (let i = 0; i < partsCount; i++) {
-                        if (i === partsCount - 1) {
-                            const lastPart = positionSize - total;
-                            parts.push(lastPart.toFixed(2));
-                        } else {
-                            const val = parseFloat(partSize.toFixed(2));
-                            parts.push(val.toFixed(2));
-                            total += val;
-                        }
-                    }
+                    // Форматируем с 2 знаками после запятой
+                    const formattedPartSize = partSize.toFixed(2);
                     
+                    // Показываем только одну сумму с пояснением
                     partsDisplay.textContent = partsCount;
-                    partsBreakdown.innerHTML = parts.map(p => `${p} USDT`).join(', ');
+                    partsBreakdown.innerHTML = `по ${formattedPartSize} USDT`;
                     partsContainer.style.display = 'flex';
                 } else {
                     partsContainer.style.display = 'none';
