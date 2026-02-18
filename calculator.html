@@ -1419,22 +1419,26 @@
                             <span>Размер позиции:</span>
                             <span class="result-value" id="positionSize">0.0 монет</span>
                         </div>
-                        <div class="result-item">
+                                               <div class="result-item">
                             <span>Размер позиции в USDT:</span>
                             <span class="result-value" id="positionSizeUsdt">
-                                0.00 USDT
-                                <button class="copy-price-btn copy-price-btn-profit" onclick="copyPositionParts()" title="Копировать позицию и части">
-                                    <i class="fas fa-copy"></i>
-                                </button>
+                                <span class="price-value-with-btn">
+                                    <span class="price-text" id="positionSizeUsdtText">0.00 USDT</span>
+                                    <button class="copy-price-btn copy-price-btn-profit" onclick="copyText('positionSizeUsdtText')" title="Копировать сумму">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </span>
                             </span>
                         </div>
-                        <div class="result-item" id="partsBreakdownContainer" style="display: none;">
+                                                <div class="result-item" id="partsBreakdownContainer" style="display: none;">
                             <span>Части (<span id="partsCountDisplay">1</span>):</span>
                             <span class="result-value" id="partsBreakdown">
-                                по 0.00 USDT
-                                <button class="copy-price-btn copy-price-btn-profit" onclick="copyPartsInfo()" title="Копировать информацию о частях">
-                                    <i class="fas fa-copy"></i>
-                                </button>
+                                <span class="price-value-with-btn">
+                                    <span class="price-text" id="partsBreakdownText">по 0.00 USDT</span>
+                                    <button class="copy-price-btn copy-price-btn-profit" onclick="copyText('partsBreakdownText')" title="Копировать информацию о частях">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </span>
                             </span>
                         </div>
                         <div class="result-item">
@@ -2108,6 +2112,7 @@ ${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${
                 showNotification('Не удалось скопировать цену: ' + err, 'error');
             });
         }
+       
 
         function copyPriceFromTakeProfit(button) {
             const priceText = button.previousElementSibling.textContent;
@@ -2120,7 +2125,19 @@ ${stopMethod === 'distance' ? `Расстояние до стоп-лосса: ${
                 showNotification('Не удалось скопировать цену: ' + err, 'error');
             });
         }
-
+        
+  function copyText(elementId) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            const text = element.textContent.trim();
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification(`Скопировано: ${text}`, 'success');
+            }).catch(err => {
+                showNotification('Ошибка копирования: ' + err, 'error');
+            });
+        }
         function setupArrowButtons() {
     document.querySelectorAll('.number-input-arrow').forEach(arrow => {
         arrow.addEventListener('click', function() {
