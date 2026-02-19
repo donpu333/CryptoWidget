@@ -716,77 +716,142 @@
     <!-- D1 Заголовок -->
     <div style="color: #4cc9f0; font-size: 1.3rem; font-weight: bold; margin: 20px 0 10px 0; padding-bottom: 5px; border-bottom: 2px solid #4cc9f0;">📊 D1 (Дневной таймфрейм)</div>
     
-    <div class="instruction-item">
-        <p>1D proboy short</p>
-        <button class="copy-btn" onclick="copyToClipboard('1D proboy short')">
-            <i class="fas fa-copy"></i>
-        </button>
+    <div class="instructions" style="background: linear-gradient(145deg, #1a1a1a 0%, #222 100%); border-radius: 24px; padding: 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid #333;">
+    
+    <!-- D1 Section с градиентом -->
+    <div style="margin-bottom: 30px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+            <div style="width: 8px; height: 40px; background: linear-gradient(180deg, #4a9eff, #2563eb); border-radius: 4px;"></div>
+            <div>
+                <span style="background: linear-gradient(135deg, #4a9eff, #2563eb); padding: 6px 16px; border-radius: 30px; font-size: 0.9rem; color: white; font-weight: 600; letter-spacing: 1px;">ТАЙМФРЕЙМ</span>
+                <h3 style="color: white; font-size: 2rem; font-weight: 700; margin: 5px 0 0 0; text-shadow: 0 2px 10px rgba(74,158,255,0.3);">D1 <span style="color: #94a3b8; font-size: 1rem; font-weight: 400; margin-left: 10px;">Дневной</span></h3>
+            </div>
+        </div>
+        
+        <div style="display: grid; gap: 10px;">
+            <!-- 1D proboy short -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(74,158,255,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s; backdrop-filter: blur(10px); hover:background: rgba(74,158,255,0.1);">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="width: 8px; height: 8px; background: #4a9eff; border-radius: 50%; box-shadow: 0 0 15px #4a9eff;"></span>
+                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1D proboy short</span>
+                </div>
+                <button onclick="copyToClipboard('1D proboy short')" style="background: rgba(74,158,255,0.1); border: none; color: #4a9eff; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; hover:background: #4a9eff; hover:color: white;">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+            
+            <!-- 1D proboy LONG -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(74,158,255,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="width: 8px; height: 8px; background: #4a9eff; border-radius: 50%; box-shadow: 0 0 15px #4a9eff;"></span>
+                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1D proboy LONG</span>
+                </div>
+                <button onclick="copyToClipboard('1D proboy LONG')" style="background: rgba(74,158,255,0.1); border: none; color: #4a9eff; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+            
+            <!-- 1D LP LONG -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(74,158,255,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="width: 8px; height: 8px; background: #4a9eff; border-radius: 50%;"></span>
+                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1D LP LONG</span>
+                </div>
+                <button onclick="copyToClipboard('1D LP LONG')" style="background: rgba(74,158,255,0.1); border: none; color: #4a9eff; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+            
+            <!-- 1D LP short -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(74,158,255,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="width: 8px; height: 8px; background: #4a9eff; border-radius: 50%;"></span>
+                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1D LP short</span>
+                </div>
+                <button onclick="copyToClipboard('1D LP short')" style="background: rgba(74,158,255,0.1); border: none; color: #4a9eff; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+        </div>
     </div>
     
-    <div class="instruction-item">
-        <p>1D proboy LONG</p>
-        <button class="copy-btn" onclick="copyToClipboard('1D proboy LONG')">
-            <i class="fas fa-copy"></i>
-        </button>
-    </div>
-    
-    <div class="instruction-item">
-        <p>1D LP LONG</p>
-        <button class="copy-btn" onclick="copyToClipboard('1D LP LONG')">
-            <i class="fas fa-copy"></i>
-        </button>
-    </div>
-    
-    <div class="instruction-item">
-        <p>1D LP short</p>
-        <button class="copy-btn" onclick="copyToClipboard('1D LP short')">
-            <i class="fas fa-copy"></i>
-        </button>
-    </div>
-
-    <!-- H1 Заголовок (другой цвет) -->
-    <div style="color: #f97316; font-size: 1.3rem; font-weight: bold; margin: 30px 0 10px 0; padding-bottom: 5px; border-bottom: 2px solid #f97316;">⏰ H1 (Часовой таймфрейм)</div>
-    
-    <div class="instruction-item">
-        <p>1H proboy LONG</p>
-        <button class="copy-btn" onclick="copyToClipboard('1H proboy LONG')">
-            <i class="fas fa-copy"></i>
-        </button>
-    </div>
-    
-    <div class="instruction-item">
-        <p>1H proboy SHORT</p>
-        <button class="copy-btn" onclick="copyToClipboard('1H proboy SHORT')">
-            <i class="fas fa-copy"></i>
-        </button>
-    </div>
-    
-    <div class="instruction-item">
-        <p>1H LP LONG</p>
-        <button class="copy-btn" onclick="copyToClipboard('1H LP LONG')">
-            <i class="fas fa-copy"></i>
-        </button>
-    </div>
-    
-    <div class="instruction-item">
-        <p>1H LP SHORT</p>
-        <button class="copy-btn" onclick="copyToClipboard('1H LP SHORT')">
-            <i class="fas fa-copy"></i>
-        </button>
-    </div>
-    
-    <div class="instruction-item">
-        <p>1H Разворот после роста</p>
-        <button class="copy-btn" onclick="copyToClipboard('1H Разворот после роста')">
-            <i class="fas fa-copy"></i>
-        </button>
-    </div>
-    
-    <div class="instruction-item">
-        <p>1H Разворот после падения</p>
-        <button class="copy-btn" onclick="copyToClipboard('1H Разворот после падения')">
-            <i class="fas fa-copy"></i>
-        </button>
+    <!-- H1 Section с оранжевым градиентом -->
+    <div style="margin-top: 40px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+            <div style="width: 8px; height: 40px; background: linear-gradient(180deg, #f97316, #ea580c); border-radius: 4px;"></div>
+            <div>
+                <span style="background: linear-gradient(135deg, #f97316, #ea580c); padding: 6px 16px; border-radius: 30px; font-size: 0.9rem; color: white; font-weight: 600; letter-spacing: 1px;">ТАЙМФРЕЙМ</span>
+                <h3 style="color: white; font-size: 2rem; font-weight: 700; margin: 5px 0 0 0; text-shadow: 0 2px 10px rgba(249,115,22,0.3);">H1 <span style="color: #94a3b8; font-size: 1rem; font-weight: 400; margin-left: 10px;">Часовой</span></h3>
+            </div>
+        </div>
+        
+        <div style="display: grid; gap: 10px;">
+            <!-- 1H proboy LONG -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(249,115,22,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="width: 8px; height: 8px; background: #f97316; border-radius: 50%; box-shadow: 0 0 15px #f97316;"></span>
+                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1H proboy LONG</span>
+                </div>
+                <button onclick="copyToClipboard('1H proboy LONG')" style="background: rgba(249,115,22,0.1); border: none; color: #f97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+            
+            <!-- 1H proboy SHORT -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(249,115,22,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="width: 8px; height: 8px; background: #f97316; border-radius: 50%;"></span>
+                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1H proboy SHORT</span>
+                </div>
+                <button onclick="copyToClipboard('1H proboy SHORT')" style="background: rgba(249,115,22,0.1); border: none; color: #f97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+            
+            <!-- 1H LP LONG -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(249,115,22,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="width: 8px; height: 8px; background: #f97316; border-radius: 50%;"></span>
+                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1H LP LONG</span>
+                </div>
+                <button onclick="copyToClipboard('1H LP LONG')" style="background: rgba(249,115,22,0.1); border: none; color: #f97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+            
+            <!-- 1H LP SHORT -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(249,115,22,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="width: 8px; height: 8px; background: #f97316; border-radius: 50%;"></span>
+                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1H LP SHORT</span>
+                </div>
+                <button onclick="copyToClipboard('1H LP SHORT')" style="background: rgba(249,115,22,0.1); border: none; color: #f97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+            
+            <!-- 1H Разворот после роста -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(249,115,22,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="width: 8px; height: 8px; background: #f97316; border-radius: 50%;"></span>
+                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1H Разворот после роста</span>
+                </div>
+                <button onclick="copyToClipboard('1H Разворот после роста')" style="background: rgba(249,115,22,0.1); border: none; color: #f97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+            
+            <!-- 1H Разворот после падения -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(249,115,22,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="width: 8px; height: 8px; background: #f97316; border-radius: 50%;"></span>
+                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1H Разворот после падения</span>
+                </div>
+                <button onclick="copyToClipboard('1H Разворот после падения')" style="background: rgba(249,115,22,0.1); border: none; color: #f97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 				            <!-- Контейнер для 3 изображений (по умолчанию) -->
