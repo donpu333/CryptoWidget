@@ -712,148 +712,171 @@
                 <button id="fourModeBtn" class="mode-btn">4 изображения</button>
                 <button id="twoModeBtn" class="mode-btn">2 изображения</button>
             </div>
-           <div class="instructions">
-    <!-- D1 Заголовок -->
-    <div style="color: #4cc9f0; font-size: 1.3rem; font-weight: bold; margin: 20px 0 10px 0; padding-bottom: 5px; border-bottom: 2px solid #4cc9f0;">📊 D1 (Дневной таймфрейм)</div>
-    
-    <div class="instructions" style="background: linear-gradient(145deg, #1a1a1a 0%, #222 100%); border-radius: 24px; padding: 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid #333;">
-    
-    <!-- D1 Section с градиентом -->
-    <div style="margin-bottom: 30px;">
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-            <div style="width: 8px; height: 40px; background: linear-gradient(180deg, #4a9eff, #2563eb); border-radius: 4px;"></div>
+           <div class="instructions" style="background: #0D0D0F; border-radius: 28px; padding: 30px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+
+    <!-- D1 Premium Section -->
+    <div style="margin-bottom: 45px; position: relative;">
+        <!-- Decorative background -->
+        <div style="position: absolute; top: -10px; left: -10px; width: 150px; height: 150px; background: radial-gradient(circle at 30% 30%, rgba(59,130,246,0.15), transparent 70%); border-radius: 50%; z-index: 0;"></div>
+        
+        <!-- D1 Header with glass effect -->
+        <div style="background: rgba(59,130,246,0.1); backdrop-filter: blur(10px); border-radius: 60px; padding: 12px 24px; display: inline-flex; align-items: center; gap: 15px; margin-bottom: 25px; border: 1px solid rgba(59,130,246,0.3); position: relative; z-index: 1;">
+            <div style="background: linear-gradient(135deg, #3B82F6, #2563EB); width: 40px; height: 40px; border-radius: 40px; display: flex; align-items: center; justify-content: center;">
+                <span style="color: white; font-weight: 800; font-size: 20px;">D</span>
+            </div>
             <div>
-                <span style="background: linear-gradient(135deg, #4a9eff, #2563eb); padding: 6px 16px; border-radius: 30px; font-size: 0.9rem; color: white; font-weight: 600; letter-spacing: 1px;">ТАЙМФРЕЙМ</span>
-                <h3 style="color: white; font-size: 2rem; font-weight: 700; margin: 5px 0 0 0; text-shadow: 0 2px 10px rgba(74,158,255,0.3);">D1 <span style="color: #94a3b8; font-size: 1rem; font-weight: 400; margin-left: 10px;">Дневной</span></h3>
+                <span style="color: white; font-weight: 700; font-size: 24px; letter-spacing: 1px;">ДНЕВНОЙ</span>
+                <span style="color: #3B82F6; font-weight: 600; font-size: 14px; margin-left: 12px;">таймфрейм</span>
             </div>
         </div>
-        
-        <div style="display: grid; gap: 10px;">
-            <!-- 1D proboy short -->
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(74,158,255,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s; backdrop-filter: blur(10px); hover:background: rgba(74,158,255,0.1);">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <span style="width: 8px; height: 8px; background: #4a9eff; border-radius: 50%; box-shadow: 0 0 15px #4a9eff;"></span>
-                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1D proboy short</span>
+
+        <!-- D1 Grid Items -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; position: relative; z-index: 1;">
+            <!-- 1D Proboy short -->
+            <div style="background: linear-gradient(145deg, #121214, #0A0A0C); border-radius: 20px; padding: 16px; border: 1px solid #1E1E24; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; hover:border-#3B82F6;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 4px; height: 30px; background: #3B82F6; border-radius: 2px;"></div>
+                    <span style="color: #F0F0FF; font-weight: 500; font-size: 15px;">1D Proboy short</span>
                 </div>
-                <button onclick="copyToClipboard('1D proboy short')" style="background: rgba(74,158,255,0.1); border: none; color: #4a9eff; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; hover:background: #4a9eff; hover:color: white;">
-                    <i class="fas fa-copy"></i>
+                <button onclick="copyToClipboard('1D Proboy short')" style="background: #1A1A20; border: none; color: #3B82F6; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; transition: all 0.2s; font-size: 16px; hover:background:#3B82F6; hover:color:white;">
+                    <i class="far fa-copy"></i>
                 </button>
             </div>
-            
-            <!-- 1D proboy LONG -->
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(74,158,255,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <span style="width: 8px; height: 8px; background: #4a9eff; border-radius: 50%; box-shadow: 0 0 15px #4a9eff;"></span>
-                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1D proboy LONG</span>
+
+            <!-- 1D Proboy LONG -->
+            <div style="background: linear-gradient(145deg, #121214, #0A0A0C); border-radius: 20px; padding: 16px; border: 1px solid #1E1E24; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 4px; height: 30px; background: #3B82F6; border-radius: 2px;"></div>
+                    <span style="color: #F0F0FF; font-weight: 500; font-size: 15px;">1D Proboy LONG</span>
                 </div>
-                <button onclick="copyToClipboard('1D proboy LONG')" style="background: rgba(74,158,255,0.1); border: none; color: #4a9eff; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-copy"></i>
+                <button onclick="copyToClipboard('1D Proboy LONG')" style="background: #1A1A20; border: none; color: #3B82F6; width: 36px; height: 36px; border-radius: 12px; cursor: pointer;">
+                    <i class="far fa-copy"></i>
                 </button>
             </div>
-            
+
             <!-- 1D LP LONG -->
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(74,158,255,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <span style="width: 8px; height: 8px; background: #4a9eff; border-radius: 50%;"></span>
-                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1D LP LONG</span>
+            <div style="background: linear-gradient(145deg, #121214, #0A0A0C); border-radius: 20px; padding: 16px; border: 1px solid #1E1E24; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 4px; height: 30px; background: #3B82F6; border-radius: 2px;"></div>
+                    <span style="color: #F0F0FF; font-weight: 500; font-size: 15px;">1D LP LONG</span>
                 </div>
-                <button onclick="copyToClipboard('1D LP LONG')" style="background: rgba(74,158,255,0.1); border: none; color: #4a9eff; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-copy"></i>
+                <button onclick="copyToClipboard('1D LP LONG')" style="background: #1A1A20; border: none; color: #3B82F6; width: 36px; height: 36px; border-radius: 12px; cursor: pointer;">
+                    <i class="far fa-copy"></i>
                 </button>
             </div>
-            
+
             <!-- 1D LP short -->
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(74,158,255,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <span style="width: 8px; height: 8px; background: #4a9eff; border-radius: 50%;"></span>
-                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1D LP short</span>
+            <div style="background: linear-gradient(145deg, #121214, #0A0A0C); border-radius: 20px; padding: 16px; border: 1px solid #1E1E24; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 4px; height: 30px; background: #3B82F6; border-radius: 2px;"></div>
+                    <span style="color: #F0F0FF; font-weight: 500; font-size: 15px;">1D LP short</span>
                 </div>
-                <button onclick="copyToClipboard('1D LP short')" style="background: rgba(74,158,255,0.1); border: none; color: #4a9eff; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-copy"></i>
+                <button onclick="copyToClipboard('1D LP short')" style="background: #1A1A20; border: none; color: #3B82F6; width: 36px; height: 36px; border-radius: 12px; cursor: pointer;">
+                    <i class="far fa-copy"></i>
                 </button>
             </div>
         </div>
     </div>
-    
-    <!-- H1 Section с оранжевым градиентом -->
-    <div style="margin-top: 40px;">
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-            <div style="width: 8px; height: 40px; background: linear-gradient(180deg, #f97316, #ea580c); border-radius: 4px;"></div>
+
+    <!-- H1 Premium Section (оранжевый) -->
+    <div style="position: relative;">
+        <!-- Decorative background -->
+        <div style="position: absolute; bottom: -10px; right: -10px; width: 150px; height: 150px; background: radial-gradient(circle at 70% 70%, rgba(249,115,22,0.15), transparent 70%); border-radius: 50%; z-index: 0;"></div>
+
+        <!-- H1 Header -->
+        <div style="background: rgba(249,115,22,0.1); backdrop-filter: blur(10px); border-radius: 60px; padding: 12px 24px; display: inline-flex; align-items: center; gap: 15px; margin-bottom: 25px; border: 1px solid rgba(249,115,22,0.3); position: relative; z-index: 1;">
+            <div style="background: linear-gradient(135deg, #F97316, #EA580C); width: 40px; height: 40px; border-radius: 40px; display: flex; align-items: center; justify-content: center;">
+                <span style="color: white; font-weight: 800; font-size: 20px;">H</span>
+            </div>
             <div>
-                <span style="background: linear-gradient(135deg, #f97316, #ea580c); padding: 6px 16px; border-radius: 30px; font-size: 0.9rem; color: white; font-weight: 600; letter-spacing: 1px;">ТАЙМФРЕЙМ</span>
-                <h3 style="color: white; font-size: 2rem; font-weight: 700; margin: 5px 0 0 0; text-shadow: 0 2px 10px rgba(249,115,22,0.3);">H1 <span style="color: #94a3b8; font-size: 1rem; font-weight: 400; margin-left: 10px;">Часовой</span></h3>
+                <span style="color: white; font-weight: 700; font-size: 24px; letter-spacing: 1px;">ЧАСОВОЙ</span>
+                <span style="color: #F97316; font-weight: 600; font-size: 14px; margin-left: 12px;">таймфрейм</span>
             </div>
         </div>
-        
-        <div style="display: grid; gap: 10px;">
-            <!-- 1H proboy LONG -->
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(249,115,22,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <span style="width: 8px; height: 8px; background: #f97316; border-radius: 50%; box-shadow: 0 0 15px #f97316;"></span>
-                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1H proboy LONG</span>
+
+        <!-- H1 Grid Items -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; position: relative; z-index: 1;">
+            <!-- 1H Proboy LONG -->
+            <div style="background: linear-gradient(145deg, #121214, #0A0A0C); border-radius: 20px; padding: 16px; border: 1px solid #1E1E24; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 4px; height: 30px; background: #F97316; border-radius: 2px;"></div>
+                    <span style="color: #F0F0FF; font-weight: 500; font-size: 15px;">1H Proboy LONG</span>
                 </div>
-                <button onclick="copyToClipboard('1H proboy LONG')" style="background: rgba(249,115,22,0.1); border: none; color: #f97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-copy"></i>
+                <button onclick="copyToClipboard('1H Proboy LONG')" style="background: #1A1A20; border: none; color: #F97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer;">
+                    <i class="far fa-copy"></i>
                 </button>
             </div>
-            
-            <!-- 1H proboy SHORT -->
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(249,115,22,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <span style="width: 8px; height: 8px; background: #f97316; border-radius: 50%;"></span>
-                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1H proboy SHORT</span>
+
+            <!-- 1H Proboy SHORT -->
+            <div style="background: linear-gradient(145deg, #121214, #0A0A0C); border-radius: 20px; padding: 16px; border: 1px solid #1E1E24; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 4px; height: 30px; background: #F97316; border-radius: 2px;"></div>
+                    <span style="color: #F0F0FF; font-weight: 500; font-size: 15px;">1H Proboy SHORT</span>
                 </div>
-                <button onclick="copyToClipboard('1H proboy SHORT')" style="background: rgba(249,115,22,0.1); border: none; color: #f97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-copy"></i>
+                <button onclick="copyToClipboard('1H Proboy SHORT')" style="background: #1A1A20; border: none; color: #F97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer;">
+                    <i class="far fa-copy"></i>
                 </button>
             </div>
-            
+
             <!-- 1H LP LONG -->
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(249,115,22,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <span style="width: 8px; height: 8px; background: #f97316; border-radius: 50%;"></span>
-                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1H LP LONG</span>
+            <div style="background: linear-gradient(145deg, #121214, #0A0A0C); border-radius: 20px; padding: 16px; border: 1px solid #1E1E24; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 4px; height: 30px; background: #F97316; border-radius: 2px;"></div>
+                    <span style="color: #F0F0FF; font-weight: 500; font-size: 15px;">1H LP LONG</span>
                 </div>
-                <button onclick="copyToClipboard('1H LP LONG')" style="background: rgba(249,115,22,0.1); border: none; color: #f97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-copy"></i>
+                <button onclick="copyToClipboard('1H LP LONG')" style="background: #1A1A20; border: none; color: #F97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer;">
+                    <i class="far fa-copy"></i>
                 </button>
             </div>
-            
+
             <!-- 1H LP SHORT -->
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(249,115,22,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <span style="width: 8px; height: 8px; background: #f97316; border-radius: 50%;"></span>
-                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1H LP SHORT</span>
+            <div style="background: linear-gradient(145deg, #121214, #0A0A0C); border-radius: 20px; padding: 16px; border: 1px solid #1E1E24; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 4px; height: 30px; background: #F97316; border-radius: 2px;"></div>
+                    <span style="color: #F0F0FF; font-weight: 500; font-size: 15px;">1H LP SHORT</span>
                 </div>
-                <button onclick="copyToClipboard('1H LP SHORT')" style="background: rgba(249,115,22,0.1); border: none; color: #f97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-copy"></i>
+                <button onclick="copyToClipboard('1H LP SHORT')" style="background: #1A1A20; border: none; color: #F97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer;">
+                    <i class="far fa-copy"></i>
                 </button>
             </div>
-            
+
             <!-- 1H Разворот после роста -->
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(249,115,22,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <span style="width: 8px; height: 8px; background: #f97316; border-radius: 50%;"></span>
-                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1H Разворот после роста</span>
+            <div style="background: linear-gradient(145deg, #121214, #0A0A0C); border-radius: 20px; padding: 16px; border: 1px solid #1E1E24; display: flex; align-items: center; justify-content: space-between; grid-column: span 1;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 4px; height: 30px; background: #F97316; border-radius: 2px;"></div>
+                    <span style="color: #F0F0FF; font-weight: 500; font-size: 15px;">1H Разворот после роста</span>
                 </div>
-                <button onclick="copyToClipboard('1H Разворот после роста')" style="background: rgba(249,115,22,0.1); border: none; color: #f97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-copy"></i>
+                <button onclick="copyToClipboard('1H Разворот после роста')" style="background: #1A1A20; border: none; color: #F97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer;">
+                    <i class="far fa-copy"></i>
                 </button>
             </div>
-            
+
             <!-- 1H Разворот после падения -->
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(249,115,22,0.2); border-radius: 16px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <span style="width: 8px; height: 8px; background: #f97316; border-radius: 50%;"></span>
-                    <span style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500;">1H Разворот после падения</span>
+            <div style="background: linear-gradient(145deg, #121214, #0A0A0C); border-radius: 20px; padding: 16px; border: 1px solid #1E1E24; display: flex; align-items: center; justify-content: space-between; grid-column: span 1;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 4px; height: 30px; background: #F97316; border-radius: 2px;"></div>
+                    <span style="color: #F0F0FF; font-weight: 500; font-size: 15px;">1H Разворот после падения</span>
                 </div>
-                <button onclick="copyToClipboard('1H Разворот после падения')" style="background: rgba(249,115,22,0.1); border: none; color: #f97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-copy"></i>
+                <button onclick="copyToClipboard('1H Разворот после падения')" style="background: #1A1A20; border: none; color: #F97316; width: 36px; height: 36px; border-radius: 12px; cursor: pointer;">
+                    <i class="far fa-copy"></i>
                 </button>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .instructions button:hover {
+        background: #3B82F6 !important;
+        color: white !important;
+        transform: scale(1.05);
+    }
+    .instructions div[style*="border-left"]:hover {
+        border-color: #3B82F6 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -10px rgba(59,130,246,0.3);
+    }
+</style>
 				            <!-- Контейнер для 3 изображений (по умолчанию) -->
             <div id="threeImagesLayout" class="collage-layout">
                 <!-- Верхние блоки -->
