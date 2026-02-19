@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Tools - Виджеты</title>
+    <title>Crypto Tools - Виджеты (Обновленный выбор ТФ)</title>
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -222,6 +222,7 @@
             background-color: rgba(0, 0, 0, 0.2);
             border-radius: 8px;
             overflow: hidden;
+            min-height: 200px;
         }
         .preview-img {
             max-width: 100%;
@@ -522,14 +523,24 @@
         .clear-text-btn:hover {
             background-color: #dc2626;
         }
-        .text-edit-input {
-            background: transparent;
-            border: 1px solid #333;
+        /* Стили для выпадающего списка */
+        .tf-select {
+            background-color: #2a2a2a;
             color: white;
-            padding: 5px;
-            margin-top: 10px;
+            border: 1px solid #444;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
             width: 100%;
-            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .tf-select:hover {
+            border-color: #4cc9f0;
+        }
+        .tf-select option {
+            background-color: #2a2a2a;
+            color: white;
         }
         .combine-collage-section {
             margin-top: 30px;
@@ -885,7 +896,16 @@
                         <h3>Верхнее левое фото (1D)</h3>
                         <label class="file-input-label">Выберите изображение:</label>
                         <input type="file" id="topLeftImage" class="collage-file-input" accept="image/*">
-                        <input type="text" id="topLeftTextInput" class="text-edit-input" value="1D" placeholder="Введите текст">
+                        <!-- Выпадающий список для выбора ТФ -->
+                        <select id="topLeftSelect" class="tf-select">
+                            <option value="1W">1W</option>
+                            <option value="1D" selected>1D</option>
+                            <option value="4H">4H</option>
+                            <option value="1H">1H</option>
+                            <option value="15M">15M</option>
+                            <option value="5M">5M</option>
+                            <option value="1M">1M</option>
+                        </select>
                         <div class="preview-container" id="topLeftPreviewContainer">
                             <img id="topLeftPreview" class="preview-img">
                             <div id="topLeftText" class="draggable-text">1D</div>
@@ -895,7 +915,15 @@
                         <h3>Верхнее правое фото (1H)</h3>
                         <label class="file-input-label">Выберите изображение:</label>
                         <input type="file" id="topRightImage" class="collage-file-input" accept="image/*">
-                        <input type="text" id="topRightTextInput" class="text-edit-input" value="1H" placeholder="Введите текст">
+                        <select id="topRightSelect" class="tf-select">
+                            <option value="1W">1W</option>
+                            <option value="1D">1D</option>
+                            <option value="4H">4H</option>
+                            <option value="1H" selected>1H</option>
+                            <option value="15M">15M</option>
+                            <option value="5M">5M</option>
+                            <option value="1M">1M</option>
+                        </select>
                         <div class="preview-container" id="topRightPreviewContainer">
                             <img id="topRightPreview" class="preview-img">
                             <div id="topRightText" class="draggable-text">1H</div>
@@ -908,7 +936,15 @@
                         <h3>Нижнее фото (5M)</h3>
                         <label class="file-input-label">Выберите изображение:</label>
                         <input type="file" id="bottomImage" class="collage-file-input" accept="image/*">
-                        <input type="text" id="bottomTextInput" class="text-edit-input" value="5M" placeholder="Введите текст">
+                        <select id="bottomSelect" class="tf-select">
+                            <option value="1W">1W</option>
+                            <option value="1D">1D</option>
+                            <option value="4H">4H</option>
+                            <option value="1H">1H</option>
+                            <option value="15M">15M</option>
+                            <option value="5M" selected>5M</option>
+                            <option value="1M">1M</option>
+                        </select>
                         <div class="preview-container" id="bottomPreviewContainer">
                             <img id="bottomPreview" class="preview-img">
                             <div id="bottomText" class="draggable-text">5M</div>
@@ -924,7 +960,15 @@
                         <h3>Верхнее левое фото (1D)</h3>
                         <label class="file-input-label">Выберите изображение:</label>
                         <input type="file" id="topLeftImage4" class="collage-file-input" accept="image/*">
-                        <input type="text" id="topLeftTextInput4" class="text-edit-input" value="1D" placeholder="Введите текст">
+                        <select id="topLeftSelect4" class="tf-select">
+                            <option value="1W">1W</option>
+                            <option value="1D" selected>1D</option>
+                            <option value="4H">4H</option>
+                            <option value="1H">1H</option>
+                            <option value="15M">15M</option>
+                            <option value="5M">5M</option>
+                            <option value="1M">1M</option>
+                        </select>
                         <div class="preview-container" id="topLeftPreviewContainer4">
                             <img id="topLeftPreview4" class="preview-img">
                             <div id="topLeftText4" class="draggable-text">1D</div>
@@ -935,7 +979,15 @@
                         <h3>Верхнее правое фото (4H)</h3>
                         <label class="file-input-label">Выберите изображение:</label>
                         <input type="file" id="topRightImage4" class="collage-file-input" accept="image/*">
-                        <input type="text" id="topRightTextInput4" class="text-edit-input" value="4H" placeholder="Введите текст">
+                        <select id="topRightSelect4" class="tf-select">
+                            <option value="1W">1W</option>
+                            <option value="1D">1D</option>
+                            <option value="4H" selected>4H</option>
+                            <option value="1H">1H</option>
+                            <option value="15M">15M</option>
+                            <option value="5M">5M</option>
+                            <option value="1M">1M</option>
+                        </select>
                         <div class="preview-container" id="topRightPreviewContainer4">
                             <img id="topRightPreview4" class="preview-img">
                             <div id="topRightText4" class="draggable-text">4H</div>
@@ -946,7 +998,15 @@
                         <h3>Нижнее левое фото (1H)</h3>
                         <label class="file-input-label">Выберите изображение:</label>
                         <input type="file" id="bottomLeftImage4" class="collage-file-input" accept="image/*">
-                        <input type="text" id="bottomLeftTextInput4" class="text-edit-input" value="1H" placeholder="Введите текст">
+                        <select id="bottomLeftSelect4" class="tf-select">
+                            <option value="1W">1W</option>
+                            <option value="1D">1D</option>
+                            <option value="4H">4H</option>
+                            <option value="1H" selected>1H</option>
+                            <option value="15M">15M</option>
+                            <option value="5M">5M</option>
+                            <option value="1M">1M</option>
+                        </select>
                         <div class="preview-container" id="bottomLeftPreviewContainer4">
                             <img id="bottomLeftPreview4" class="preview-img">
                             <div id="bottomLeftText4" class="draggable-text">1H</div>
@@ -957,7 +1017,15 @@
                         <h3>Нижнее правое фото (5M)</h3>
                         <label class="file-input-label">Выберите изображение:</label>
                         <input type="file" id="bottomRightImage4" class="collage-file-input" accept="image/*">
-                        <input type="text" id="bottomRightTextInput4" class="text-edit-input" value="5M" placeholder="Введите текст">
+                        <select id="bottomRightSelect4" class="tf-select">
+                            <option value="1W">1W</option>
+                            <option value="1D">1D</option>
+                            <option value="4H">4H</option>
+                            <option value="1H">1H</option>
+                            <option value="15M">15M</option>
+                            <option value="5M" selected>5M</option>
+                            <option value="1M">1M</option>
+                        </select>
                         <div class="preview-container" id="bottomRightPreviewContainer4">
                             <img id="bottomRightPreview4" class="preview-img">
                             <div id="bottomRightText4" class="draggable-text">5M</div>
@@ -973,7 +1041,15 @@
                         <h3>Левое фото</h3>
                         <label class="file-input-label">Выберите изображение:</label>
                         <input type="file" id="leftImage2" class="collage-file-input" accept="image/*">
-                        <input type="text" id="leftTextInput2" class="text-edit-input" value="1D" placeholder="Введите текст">
+                        <select id="leftSelect2" class="tf-select">
+                            <option value="1W">1W</option>
+                            <option value="1D" selected>1D</option>
+                            <option value="4H">4H</option>
+                            <option value="1H">1H</option>
+                            <option value="15M">15M</option>
+                            <option value="5M">5M</option>
+                            <option value="1M">1M</option>
+                        </select>
                         <div class="preview-container" id="leftPreviewContainer2">
                             <img id="leftPreview2" class="preview-img">
                             <div id="leftText2" class="draggable-text">1D</div>
@@ -984,7 +1060,15 @@
                         <h3>Правое фото</h3>
                         <label class="file-input-label">Выберите изображение:</label>
                         <input type="file" id="rightImage2" class="collage-file-input" accept="image/*">
-                        <input type="text" id="rightTextInput2" class="text-edit-input" value="1H" placeholder="Введите текст">
+                        <select id="rightSelect2" class="tf-select">
+                            <option value="1W">1W</option>
+                            <option value="1D">1D</option>
+                            <option value="4H">4H</option>
+                            <option value="1H" selected>1H</option>
+                            <option value="15M">15M</option>
+                            <option value="5M">5M</option>
+                            <option value="1M">1M</option>
+                        </select>
                         <div class="preview-container" id="rightPreviewContainer2">
                             <img id="rightPreview2" class="preview-img">
                             <div id="rightText2" class="draggable-text">1H</div>
@@ -1271,10 +1355,10 @@
             const resultCanvas = document.getElementById('collageCanvas');
             const collageText = document.getElementById('collageText');
             const clearTextBtn = document.getElementById('clearTextBtn');
-            // Текстовые инпуты для 3 изображений
-            const topLeftTextInput = document.getElementById('topLeftTextInput');
-            const topRightTextInput = document.getElementById('topRightTextInput');
-            const bottomTextInput = document.getElementById('bottomTextInput');
+            // Селекты для 3 изображений
+            const topLeftSelect = document.getElementById('topLeftSelect');
+            const topRightSelect = document.getElementById('topRightSelect');
+            const bottomSelect = document.getElementById('bottomSelect');
             // Контейнеры превью для 3 изображений
             const topLeftPreviewContainer = document.getElementById('topLeftPreviewContainer');
             const topRightPreviewContainer = document.getElementById('topRightPreviewContainer');
@@ -1292,11 +1376,11 @@
             const topRightPreview4 = document.getElementById('topRightPreview4');
             const bottomLeftPreview4 = document.getElementById('bottomLeftPreview4');
             const bottomRightPreview4 = document.getElementById('bottomRightPreview4');
-            // Текстовые инпуты для 4-изображений
-            const topLeftTextInput4 = document.getElementById('topLeftTextInput4');
-            const topRightTextInput4 = document.getElementById('topRightTextInput4');
-            const bottomLeftTextInput4 = document.getElementById('bottomLeftTextInput4');
-            const bottomRightTextInput4 = document.getElementById('bottomRightTextInput4');
+            // Селекты для 4-изображений
+            const topLeftSelect4 = document.getElementById('topLeftSelect4');
+            const topRightSelect4 = document.getElementById('topRightSelect4');
+            const bottomLeftSelect4 = document.getElementById('bottomLeftSelect4');
+            const bottomRightSelect4 = document.getElementById('bottomRightSelect4');
             // Контейнеры превью для 4-изображений
             const topLeftPreviewContainer4 = document.getElementById('topLeftPreviewContainer4');
             const topRightPreviewContainer4 = document.getElementById('topRightPreviewContainer4');
@@ -1312,9 +1396,9 @@
             const rightImageInput2 = document.getElementById('rightImage2');
             const leftPreview2 = document.getElementById('leftPreview2');
             const rightPreview2 = document.getElementById('rightPreview2');
-            // Текстовые инпуты для 2-изображений
-            const leftTextInput2 = document.getElementById('leftTextInput2');
-            const rightTextInput2 = document.getElementById('rightTextInput2');
+            // Селекты для 2-изображений
+            const leftSelect2 = document.getElementById('leftSelect2');
+            const rightSelect2 = document.getElementById('rightSelect2');
             // Контейнеры превью для 2-изображений
             const leftPreviewContainer2 = document.getElementById('leftPreviewContainer2');
             const rightPreviewContainer2 = document.getElementById('rightPreviewContainer2');
@@ -1333,33 +1417,33 @@
                     element: topLeftText,
                     container: topLeftPreviewContainer,
                     previewImg: topLeftPreview,
+                    select: topLeftSelect,
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
                     imageSize: { width: 0, height: 0 },
-                    textInput: topLeftTextInput,
                     defaultText: '1D'
                 },
                 topRight: {
                     element: topRightText,
                     container: topRightPreviewContainer,
                     previewImg: topRightPreview,
+                    select: topRightSelect,
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
                     imageSize: { width: 0, height: 0 },
-                    textInput: topRightTextInput,
                     defaultText: '1H'
                 },
                 bottom: {
                     element: bottomText,
                     container: bottomPreviewContainer,
                     previewImg: bottomPreview,
+                    select: bottomSelect,
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
                     imageSize: { width: 0, height: 0 },
-                    textInput: bottomTextInput,
                     defaultText: '5M'
                 }
             };
@@ -1369,44 +1453,44 @@
                     element: topLeftText4,
                     container: topLeftPreviewContainer4,
                     previewImg: topLeftPreview4,
+                    select: topLeftSelect4,
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
                     imageSize: { width: 0, height: 0 },
-                    textInput: topLeftTextInput4,
                     defaultText: '1D'
                 },
                 topRight: {
                     element: topRightText4,
                     container: topRightPreviewContainer4,
                     previewImg: topRightPreview4,
+                    select: topRightSelect4,
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
                     imageSize: { width: 0, height: 0 },
-                    textInput: topRightTextInput4,
                     defaultText: '4H'
                 },
                 bottomLeft: {
                     element: bottomLeftText4,
                     container: bottomLeftPreviewContainer4,
                     previewImg: bottomLeftPreview4,
+                    select: bottomLeftSelect4,
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
                     imageSize: { width: 0, height: 0 },
-                    textInput: bottomLeftTextInput4,
                     defaultText: '1H'
                 },
                 bottomRight: {
                     element: bottomRightText4,
                     container: bottomRightPreviewContainer4,
                     previewImg: bottomRightPreview4,
+                    select: bottomRightSelect4,
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
                     imageSize: { width: 0, height: 0 },
-                    textInput: bottomRightTextInput4,
                     defaultText: '5M'
                 }
             };
@@ -1416,22 +1500,22 @@
                     element: leftText2,
                     container: leftPreviewContainer2,
                     previewImg: leftPreview2,
+                    select: leftSelect2,
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
                     imageSize: { width: 0, height: 0 },
-                    textInput: leftTextInput2,
                     defaultText: '1D'
                 },
                 right: {
                     element: rightText2,
                     container: rightPreviewContainer2,
                     previewImg: rightPreview2,
+                    select: rightSelect2,
                     image: null,
                     position: { x: 20, y: 20 },
                     containerSize: { width: 0, height: 0 },
                     imageSize: { width: 0, height: 0 },
-                    textInput: rightTextInput2,
                     defaultText: '1H'
                 }
             };
@@ -1465,13 +1549,15 @@
                     updateContainerSizes();
                 });
             }
-            // Обновление текста при изменении инпута
-            function initTextInputs(dataObj) {
+            // Обновление текста при изменении селекта
+            function initSelectListeners(dataObj) {
                 Object.keys(dataObj).forEach(section => {
                     const data = dataObj[section];
-                    data.textInput.addEventListener('input', (e) => {
+                    data.select.addEventListener('change', (e) => {
                         data.element.textContent = e.target.value || data.defaultText;
                     });
+                    // Устанавливаем начальное значение
+                    data.element.textContent = data.select.value;
                 });
             }
             // Обновление размеров контейнеров и изображений
@@ -1525,10 +1611,10 @@
             Object.keys(collageData).forEach(section => initDrag(section, collageData));
             Object.keys(collageData4).forEach(section => initDrag(section, collageData4));
             Object.keys(collageData2).forEach(section => initDrag(section, collageData2));
-            // Инициализация текстовых инпутов
-            initTextInputs(collageData);
-            initTextInputs(collageData4);
-            initTextInputs(collageData2);
+            // Инициализация слушателей селектов
+            initSelectListeners(collageData);
+            initSelectListeners(collageData4);
+            initSelectListeners(collageData2);
             // Обработчики загрузки изображений для 3 изображений
             topLeftImageInput.addEventListener('change', (e) => handleImageUpload(e, 'topLeft'));
             topRightImageInput.addEventListener('change', (e) => handleImageUpload(e, 'topRight'));
@@ -1778,19 +1864,19 @@
                 const data = collageData[section];
                 data.element.style.left = data.position.x + 'px';
                 data.element.style.top = data.position.y + 'px';
-                data.element.textContent = data.textInput.value || data.defaultText;
+                data.element.textContent = data.select.value;
             });
             Object.keys(collageData4).forEach(section => {
                 const data = collageData4[section];
                 data.element.style.left = data.position.x + 'px';
                 data.element.style.top = data.position.y + 'px';
-                data.element.textContent = data.textInput.value || data.defaultText;
+                data.element.textContent = data.select.value;
             });
             Object.keys(collageData2).forEach(section => {
                 const data = collageData2[section];
                 data.element.style.left = data.position.x + 'px';
                 data.element.style.top = data.position.y + 'px';
-                data.element.textContent = data.textInput.value || data.defaultText;
+                data.element.textContent = data.select.value;
             });
             // Обновляем размеры при изменении окна
             window.addEventListener('resize', updateContainerSizes);
