@@ -2703,31 +2703,7 @@ html, body {
     transition: none;  /* убираем все transition */
 }
 /* Звезда всегда поверх и кликабельная */
-.ticker-panel .star {
-    position: relative !important;
-    z-index: 1000 !important;
-    cursor: pointer !important;
-    pointer-events: auto !important;
-    width: 20px !important;
-    height: 20px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
 
-/* Область клика больше */
-.ticker-panel .star::before {
-    content: '';
-    position: absolute;
-    top: -10px;      /* Увеличиваем область на 10px во все стороны */
-    left: -10px;
-    right: -10px;
-    bottom: -10px;
-    background: transparent;
-    z-index: 101;
-    border-radius: 50%;
-    cursor: pointer !important;
-}
 .ticker-panel .price-flash-positive {
     animation: flash-positive 0.5s ease;
 }
