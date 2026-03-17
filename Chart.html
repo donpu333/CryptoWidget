@@ -3449,7 +3449,7 @@ html, body {
     <div class="app-container">
         <div class="timeframe-bar">
             <div class="instrument-info" id="instrumentInfo">
-                <span class="pair" id="pairDisplay">BTCUSDT</span>
+            <span class="pair" id="pairDisplay"></span>
                 <span class="contract-type" id="contractTypeDisplay">PERP</span>
                 <span class="exchange" id="exchangeDisplay">Binance</span>
                 <span class="timeframe-badge" id="currentTfBadge">1ч</span>
@@ -4946,10 +4946,13 @@ class TimerRenderer {
                 this.hasMoreData = true;
                 this.currentInterval = CONFIG.defaultInterval;
                 this.currentSymbol = CONFIG.defaultSymbol;
+                 this.currentExchange = 'binance';        // <-- ДОБАВИТЬ
+    this.currentMarketType = 'futures';  
                   this._lastWidth = this.chartContainer.clientWidth;
     this._lastHeight = this.chartContainer.clientHeight;
                 this.activeIndicators = [];
-                
+                 
+                 this._symbolChangeCallbacks = [];
                 this._updateScheduled = false;
                 this._lastUpdateTime = 0;
                 
@@ -5147,6 +5150,16 @@ class TimerRenderer {
                     attributeFilter: ['style', 'class', 'width', 'height']
                 });
             }
+            _subscribeToSymbolChange(callback) {
+    this._symbolChangeCallbacks = this._symbolChangeCallbacks || [];
+    this._symbolChangeCallbacks.push(callback);
+}
+
+_notifySymbolChange() {
+    if (this._symbolChangeCallbacks) {
+        this._symbolChangeCallbacks.forEach(cb => cb());
+    }
+} 
     loadSymbolData(symbol, exchange, marketType) {
         console.log(`📊 Загружаю данные для ${symbol} (${exchange} ${marketType})`);
         
@@ -5755,7 +5768,7 @@ class TimerRenderer {
                 }
             }
 
-  setDataQuick(data, interval, symbol) {
+  setDataQuick(data, interval, symbol, exchange = 'binance', marketType = 'futures') {
     console.log('🔵 setDataQuick: получено свечей', data.length);
     if (data.length > 0) {
         console.log('    Первая свеча:', data[0]);
@@ -5764,6 +5777,8 @@ class TimerRenderer {
         this.chartData = data;
         this.currentInterval = interval;
         this.currentSymbol = symbol;
+        this.currentExchange = exchange;        // ← СОХРАНЯЕМ
+        this.currentMarketType = marketType;    // ← СОХРАНЯЕМ
         this.hasMoreData = true;
         this.lastCandle = data[data.length - 1];
         
@@ -5774,18 +5789,20 @@ class TimerRenderer {
             this.chart.timeScale().fitContent();
         }
         
-        // 👇 ДОБАВИЛИ АВТОВЫРАВНИВАНИЕ
+        // Автовыравнивание
         setTimeout(() => {
-            this.autoScale(); // Автовыравнивание по цене
+            this.autoScale();
         }, 100);
         
         setTimeout(() => {
             if (window.renderDrawings) window.renderDrawings();
         }, 100);
         
+        // ← ВАЖНО: УВЕДОМЛЯЕМ О СМЕНЕ СИМВОЛА
+        this._notifySymbolChange();
+        
     } else {
         console.warn('setDataQuick: нет данных');
-        // Если данных нет, но это не ошибка (например, новый токен), показываем сообщение
         const notification = document.getElementById('alertNotification');
         if (notification) {
             notification.innerHTML = `
@@ -7077,10 +7094,7 @@ class TimerRenderer {
             }
         }
 
-        // ========== КЛАСС ДЛЯ КОНТЕКСТНОГО МЕНЮ ==========
-   
-        // ========== МЕНЕДЖЕР ЛУЧЕЙ ==========
-      // ========== МЕНЕДЖЕР ЛУЧЕЙ ==========
+       
 class HorizontalRayManager {
     constructor(chartManager) {
         this._rays = [];
@@ -7095,18 +7109,36 @@ class HorizontalRayManager {
         this._dragStartY = 0;
         this._dragStartPrice = 0;
         this._dragStartTime = 0;
-        this._handleContextMenu = this._handleContextMenu.bind(this);
         this._lastMouseX = 0;
         this._lastMouseY = 0;
-        
-        this._setupEventListeners();
-        this._setupHotkeys();
         this._potentialDrag = null;
         this._dragThreshold = 5;
+        
+        // Новое поле для хранения текущего символа
+        this._currentSymbolKey = this._getCurrentSymbolKey();
+        
+        this._handleContextMenu = this._handleContextMenu.bind(this);
+        this._setupEventListeners();
+        this._setupHotkeys();
+    }
+
+    // ========== НОВЫЙ МЕТОД: Получить ключ текущего символа ==========
+    _getCurrentSymbolKey() {
+        const symbol = this._chartManager.currentSymbol || 'BTCUSDT';
+        const exchange = this._chartManager.currentExchange || 'binance';
+        const marketType = this._chartManager.currentMarketType || 'futures';
+        return `${symbol}:${exchange}:${marketType}`;
+    }
+
+    // ========== НОВЫЙ МЕТОД: Получить лучи только для текущего символа ==========
+    _getRaysForCurrentSymbol() {
+        const currentKey = this._getCurrentSymbolKey();
+        return this._rays.filter(item => item.ray.symbolKey === currentKey);
     }
 
     _setupHotkeys() {
         document.addEventListener('keydown', (e) => {
+            // Горячая клавиша O для создания луча
             if (e.code === 'KeyO' && !e.ctrlKey && !e.altKey && !e.metaKey) {
                 e.preventDefault();
                 
@@ -7144,6 +7176,7 @@ class HorizontalRayManager {
                 });
             }
             
+            // Клавиша Delete для удаления выделенного луча
             if (e.key === 'Delete' && this._selectedRay) {
                 this.deleteRay(this._selectedRay.id);
                 this._selectedRay = null;
@@ -7366,7 +7399,18 @@ class HorizontalRayManager {
                     this._requestRedraw();
                 }
             } else {
-                const hit = this.hitTest(x, y);
+                // Используем _getRaysForCurrentSymbol для хит-теста
+                const raysForCurrent = this._getRaysForCurrentSymbol();
+                let hit = null;
+                
+                for (const item of raysForCurrent) {
+                    const hitType = item.primitive._paneView._renderer.hitTest(x, y);
+                    if (hitType) {
+                        hit = { ray: item.ray, type: hitType };
+                        break;
+                    }
+                }
+                
                 const hitRay = hit ? hit.ray : null;
 
                 if (hitRay) {
@@ -7451,8 +7495,6 @@ class HorizontalRayManager {
             const hit = this.hitTest(x, y);
             
             if (hit) {
-                console.log('Двойной клик по лучу');
-                
                 this.deleteRay(hit.ray.id);
                 
                 if (this._selectedRay && this._selectedRay.id === hit.ray.id) {
@@ -7509,10 +7551,19 @@ class HorizontalRayManager {
         
         const timeframeVisibility = options.timeframeVisibility || defaultVisibility;
         
+        // ========== ВАЖНО: СОХРАНЯЕМ КЛЮЧ СИМВОЛА ==========
+        const symbolKey = this._getCurrentSymbolKey();
+        
         const ray = new HorizontalRay(price, time, {
             ...options,
             timeframeVisibility: timeframeVisibility
         });
+        
+        // Добавляем информацию о символе
+        ray.symbolKey = symbolKey;
+        ray.symbol = this._chartManager.currentSymbol || 'BTCUSDT';
+        ray.exchange = this._chartManager.currentExchange || 'binance';
+        ray.marketType = this._chartManager.currentMarketType || 'futures';
         
         const primitive = new HorizontalRayPrimitive(ray, this._chartManager);
         const series = this._chartManager.currentChartType === 'candle' ? this._chartManager.candleSeries : this._chartManager.barSeries;
@@ -7536,16 +7587,37 @@ class HorizontalRayManager {
         return false;
     }
 
+    // ========== ИЗМЕНЕНО: Удаляем только лучи текущего символа ==========
     deleteAllRays() {
-        this._rays.forEach(({ primitive, series }) => { try { series.detachPrimitive(primitive); } catch (e) {} });
-        this._rays = [];
-        this._selectedRay = null;
-        this._dragRay = null;
+        const currentKey = this._getCurrentSymbolKey();
+        
+        // Находим все лучи текущего символа
+        const raysToDelete = this._rays.filter(item => item.ray.symbolKey === currentKey);
+        
+        // Удаляем их с графика
+        raysToDelete.forEach(({ primitive, series }) => {
+            try { series.detachPrimitive(primitive); } catch (e) {}
+        });
+        
+        // Оставляем только лучи других символов
+        this._rays = this._rays.filter(item => item.ray.symbolKey !== currentKey);
+        
+        if (this._selectedRay && this._selectedRay.symbolKey === currentKey) {
+            this._selectedRay = null;
+        }
+        if (this._dragRay && this._dragRay.symbolKey === currentKey) {
+            this._dragRay = null;
+        }
+        
         this._saveRays();
+        this._requestRedraw();
     }
 
+    // ========== ИЗМЕНЕНО: Хит-тест только для текущего символа ==========
     hitTest(x, y) {
-        for (const item of this._rays) {
+        const raysForCurrent = this._getRaysForCurrentSymbol();
+        
+        for (const item of raysForCurrent) {
             const hitType = item.primitive._paneView._renderer.hitTest(x, y);
             if (hitType) return { ray: item.ray, type: hitType };
         }
@@ -7554,19 +7626,28 @@ class HorizontalRayManager {
 
     syncWithNewTimeframe() {
         if (!this._chartManager) return;
-    if (!this._chartManager.chartData) return;
-    if (this._chartManager.chartData.length === 0) return
+        if (!this._chartManager.chartData) return;
+        if (this._chartManager.chartData.length === 0) return;
         
         console.log('Синхронизация лучей с новым таймфреймом');
         
-        const raysData = this._rays.map(item => ({
+        // Получаем лучи ТОЛЬКО для текущего символа
+        const currentKey = this._getCurrentSymbolKey();
+        const raysForCurrent = this._rays.filter(item => item.ray.symbolKey === currentKey);
+        
+        const raysData = raysForCurrent.map(item => ({
             price: item.ray.price,
             time: item.ray.time,
             options: { ...item.ray.options },
-            anchorCandle: item.ray.anchorCandle
+            anchorCandle: item.ray.anchorCandle,
+            symbolKey: item.ray.symbolKey,
+            symbol: item.ray.symbol,
+            exchange: item.ray.exchange,
+            marketType: item.ray.marketType
         }));
         
-        this._rays.forEach(item => {
+        // Удаляем старые примитивы для текущего символа
+        raysForCurrent.forEach(item => {
             try { 
                 if (item.series && item.primitive) {
                     item.series.detachPrimitive(item.primitive); 
@@ -7574,7 +7655,9 @@ class HorizontalRayManager {
             } catch (e) {}
         });
         
-        this._rays = [];
+        // Удаляем их из общего массива
+        this._rays = this._rays.filter(item => item.ray.symbolKey !== currentKey);
+        
         this._selectedRay = null;
         this._hoveredRay = null;
         
@@ -7587,6 +7670,7 @@ class HorizontalRayManager {
         const chartData = this._chartManager.chartData;
         if (!chartData || chartData.length === 0) return;
         
+        // Восстанавливаем лучи для текущего символа
         raysData.forEach(data => {
             try {
                 let newTime = data.time;
@@ -7632,6 +7716,10 @@ class HorizontalRayManager {
                 
                 const ray = new HorizontalRay(newPrice, newTime, data.options);
                 ray.anchorCandle = data.anchorCandle;
+                ray.symbolKey = data.symbolKey;
+                ray.symbol = data.symbol;
+                ray.exchange = data.exchange;
+                ray.marketType = data.marketType;
                 
                 const primitive = new HorizontalRayPrimitive(ray, this._chartManager);
                 series.attachPrimitive(primitive);
@@ -7645,7 +7733,7 @@ class HorizontalRayManager {
         this._requestRedraw();
         this._saveRays();
         
-        console.log('Лучи восстановлены:', this._rays.length);
+        console.log('Лучи для текущего символа восстановлены:', raysData.length);
     }
 
     _handleChartClick(event) {
@@ -7708,24 +7796,34 @@ class HorizontalRayManager {
             }
         }
         
-        const dHigh = Math.abs(closestCandle.high - price);
-        const dLow = Math.abs(closestCandle.low - price);
-        const dClose = Math.abs(closestCandle.close - price);
+        const priceY = this._chartManager.priceToCoordinate(price);
+        const highY = this._chartManager.priceToCoordinate(closestCandle.high);
+        const lowY = this._chartManager.priceToCoordinate(closestCandle.low);
+        const closeY = this._chartManager.priceToCoordinate(closestCandle.close);
+        
+        if (priceY === null || highY === null) return { price, time, anchorCandle: null };
+        
+        const dHighPx = Math.abs(highY - priceY);
+        const dLowPx = Math.abs(lowY - priceY);
+        const dClosePx = Math.abs(closeY - priceY);
         
         let snappedPrice = price;
         let anchorType = null;
         
-        const minDist = Math.min(dHigh, dLow, dClose);
+        const MAGNET_THRESHOLD = 15;
+        const minDistPx = Math.min(dHighPx, dLowPx, dClosePx);
         
-        if (minDist === dHigh) {
-            snappedPrice = closestCandle.high;
-            anchorType = 'high';
-        } else if (minDist === dLow) {
-            snappedPrice = closestCandle.low;
-            anchorType = 'low';
-        } else {
-            snappedPrice = closestCandle.close;
-            anchorType = 'close';
+        if (minDistPx < MAGNET_THRESHOLD) {
+            if (minDistPx === dHighPx) {
+                snappedPrice = closestCandle.high;
+                anchorType = 'high';
+            } else if (minDistPx === dLowPx) {
+                snappedPrice = closestCandle.low;
+                anchorType = 'low';
+            } else if (minDistPx === dClosePx) {
+                snappedPrice = closestCandle.close;
+                anchorType = 'close';
+            }
         }
         
         return { 
@@ -7758,168 +7856,153 @@ class HorizontalRayManager {
     }
 
     _showSettings(ray) {
-    const settings = document.getElementById('drawingSettings');
-    
-    // Заполняем поля стиля
-    document.getElementById('currentColorBox').style.backgroundColor = ray.options.color;
-    document.getElementById('hexInputInline').value = ray.options.color;
-    document.getElementById('settingThickness').value = ray.options.lineWidth;
-    document.getElementById('templateSelect').value = ray.options.lineStyle;
-    document.getElementById('colorOpacity').value = Math.round(ray.options.opacity * 100);
-    document.getElementById('colorOpacityValue').textContent = document.getElementById('colorOpacity').value + '%';
-    
-    // Для поля цены
-    const priceInput = document.getElementById('settingsPriceInput');
-    if (priceInput) {
-        priceInput.value = Utils.formatPrice(ray.price);
-        priceInput.addEventListener('contextmenu', (e) => {
-            e.stopPropagation();
-        });
-    }
-
-    // Для поля HEX (цвет)
-    const hexInput = document.getElementById('hexInputInline');
-    if (hexInput) {
-        hexInput.addEventListener('contextmenu', (e) => {
-            e.stopPropagation();
-        });
-    }
-
-    // Рендерим чекбоксы видимости (РАСКОММЕНТИРОВАНО!)
-    this._renderTimeframeCheckboxes(ray);
-    
-    settings.style.display = 'block';
-    settings.style.left = '50%';
-    settings.style.top = '50%';
-    settings.style.transform = 'translate(-50%, -50%)';
-    
-    // БЛОКИРУЕМ СОБЫТИЯ МЫШИ ДЛЯ ОКНА НАСТРОЕК
-    settings.addEventListener('mousedown', (e) => e.stopPropagation());
-    settings.addEventListener('mousemove', (e) => e.stopPropagation());
-    settings.addEventListener('mouseup', (e) => e.stopPropagation());
-    settings.addEventListener('click', (e) => e.stopPropagation());
-    
-    // ДОБАВЛЯЕМ КРЕСТИК ДЛЯ ЗАКРЫТИЯ
-    let header = settings.querySelector('.settings-header');
-    if (!header) {
-        header = document.createElement('div');
-        header.className = 'settings-header';
-        header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #404040;';
+        const settings = document.getElementById('drawingSettings');
         
-        const title = document.createElement('span');
-        title.textContent = 'Настройки луча';
-        title.style.color = '#FFFFFF';
-        title.style.fontSize = '14px';
-        title.style.fontWeight = 'bold';
+        document.getElementById('currentColorBox').style.backgroundColor = ray.options.color;
+        document.getElementById('hexInputInline').value = ray.options.color;
+        document.getElementById('settingThickness').value = ray.options.lineWidth;
+        document.getElementById('templateSelect').value = ray.options.lineStyle;
+        document.getElementById('colorOpacity').value = Math.round(ray.options.opacity * 100);
+        document.getElementById('colorOpacityValue').textContent = document.getElementById('colorOpacity').value + '%';
         
-        const closeBtn = document.createElement('button');
-        closeBtn.innerHTML = '✕';
-        closeBtn.style.cssText = 'background: transparent; border: none; color: #B0B0B0; font-size: 18px; cursor: pointer; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px;';
-        closeBtn.onmouseover = () => closeBtn.style.background = '#404040';
-        closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
-        closeBtn.onclick = (e) => {
-            e.stopPropagation();
-            settings.style.display = 'none';
+        const priceInput = document.getElementById('settingsPriceInput');
+        if (priceInput) {
+            priceInput.value = Utils.formatPrice(ray.price);
+            priceInput.addEventListener('contextmenu', (e) => {
+                e.stopPropagation();
+            });
+        }
+
+        const hexInput = document.getElementById('hexInputInline');
+        if (hexInput) {
+            hexInput.addEventListener('contextmenu', (e) => {
+                e.stopPropagation();
+            });
+        }
+
+        this._renderTimeframeCheckboxes(ray);
+        
+        settings.style.display = 'block';
+        settings.style.left = '50%';
+        settings.style.top = '50%';
+        settings.style.transform = 'translate(-50%, -50%)';
+        
+        settings.addEventListener('mousedown', (e) => e.stopPropagation());
+        settings.addEventListener('mousemove', (e) => e.stopPropagation());
+        settings.addEventListener('mouseup', (e) => e.stopPropagation());
+        settings.addEventListener('click', (e) => e.stopPropagation());
+        
+        let header = settings.querySelector('.settings-header');
+        if (!header) {
+            header = document.createElement('div');
+            header.className = 'settings-header';
+            header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #404040;';
+            
+            const title = document.createElement('span');
+            title.textContent = 'Настройки луча';
+            title.style.color = '#FFFFFF';
+            title.style.fontSize = '14px';
+            title.style.fontWeight = 'bold';
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.innerHTML = '✕';
+            closeBtn.style.cssText = 'background: transparent; border: none; color: #B0B0B0; font-size: 18px; cursor: pointer; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px;';
+            closeBtn.onmouseover = () => closeBtn.style.background = '#404040';
+            closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
+            closeBtn.onclick = (e) => {
+                e.stopPropagation();
+                settings.style.display = 'none';
+            };
+            
+            header.appendChild(title);
+            header.appendChild(closeBtn);
+            settings.insertBefore(header, settings.firstChild);
+        }
+        
+        const closeOnOutsideClick = (e) => {
+            if (!settings.contains(e.target) && settings.style.display === 'block') {
+                settings.style.display = 'none';
+                document.removeEventListener('mousedown', closeOnOutsideClick);
+            }
         };
         
-        header.appendChild(title);
-        header.appendChild(closeBtn);
+        document.removeEventListener('mousedown', closeOnOutsideClick);
+        setTimeout(() => {
+            document.addEventListener('mousedown', closeOnOutsideClick);
+        }, 100);
         
-        // Вставляем заголовок в начало настроек
-        settings.insertBefore(header, settings.firstChild);
-    }
-    
-    // ЗАКРЫТИЕ ПРИ КЛИКЕ ВНЕ ОКНА
-    const closeOnOutsideClick = (e) => {
-        if (!settings.contains(e.target) && settings.style.display === 'block') {
-            settings.style.display = 'none';
-            document.removeEventListener('mousedown', closeOnOutsideClick);
-        }
-    };
-    
-    document.removeEventListener('mousedown', closeOnOutsideClick);
-    setTimeout(() => {
-        document.addEventListener('mousedown', closeOnOutsideClick);
-    }, 100);
-    
-    // Настройка вкладок
-    const stylePanel = document.getElementById('stylePanel');
-    const visibilityPanel = document.getElementById('visibilityPanel');
-    const tabs = document.querySelectorAll('#drawingSettings .settings-tab');
-    
-    // Активируем вкладку "Стиль" по умолчанию
-    tabs.forEach(tab => {
-        tab.classList.remove('active');
-        if (tab.dataset.settingsTab === 'style') {
-            tab.classList.add('active');
-        }
-    });
-    stylePanel.classList.add('active');
-    visibilityPanel.classList.remove('active');
-    
-    // Удаляем старые обработчики и добавляем новые
-    tabs.forEach(tab => {
-        const newTab = tab.cloneNode(true);
-        tab.parentNode.replaceChild(newTab, tab);
-    });
-    
-    document.querySelectorAll('#drawingSettings .settings-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('#drawingSettings .settings-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            
+        const stylePanel = document.getElementById('stylePanel');
+        const visibilityPanel = document.getElementById('visibilityPanel');
+        const tabs = document.querySelectorAll('#drawingSettings .settings-tab');
+        
+        tabs.forEach(tab => {
+            tab.classList.remove('active');
             if (tab.dataset.settingsTab === 'style') {
-                stylePanel.classList.add('active');
-                visibilityPanel.classList.remove('active');
-            } else {
-                stylePanel.classList.remove('active');
-                visibilityPanel.classList.add('active');
+                tab.classList.add('active');
             }
         });
-    });
-    
-    // Кнопка применения цены
-    const applyBtn = document.getElementById('applyPriceBtn');
-    const newApplyBtn = applyBtn.cloneNode(true);
-    applyBtn.parentNode.replaceChild(newApplyBtn, applyBtn);
-    
-    newApplyBtn.addEventListener('click', () => {
-        const newPrice = parseFloat(document.getElementById('settingsPriceInput').value);
-        if (!isNaN(newPrice)) {
-            ray.price = newPrice;
-            this._requestRedraw();
-            this._saveRays();
-        }
-    });
-    
-    // Кнопка сохранения
-    const saveBtn = document.getElementById('saveSettings');
-    const newSaveBtn = saveBtn.cloneNode(true);
-    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-    
-    newSaveBtn.addEventListener('click', () => {
-        ray.updateOptions({
-            color: document.getElementById('currentColorBox').style.backgroundColor,
-            lineWidth: parseInt(document.getElementById('settingThickness').value),
-            lineStyle: document.getElementById('templateSelect').value,
-            opacity: parseInt(document.getElementById('colorOpacity').value) / 100
+        stylePanel.classList.add('active');
+        visibilityPanel.classList.remove('active');
+        
+        tabs.forEach(tab => {
+            const newTab = tab.cloneNode(true);
+            tab.parentNode.replaceChild(newTab, tab);
         });
-        this._requestRedraw();
-        settings.style.display = 'none';
-        this._saveRays();
-    });
-    
-    // Кнопка удаления
-    const deleteBtn = document.getElementById('deleteDrawing');
-    const newDeleteBtn = deleteBtn.cloneNode(true);
-    deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
-    
-    newDeleteBtn.addEventListener('click', () => {
-        this.deleteRay(ray.id);
-        settings.style.display = 'none';
-        this._requestRedraw();
-    });
-}
+        
+        document.querySelectorAll('#drawingSettings .settings-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('#drawingSettings .settings-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                if (tab.dataset.settingsTab === 'style') {
+                    stylePanel.classList.add('active');
+                    visibilityPanel.classList.remove('active');
+                } else {
+                    stylePanel.classList.remove('active');
+                    visibilityPanel.classList.add('active');
+                }
+            });
+        });
+        
+        const applyBtn = document.getElementById('applyPriceBtn');
+        const newApplyBtn = applyBtn.cloneNode(true);
+        applyBtn.parentNode.replaceChild(newApplyBtn, applyBtn);
+        
+        newApplyBtn.addEventListener('click', () => {
+            const newPrice = parseFloat(document.getElementById('settingsPriceInput').value);
+            if (!isNaN(newPrice)) {
+                ray.price = newPrice;
+                this._requestRedraw();
+                this._saveRays();
+            }
+        });
+        
+        const saveBtn = document.getElementById('saveSettings');
+        const newSaveBtn = saveBtn.cloneNode(true);
+        saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+        
+        newSaveBtn.addEventListener('click', () => {
+            ray.updateOptions({
+                color: document.getElementById('currentColorBox').style.backgroundColor,
+                lineWidth: parseInt(document.getElementById('settingThickness').value),
+                lineStyle: document.getElementById('templateSelect').value,
+                opacity: parseInt(document.getElementById('colorOpacity').value) / 100
+            });
+            this._requestRedraw();
+            settings.style.display = 'none';
+            this._saveRays();
+        });
+        
+        const deleteBtn = document.getElementById('deleteDrawing');
+        const newDeleteBtn = deleteBtn.cloneNode(true);
+        deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
+        
+        newDeleteBtn.addEventListener('click', () => {
+            this.deleteRay(ray.id);
+            settings.style.display = 'none';
+            this._requestRedraw();
+        });
+    }
 
     _renderTimeframeCheckboxes(ray) {
         const container = document.getElementById('timeframeCheckboxList');
@@ -7988,42 +8071,66 @@ class HorizontalRayManager {
     }
 
     _requestRedraw() {
-        this._rays.forEach(item => { 
+        // Перерисовываем только лучи текущего символа
+        const raysForCurrent = this._getRaysForCurrentSymbol();
+        
+        raysForCurrent.forEach(item => { 
             if (item.primitive?.requestRedraw) {
                 item.primitive.requestRedraw();
             }
         });
     }
 
+    // ========== ИЗМЕНЕНО: Сохраняем с привязкой к символу ==========
     _saveRays() {
         const raysData = this._rays.map(item => ({
             price: item.ray.price,
             time: item.ray.time,
             id: item.ray.id,
             options: item.ray.options,
-            timeframeVisibility: item.ray.timeframeVisibility
+            timeframeVisibility: item.ray.timeframeVisibility,
+            anchorCandle: item.ray.anchorCandle,
+            symbolKey: item.ray.symbolKey,
+            symbol: item.ray.symbol,
+            exchange: item.ray.exchange,
+            marketType: item.ray.marketType
         }));
         localStorage.setItem('horizontalRays', JSON.stringify(raysData));
     }
 
+    // ========== ИЗМЕНЕНО: Загружаем все лучи, но отображаем только для текущего ==========
     loadRays() {
         try {
             const saved = localStorage.getItem('horizontalRays');
             if (saved) {
                 const raysData = JSON.parse(saved);
+                
                 raysData.forEach(data => {
-                    this.createRay(data.price, data.time, {
-                        ...data.options,
-                        timeframeVisibility: data.timeframeVisibility
+                    // Проверяем, что у данных есть symbolKey, если нет - создаем из старого формата
+                    if (!data.symbolKey) {
+                        // Для обратной совместимости: присваиваем дефолтный символ
+                        data.symbolKey = 'BTCUSDT:binance:futures';
+                        data.symbol = 'BTCUSDT';
+                        data.exchange = 'binance';
+                        data.marketType = 'futures';
+                    }
+                    
+                    // Добавляем в массив, но не отображаем сразу
+                    // Они отобразятся при синхронизации с таймфреймом для своего символа
+                    this._rays.push({
+                        ray: data,
+                        primitive: null,
+                        series: null
                     });
                 });
+                
+                console.log(`Загружено ${raysData.length} лучей из localStorage`);
             }
         } catch (e) { 
             console.warn('Ошибка загрузки лучей:', e); 
         }
     }
 }
-
         // ========== МЕНЕДЖЕР ТРЕНДОВЫХ ЛИНИЙ ==========
         class TrendLineManager {
 
@@ -12518,7 +12625,13 @@ async switchToTimeframe(tf) {
     
     if (data && data.length > 0) {
         console.log('Устанавливаем данные на график');
-        this.chartManager.setDataQuick(data, tf, CONFIG.defaultSymbol);
+        this.chartManager.setDataQuick(
+    data, 
+    tf, 
+    CONFIG.defaultSymbol, 
+    this.chartManager.currentExchange, 
+    this.chartManager.currentMarketType
+);
         
         // 👇 ДОБАВЬТЕ ЭТОТ ВЫЗОВ
         setTimeout(() => {
@@ -14313,37 +14426,51 @@ const activeIndicatorsList = safeGet('activeIndicatorsList');
 
  async loadUserData() {
     console.log('📦 Загрузка пользовательских данных из IndexedDB...');
-    
-    // ВАЖНО: инициализируем пустым объектом ДО загрузки
-    this.state.flags = {}; // ← ЭТА СТРОКА РЕШАЕТ ПРОБЛЕМУ!
+    this.state.flags = {};
+    // 👇 УСТАНАВЛИВАЕМ ЗНАЧЕНИЯ ПО УМОЛЧАНИЮ
+    this.state.currentSymbol = 'BTCUSDT';
+    this.state.currentExchange = 'binance';
+    this.state.currentMarketType = 'futures';
     
     try {
         const favorites = await window.db.get('settings', 'favorites');
         if (favorites && favorites.value) {
             this.state.favorites = favorites.value;
         }
-        
         const customSymbols = await window.db.get('settings', 'customSymbols');
         if (customSymbols && customSymbols.value) {
             this.state.customSymbols = customSymbols.value;
         }
-        
         const flags = await window.db.get('settings', 'flags');
         if (flags && flags.value) {
-            this.state.flags = flags.value; // ← перезаписываем, если есть
-            console.log('✅ Загружены флаги:', flags.value);
-        } else {
-            console.log('⚠️ Флаги не найдены, используем пустой объект');
-            // this.state.flags уже {} из инициализации выше
+            this.state.flags = flags.value;
+        }
+        
+        // 👇 ЗАГРУЖАЕМ СОХРАНЁННЫЙ СИМВОЛ
+        const currentSymbol = await window.db.get('settings', 'currentSymbol');
+        if (currentSymbol && currentSymbol.value) {
+            this.state.currentSymbol = currentSymbol.value.symbol || 'BTCUSDT';
+            this.state.currentExchange = currentSymbol.value.exchange || 'binance';
+            this.state.currentMarketType = currentSymbol.value.marketType || 'futures';
+            console.log('✅ Загружен последний символ:', this.state.currentSymbol);
         }
         
         console.log('✅ Пользовательские данные загружены из IndexedDB');
     } catch (error) {
         console.warn('❌ Ошибка загрузки из IndexedDB:', error);
-        // this.state.flags уже {} из инициализации выше
     }
 }
-
+async saveCurrentSymbol(symbol, exchange, marketType) {
+    try {
+        await window.db.put('settings', {
+            key: 'currentSymbol',
+            value: { symbol, exchange, marketType },
+            timestamp: Date.now()
+        });
+    } catch (error) {
+        console.warn('❌ Ошибка сохранения текущего символа:', error);
+    }
+}
   addInitialSymbols() {
     const savedSymbols = this.state.customSymbols;
     
@@ -15595,13 +15722,15 @@ getFilteredTickers() {
         const isFavorite = this.state.favorites.includes(ticker.symbol) ? 'favorite' : '';
 
         div.innerHTML = `
-           <div class="ticker-name">
-    ${flagHTML}
-    ${exchangeIconHtml}
-    <span class="symbol-text">${ticker.symbol.replace('USDT', '')}</span>
-    ${marketBadgeHTML}
-    <span class="star ${isFavorite}" data-symbol="${ticker.symbol}" title="Избранное" onclick="event.stopPropagation(); window.tickerPanel?.handleStarClick(this)">★</span>
-</div>
+            <div class="ticker-name">
+                ${flagHTML}
+                <span class="symbol-text">${ticker.symbol.replace('USDT', '')}</span>
+                <span class="star ${isFavorite}" data-symbol="${ticker.symbol}" title="Избранное" onclick="event.stopPropagation(); window.tickerPanel?.handleStarClick(this)">★</span>
+            </div>
+            <div class="ticker-price ${ticker.change > 0 ? 'positive' : (ticker.change < 0 ? 'negative' : '')}">${this.formatPrice(ticker.price)}</div>
+            <div class="ticker-change ${ticker.change > 0 ? 'positive' : (ticker.change < 0 ? 'negative' : '')}">${this.formatChange(ticker.change)}%</div>
+            <div class="ticker-volume">${this.formatVolume(ticker.volume)}</div>
+            <div class="ticker-trades">${this.formatTrades(ticker)}</div>
         `;
 
         return div;
@@ -15784,12 +15913,12 @@ getFilteredTickers() {
         container.addEventListener('dblclick', this.handleDoubleClick);
     }
 
-   handleTickerClick = (e) => {
+  handleTickerClick = (e) => {
+    // Обработка клика по звезде (избранное)
     const star = e.target.closest('.star');
     if (star) {
         e.preventDefault();
         e.stopPropagation();
-        
         const symbol = star.dataset.symbol;
         if (!symbol) return;
         
@@ -15801,28 +15930,29 @@ getFilteredTickers() {
             this.state.favorites.splice(index, 1);
             star.classList.remove('favorite');
         }
-        
         this.saveState();
         this.filterCache = null;
         return;
     }
-    
+
+    // Обработка клика по флагу
     const flag = e.target.closest('.flag');
     if (flag) {
         e.preventDefault();
         e.stopPropagation();
         return;
     }
-    
+
+    // Обработка клика по тикеру
     const tickerItem = e.target.closest('.ticker-item');
     if (tickerItem && tickerItem.dataset.symbol) {
         const symbol = tickerItem.dataset.symbol;
         const exchange = tickerItem.dataset.exchange;
         const marketType = tickerItem.dataset.marketType;
         
-        // Проверка на тот же символ
-        if (this.state.currentSymbol === symbol && 
-            this.state.currentExchange === exchange && 
+        // Проверка на тот же символ — не перезагружаем
+        if (this.state.currentSymbol === symbol &&
+            this.state.currentExchange === exchange &&
             this.state.currentMarketType === marketType) {
             return;
         }
@@ -15831,6 +15961,9 @@ getFilteredTickers() {
         this.state.currentSymbol = symbol;
         this.state.currentExchange = exchange;
         this.state.currentMarketType = marketType;
+        
+        // 👇 СОХРАНЯЕМ В INDEXEDDB (НОВОЕ)
+        this.saveCurrentSymbol(symbol, exchange, marketType);
         
         // Убираем активный класс со всех тикеров
         document.querySelectorAll('.ticker-item.active').forEach(el => {
@@ -15843,7 +15976,6 @@ getFilteredTickers() {
         // Загружаем данные через координатор
         if (this.coordinator) {
             this.coordinator.loadSymbol(symbol, exchange, marketType);
-            
             // Автовыравнивание после загрузки
             setTimeout(() => {
                 if (this.coordinator.chartManager) {
@@ -15854,9 +15986,9 @@ getFilteredTickers() {
         
         // Обновляем информацию в шапке
         document.getElementById('pairDisplay').textContent = symbol;
-        document.getElementById('exchangeDisplay').textContent = 
+        document.getElementById('exchangeDisplay').textContent =
             exchange === 'binance' ? 'Binance' : 'Bybit';
-        document.getElementById('contractTypeDisplay').textContent = 
+        document.getElementById('contractTypeDisplay').textContent =
             marketType === 'futures' ? 'PERP' : 'SPOT';
     }
 }
@@ -16105,37 +16237,29 @@ class AppCoordinator {
         this.init();
     }
     
-    async init() {
-        console.log('🚀 Запуск приложения...');
-        
-        // Сначала создаём менеджер графика
-        this.chartManager = new ChartManager(document.getElementById('chart-container'));
-        window.chartManagerInstance = this.chartManager;
-        
-        // Ждём инициализации графика
-        await this._waitForChart();
-        
-        // Создаём WebSocket менеджер
-        this.wsManager = new WebSocketManager(this.chartManager);
-        
-        // Создаём таймер
-        this.timerManager = new TimerManager(this.chartManager);
-        
-        // Создаём менеджер таймфреймов
-        this.tfManager = new TimeframeManager(this.chartManager, this.wsManager, this.timerManager);
-        
-        // Создаём панель котировок и связываем её с нами
-        this.tickerPanel = new TickerPanel(this);
-        window.tickerPanel = this.tickerPanel;
-        
-        // Загружаем начальные данные
-        await this.loadInitialData();
-        
-        // Инициализируем инструменты рисования
-        this.initDrawingTools();
-        
-        console.log('✅ Приложение готово');
-    }
+   async init() {
+    console.log('🚀 Запуск приложения...');
+    
+    this.chartManager = new ChartManager(document.getElementById('chart-container'));
+    window.chartManagerInstance = this.chartManager;
+    
+    await this._waitForChart();
+    
+    this.wsManager = new WebSocketManager(this.chartManager);
+    this.timerManager = new TimerManager(this.chartManager);
+    this.tfManager = new TimeframeManager(this.chartManager, this.wsManager, this.timerManager);
+    
+    this.tickerPanel = new TickerPanel(this);
+    window.tickerPanel = this.tickerPanel;
+    
+    // 👇 НОВОЕ: СНАЧАЛА загружаем сохранённый символ и обновляем заголовок
+    await this._waitForSavedSymbol();
+    this._updateHeaderFromSavedSymbol();  // ← ДОБАВИТЬ
+    
+    await this.loadInitialData();
+    this.initDrawingTools();
+    console.log('✅ Приложение готово');
+}
     
     _waitForChart() {
         return new Promise(resolve => {
@@ -16149,61 +16273,113 @@ class AppCoordinator {
             check();
         });
     }
+async loadInitialData() {
+    // 👇 БЕРЁМ СИМВОЛ ИЗ CHARTMANAGER (уже загружен из IndexedDB)
+    const defaultSymbol = this.chartManager.currentSymbol || 'BTCUSDT';
+    const defaultExchange = this.chartManager.currentExchange || 'binance';
+    const defaultMarketType = this.chartManager.currentMarketType || 'futures';
+    const defaultInterval = '1h';
     
-    async loadInitialData() {
-        const defaultSymbol = 'BTCUSDT';
-        const defaultExchange = 'binance';
-        const defaultMarketType = 'futures';
-        const defaultInterval = '1h';
+    console.log('📊 Загружаю данные для:', defaultSymbol, defaultExchange, defaultMarketType);
+    
+    const data = await DataCache.get(defaultSymbol, defaultInterval);
+    if (data && data.length > 0) {
+        this.chartManager.setDataQuick(
+            data,
+            defaultInterval,
+            defaultSymbol,
+            defaultExchange,
+            defaultMarketType
+        );
+        this.wsManager.connect(defaultSymbol, defaultInterval);
         
-        // Загружаем данные
-        const data = await DataCache.get(defaultSymbol, defaultInterval);
-        
-        if (data && data.length > 0) {
-            this.chartManager.setDataQuick(data, defaultInterval, defaultSymbol);
-            this.wsManager.connect(defaultSymbol, defaultInterval);
-            
-            // Обновляем информацию в шапке
-            document.getElementById('pairDisplay').textContent = defaultSymbol;
-            document.getElementById('exchangeDisplay').textContent = 'Binance';
-            document.getElementById('contractTypeDisplay').textContent = 'PERP';
+        // 👇 СРАЗУ обновляем шапку ПРАВИЛЬНЫМ символом
+        document.getElementById('pairDisplay').textContent = defaultSymbol;
+        document.getElementById('exchangeDisplay').textContent =
+            defaultExchange === 'binance' ? 'Binance' : 'Bybit';
+        document.getElementById('contractTypeDisplay').textContent =
+            defaultMarketType === 'futures' ? 'PERP' : 'SPOT';
+    }
+
+}
+// 👇 НОВЫЙ МЕТОД в AppCoordinator
+_updateHeaderFromSavedSymbol() {
+    const symbol = this.chartManager.currentSymbol || 'BTCUSDT';
+    const exchange = this.chartManager.currentExchange || 'binance';
+    const marketType = this.chartManager.currentMarketType || 'futures';
+    
+    // СРАЗУ обновляем заголовок чтобы не было мелькания
+    const pairDisplay = document.getElementById('pairDisplay');
+    const exchangeDisplay = document.getElementById('exchangeDisplay');
+    const contractTypeDisplay = document.getElementById('contractTypeDisplay');
+    
+    if (pairDisplay) pairDisplay.textContent = symbol;
+    if (exchangeDisplay) exchangeDisplay.textContent = exchange === 'binance' ? 'Binance' : 'Bybit';
+    if (contractTypeDisplay) contractTypeDisplay.textContent = marketType === 'futures' ? 'PERP' : 'SPOT';
+    
+    console.log('📊 Заголовок обновлён:', symbol);
+}
+// 👇 НОВЫЙ МЕТОД: Ждём загрузки сохранённого символа
+async _waitForSavedSymbol() {
+    return new Promise(async (resolve) => {
+        try {
+            const saved = await window.db.get('settings', 'currentSymbol');
+            if (saved && saved.value && saved.value.symbol) {
+                this.chartManager.currentSymbol = saved.value.symbol;
+                this.chartManager.currentExchange = saved.value.exchange || 'binance';
+                this.chartManager.currentMarketType = saved.value.marketType || 'futures';
+                
+                // 👇 НОВОЕ: СРАЗУ обновляем заголовок
+                this._updateHeaderFromSavedSymbol();
+                
+                console.log('✅ Используется сохранённый символ:', saved.value.symbol);
+            }
+        } catch (e) {
+            console.warn('Не удалось загрузить сохранённый символ');
         }
-    }
+        resolve();
+    });
+}
+  initDrawingTools() {
+    // Лучи
+    const rayManager = new HorizontalRayManager(this.chartManager);
+    window.rayManager = rayManager;
     
-    initDrawingTools() {
-        // Лучи
-        const rayManager = new HorizontalRayManager(this.chartManager);
-        window.rayManager = rayManager;
-        
-        // Трендовые линии
-        const trendLineManager = new TrendLineManager(this.chartManager);
-        window.trendLineManager = trendLineManager;
-        
-        // Линейки
-        const rulerLineManager = new RulerLineManager(this.chartManager);
-        window.rulerLineManager = rulerLineManager;
-        
-        // Алерты
-        const alertLineManager = new AlertLineManager(this.chartManager);
-        window.alertLineManager = alertLineManager;
-        
-        // Текст
-        const textManager = new TextManager(this.chartManager);
-        window.textManager = textManager;
-        
-        // Загружаем сохранённые рисунки через секунду
-        setTimeout(() => {
-            rayManager.loadRays();
-            trendLineManager.loadTrendLines();
-            rulerLineManager.loadRulers();
-            alertLineManager.loadAlerts();
-            textManager.loadTexts();
-            console.log('✅ Рисунки загружены');
-        }, 1000);
-        
-        // Настраиваем кнопки инструментов
-        this.setupToolButtons();
-    }
+    // Трендовые линии
+    const trendLineManager = new TrendLineManager(this.chartManager);
+    window.trendLineManager = trendLineManager;
+    
+    // Линейки
+    const rulerLineManager = new RulerLineManager(this.chartManager);
+    window.rulerLineManager = rulerLineManager;
+    
+    // Алерты
+    const alertLineManager = new AlertLineManager(this.chartManager);
+    window.alertLineManager = alertLineManager;
+    
+    // Текст
+    const textManager = new TextManager(this.chartManager);
+    window.textManager = textManager;
+    
+    // ЗАГРУЖАЕМ РИСУНКИ МГНОВЕННО
+    rayManager.loadRays();
+    trendLineManager.loadTrendLines();
+    rulerLineManager.loadRulers();
+    alertLineManager.loadAlerts();
+    textManager.loadTexts();
+    
+    // КОРОТКАЯ ЗАДЕРЖКА ДЛЯ СИНХРОНИЗАЦИИ (200 мс достаточно)
+    setTimeout(() => {
+        rayManager.syncWithNewTimeframe();
+        trendLineManager.syncWithNewTimeframe();
+        rulerLineManager.syncWithNewTimeframe();
+        alertLineManager.syncWithNewTimeframe();
+        textManager.syncWithNewTimeframe();
+    }, 200);
+    
+    // Настраиваем кнопки инструментов (этот метод уже есть ниже)
+    this.setupToolButtons();
+}
     
     setupToolButtons() {
         // Горизонтальный луч
@@ -16365,11 +16541,12 @@ class AppCoordinator {
         const cacheKey = `${symbol}_${exchange}_${marketType}_${this.chartManager.currentInterval}`;
         const cached = this.symbolCache.get(cacheKey);
         
-        if (cached && (Date.now() - cached.timestamp < 5 * 60 * 1000)) {
-            console.log('Загружаем из кэша:', cached.data.length, 'свечей');
-            this.chartManager.setDataQuick(cached.data, this.chartManager.currentInterval, symbol);
+        if (cached && (Date.now() - cached.timestamp < 5 * 60 * 1000)) { // 5 минут
+            console.log('📦 Загружаем из кэша:', cached.data.length, 'свечей');
             
-            // 👇 ДОБАВЬТЕ ЭТОТ ВЫЗОВ
+            // Отображаем на графике
+         this.chartManager.setDataQuick(cached.data, this.chartManager.currentInterval, symbol, exchange, marketType);
+            // 👇 АВТОВЫРАВНИВАНИЕ
             setTimeout(() => {
                 this.chartManager.autoScale();
             }, 200);
@@ -16381,16 +16558,29 @@ class AppCoordinator {
             document.getElementById('contractTypeDisplay').textContent = 
                 marketType === 'futures' ? 'PERP' : 'SPOT';
             
+            // Обновляем текущие значения в менеджере графика
             this.chartManager.currentSymbol = symbol;
             this.chartManager.currentExchange = exchange;
             this.chartManager.currentMarketType = marketType;
             
-            // Синхронизируем рисунки
-            this.syncAllDrawings();
+            // 👇 СИНХРОНИЗАЦИЯ ВСЕХ РИСУНКОВ ПОСЛЕ ЗАГРУЗКИ
+            setTimeout(() => {
+                if (window.rayManager) window.rayManager.syncWithNewTimeframe();
+                if (window.trendLineManager) window.trendLineManager.syncWithNewTimeframe();
+                if (window.rulerLineManager) window.rulerLineManager.syncWithNewTimeframe();
+                if (window.alertLineManager) window.alertLineManager.syncWithNewTimeframe();
+                if (window.textManager) window.textManager.syncWithNewTimeframe();
+            }, 200);
+            
+            // Возвращаемся к последней свече
+            setTimeout(() => {
+                this.chartManager.scrollToLast();
+                this.chartManager.chart.timeScale().fitContent();
+            }, 200);
             
             this._isLoading = false;
             
-            // Проверяем, есть ли ожидающий символ
+            // Проверяем очередь
             if (this._pendingSymbol) {
                 const pending = this._pendingSymbol;
                 this._pendingSymbol = null;
@@ -16417,9 +16607,9 @@ class AppCoordinator {
             }
             
             // Отображаем на графике
-            this.chartManager.setDataQuick(data, this.chartManager.currentInterval, symbol);
+          this.chartManager.setDataQuick(data, this.chartManager.currentInterval, symbol, exchange, marketType);
             
-            // 👇 ДОБАВЬТЕ ЭТОТ ВЫЗОВ
+            // 👇 АВТОВЫРАВНИВАНИЕ
             setTimeout(() => {
                 this.chartManager.autoScale();
             }, 200);
@@ -16431,6 +16621,7 @@ class AppCoordinator {
             document.getElementById('contractTypeDisplay').textContent = 
                 marketType === 'futures' ? 'PERP' : 'SPOT';
             
+            // Обновляем текущие значения в менеджере графика
             this.chartManager.currentSymbol = symbol;
             this.chartManager.currentExchange = exchange;
             this.chartManager.currentMarketType = marketType;
@@ -16441,8 +16632,14 @@ class AppCoordinator {
                 this.wsManager.connect(symbol, this.chartManager.currentInterval);
             }
             
-            // Синхронизируем рисунки
-            this.syncAllDrawings();
+            // 👇 СИНХРОНИЗАЦИЯ ВСЕХ РИСУНКОВ ПОСЛЕ ЗАГРУЗКИ
+            setTimeout(() => {
+                if (window.rayManager) window.rayManager.syncWithNewTimeframe();
+                if (window.trendLineManager) window.trendLineManager.syncWithNewTimeframe();
+                if (window.rulerLineManager) window.rulerLineManager.syncWithNewTimeframe();
+                if (window.alertLineManager) window.alertLineManager.syncWithNewTimeframe();
+                if (window.textManager) window.textManager.syncWithNewTimeframe();
+            }, 200);
             
             // Возвращаемся к последней свече
             setTimeout(() => {
@@ -16452,9 +16649,9 @@ class AppCoordinator {
         }
         
     } catch (error) {
-        console.error('Ошибка загрузки символа:', error);
+        console.error('❌ Ошибка загрузки символа:', error);
         
-        // Показываем уведомление
+        // Показываем уведомление об ошибке
         const notification = document.getElementById('alertNotification');
         if (notification) {
             notification.innerHTML = `
@@ -16472,7 +16669,7 @@ class AppCoordinator {
     } finally {
         this._isLoading = false;
         
-        // Проверяем, есть ли ожидающий символ
+        // Проверяем очередь
         if (this._pendingSymbol) {
             const pending = this._pendingSymbol;
             this._pendingSymbol = null;
@@ -16480,7 +16677,6 @@ class AppCoordinator {
         }
     }
 }
-    
     async _fetchSymbolData(symbol, exchange, marketType) {
         const interval = this.chartManager.currentInterval;
         
@@ -16679,7 +16875,7 @@ class AppCoordinator {
                 wsManager.connect(CONFIG.defaultSymbol, CONFIG.defaultInterval);
             }
             
-           function initDrawingTools() {
+  function initDrawingTools() {
     if (!window.chartManagerInstance) {
         console.error('ChartManager не найден!');
         setTimeout(initDrawingTools, 500);
@@ -16688,62 +16884,40 @@ class AppCoordinator {
     
     console.log('✅ Инициализация инструментов рисования...');
     
+    // СОЗДАЁМ МЕНЕДЖЕРЫ
     const rayManager = new HorizontalRayManager(window.chartManagerInstance);
     window.rayManager = rayManager;
     
     const trendLineManager = new TrendLineManager(window.chartManagerInstance);
     window.trendLineManager = trendLineManager;
+    
     const rulerLineManager = new RulerLineManager(window.chartManagerInstance);
-window.rulerLineManager = rulerLineManager;
-
-setTimeout(() => {
-    rulerLineManager.loadRulers();
-    console.log('✅ Линейки загружены');
-}, 500);
-    // 👇 ДОБАВЛЯЕМ СОЗДАНИЕ МЕНЕДЖЕРА АЛЕРТОВ
+    window.rulerLineManager = rulerLineManager;
+    
     const alertLineManager = new AlertLineManager(window.chartManagerInstance);
     window.alertLineManager = alertLineManager;
-    // Загружаем сохранённые алерты через секунду
-    setTimeout(() => {
-        window.alertLineManager.loadAlerts();
-        console.log('✅ Алерты загружены');
-    }, 1000);
     
-    setTimeout(() => {
-        rayManager.loadRays();
-        trendLineManager.loadTrendLines();
-        console.log('✅ Лучи и линии загружены');
-    }, 500);
-    // после rulerLineManager
-const textManager = new TextManager(window.chartManagerInstance);
-window.textManager = textManager;
-
-setTimeout(() => {
+    const textManager = new TextManager(window.chartManagerInstance);
+    window.textManager = textManager;
+    
+    // ЗАГРУЖАЕМ ВСЁ МГНОВЕННО (БЕЗ ТАЙМАУТОВ)
+    rayManager.loadRays();
+    trendLineManager.loadTrendLines();
+    rulerLineManager.loadRulers();
+    alertLineManager.loadAlerts();
     textManager.loadTexts();
-    console.log('✅ Текст загружен');
-}, 600);
-const rulerBtn = document.getElementById('toolRuler');
-if (rulerBtn) {
-    rulerBtn.onclick = function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!window.rulerLineManager) return;
+    
+    console.log('✅ Все рисунки загружены');
+    
+    // ОДИН КОРОТКИЙ ТАЙМАУТ ДЛЯ СИНХРОНИЗАЦИИ
+    setTimeout(() => {
+        rayManager.syncWithNewTimeframe();
+        trendLineManager.syncWithNewTimeframe();
+        rulerLineManager.syncWithNewTimeframe();
+        alertLineManager.syncWithNewTimeframe();
+        textManager.syncWithNewTimeframe();
+    }, 50);
 
-        // Отключаем другие режимы рисования
-        if (window.rayManager && window.rayManager._isDrawingMode) {
-            window.rayManager.setDrawingMode(false);
-        }
-        if (window.trendLineManager && window.trendLineManager._isDrawingMode) {
-            window.trendLineManager.setDrawingMode(false);
-        }
-        if (window.alertLineManager && window.alertLineManager._isDrawingMode) {
-            window.alertLineManager.setDrawingMode(false);
-        }
-
-        const newMode = !window.rulerLineManager._isDrawingMode;
-        window.rulerLineManager.setDrawingMode(newMode);
-    };
-}
 
                 const rayBtn = document.getElementById('toolHorizontalRay');
                 if (rayBtn) {
