@@ -15595,15 +15595,13 @@ getFilteredTickers() {
         const isFavorite = this.state.favorites.includes(ticker.symbol) ? 'favorite' : '';
 
         div.innerHTML = `
-            <div class="ticker-name">
-                ${flagHTML}
-                <span class="symbol-text">${ticker.symbol.replace('USDT', '')}</span>
-                <span class="star ${isFavorite}" data-symbol="${ticker.symbol}" title="Избранное" onclick="event.stopPropagation(); window.tickerPanel?.handleStarClick(this)">★</span>
-            </div>
-            <div class="ticker-price ${ticker.change > 0 ? 'positive' : (ticker.change < 0 ? 'negative' : '')}">${this.formatPrice(ticker.price)}</div>
-            <div class="ticker-change ${ticker.change > 0 ? 'positive' : (ticker.change < 0 ? 'negative' : '')}">${this.formatChange(ticker.change)}%</div>
-            <div class="ticker-volume">${this.formatVolume(ticker.volume)}</div>
-            <div class="ticker-trades">${this.formatTrades(ticker)}</div>
+           <div class="ticker-name">
+    ${flagHTML}
+    ${exchangeIconHtml}
+    <span class="symbol-text">${ticker.symbol.replace('USDT', '')}</span>
+    ${marketBadgeHTML}
+    <span class="star ${isFavorite}" data-symbol="${ticker.symbol}" title="Избранное" onclick="event.stopPropagation(); window.tickerPanel?.handleStarClick(this)">★</span>
+</div>
         `;
 
         return div;
